@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estudio del perceptrón · Computacional I</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   TOKENS DE DISEÑO
+   Idea visual: un cuaderno cuadriculado de ingeniería. Tinta azul para la
+   estructura, resaltador amarillo para lo que hay que recordar y tinta roja
+   de corrección para los errores, como cuando el profesor revisa a mano.
+   ===================================================================== */
+:root {
+  --papel: #f6f8fc;
+  --hoja: #ffffff;
+  --cuadricula: rgba(40, 90, 170, 0.075);
+  --tinta: #1c3d8c;
+  --tinta-suave: #e5ebf8;
+  --grafito: #252a33;
+  --lapiz: #5d6573;
+  --linea: #d6dceb;
+  --resaltador: #fff0a0;
+  --correccion: #c0392b;
+  --correccion-suave: #fbe9e7;
+  --acierto: #1f7a4d;
+  --acierto-suave: #e3f3ea;
+  --codigo-fondo: #f1f4fa;
+  --sombra: 0 1px 0 rgba(28, 61, 140, 0.08);
+  --fuente: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+  --radio: 6px;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel: #11151d; --hoja: #171c26; --cuadricula: rgba(130, 165, 255, 0.06);
+    --tinta: #93b1ff; --tinta-suave: #1f2940; --grafito: #e4e7ee; --lapiz: #9aa3b4;
+    --linea: #2a3346; --resaltador: rgba(255, 228, 92, 0.22); --correccion: #ff7b6e;
+    --correccion-suave: rgba(255, 123, 110, 0.12); --acierto: #6fd39d;
+    --acierto-suave: rgba(111, 211, 157, 0.12); --codigo-fondo: #121722;
+  }
+}
+:root[data-theme="dark"] {
+  --papel: #11151d; --hoja: #171c26; --cuadricula: rgba(130, 165, 255, 0.06);
+  --tinta: #93b1ff; --tinta-suave: #1f2940; --grafito: #e4e7ee; --lapiz: #9aa3b4;
+  --linea: #2a3346; --resaltador: rgba(255, 228, 92, 0.22); --correccion: #ff7b6e;
+  --correccion-suave: rgba(255, 123, 110, 0.12); --acierto: #6fd39d;
+  --acierto-suave: rgba(111, 211, 157, 0.12); --codigo-fondo: #121722;
+}
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+body {
+  margin: 0; min-height: 100%; font-family: var(--fuente); font-size: 17px; line-height: 1.6;
+  color: var(--grafito); background-color: var(--papel);
+  /* Cuadrícula del cuaderno: dos gradientes lineales cruzados */
+  background-image:
+    linear-gradient(var(--cuadricula) 1px, transparent 1px),
+    linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+img, svg, canvas { max-width: 100%; }
+a { color: var(--tinta); }
+:focus-visible { outline: 3px solid var(--tinta); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- Estructura general: barra lateral + contenido ---------- */
+.marco { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: 100vh; }
+.lateral {
+  position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; overflow-y: auto;
+  background: var(--hoja); border-right: 1px solid var(--linea); padding: 22px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.marca { font-weight: 700; font-size: 1.05rem; color: var(--tinta); line-height: 1.25; margin-bottom: 2px; }
+.marca small { display: block; font-weight: 400; color: var(--lapiz); font-size: 0.82rem; margin-top: 3px; }
+.progreso-general { margin: 14px 0 18px; font-size: 0.85rem; color: var(--lapiz); }
+.barra { height: 6px; background: var(--tinta-suave); border-radius: 3px; overflow: hidden; margin-top: 5px; }
+.barra > span { display: block; height: 100%; background: var(--tinta); width: 0; transition: width .4s; }
+.nav-btn {
+  display: flex; align-items: baseline; gap: 10px; width: 100%; text-align: left; border: 0;
+  background: transparent; color: var(--grafito); font: inherit; font-size: 0.97rem;
+  padding: 8px 10px; border-radius: var(--radio); cursor: pointer;
+}
+.nav-btn:hover { background: var(--tinta-suave); }
+.nav-btn[aria-current="page"] { background: var(--tinta); color: var(--hoja); font-weight: 700; }
+.nav-btn .n { font-family: var(--mono); font-size: 0.78rem; opacity: .7; min-width: 1.2em; }
+.lateral .pie { margin-top: auto; padding-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+.boton-chico {
+  font: inherit; font-size: 0.82rem; border: 1px solid var(--linea); background: var(--hoja);
+  color: var(--lapiz); padding: 5px 10px; border-radius: var(--radio); cursor: pointer;
+}
+.boton-chico:hover { color: var(--tinta); border-color: var(--tinta); }
+
+.contenido { padding: 34px clamp(18px, 4vw, 56px) 80px; }
+.columna { max-width: 820px; margin: 0 auto; }
+.encabezado-movil { display: none; }
+
+@media (max-width: 860px) {
+  .marco { grid-template-columns: 1fr; }
+  .lateral {
+    position: fixed; inset: 0 auto 0 0; width: min(290px, 86vw); z-index: 30;
+    transform: translateX(-102%); transition: transform .25s; height: 100%;
+    padding-top: calc(22px + env(safe-area-inset-top, 0px));
+  }
+  .lateral.abierta { transform: none; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .35); }
+  .encabezado-movil {
+    display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 20;
+    background: var(--hoja); border-bottom: 1px solid var(--linea);
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+  }
+  .encabezado-movil strong { color: var(--tinta); }
+  .contenido { padding-top: 22px; }
+}
+
+/* ---------- Tipografía ---------- */
+h1 { font-size: clamp(1.9rem, 4.2vw, 2.7rem); line-height: 1.1; margin: 0 0 14px; color: var(--grafito); letter-spacing: -0.01em; }
+h2 { font-size: 1.55rem; line-height: 1.2; margin: 42px 0 12px; color: var(--tinta); }
+h3 { font-size: 1.18rem; margin: 28px 0 8px; }
+p { margin: 0 0 14px; }
+.entrada { font-size: 1.12rem; color: var(--lapiz); max-width: 64ch; }
+.resaltado { background: linear-gradient(transparent 55%, var(--resaltador) 55%); padding: 0 2px; }
+code, .mono { font-family: var(--mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--codigo-fondo); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--linea); }
+.formula {
+  font-family: var(--mono); background: var(--hoja); border: 1px solid var(--linea);
+  border-left: 4px solid var(--tinta); padding: 10px 14px; margin: 12px 0 16px;
+  border-radius: 0 var(--radio) var(--radio) 0; overflow-x: auto; white-space: pre; font-size: 0.92rem;
+}
+
+/* ---------- Bloques de contenido ---------- */
+.hoja { background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio); padding: 20px 22px; margin: 16px 0; box-shadow: var(--sombra); }
+.nota-margen { border-left: 3px solid var(--resaltador); background: var(--hoja); padding: 12px 16px; margin: 16px 0; border-radius: 0 var(--radio) var(--radio) 0; }
+.nota-margen.roja { border-left-color: var(--correccion); }
+.nota-margen strong:first-child { display: block; margin-bottom: 2px; }
+pre.codigo {
+  font-family: var(--mono); font-size: 0.84rem; line-height: 1.55; background: var(--codigo-fondo);
+  border: 1px solid var(--linea); border-radius: var(--radio); padding: 14px 16px; overflow-x: auto; margin: 10px 0 16px;
+}
+.archivo { font-family: var(--mono); font-size: 0.78rem; color: var(--lapiz); margin-bottom: -6px; }
+.kw { color: #7b3fb5; } .cm { color: #6b7a8f; font-style: italic; } .st { color: #2f7d4f; } .nu { color: #b05a12; }
+:root[data-theme="dark"] .kw { color: #c99bff; } :root[data-theme="dark"] .st { color: #8fd6a8; } :root[data-theme="dark"] .nu { color: #f0a868; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .kw { color: #c99bff; } :root:not([data-theme="light"]) .st { color: #8fd6a8; } :root:not([data-theme="light"]) .nu { color: #f0a868; }
+}
+
+.boton {
+  font: inherit; font-weight: 700; border: 2px solid var(--tinta); background: var(--tinta); color: var(--hoja);
+  padding: 9px 18px; border-radius: var(--radio); cursor: pointer;
+}
+.boton.secundario { background: transparent; color: var(--tinta); }
+.boton:disabled { opacity: .45; cursor: not-allowed; }
+.fila-botones { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+
+/* ---------- Inicio: perceptrón en vivo ---------- */
+.lienzo-vivo { background: var(--hoja); border: 1px solid var(--linea); border-radius: var(--radio); padding: 14px; margin: 18px 0 8px; }
+.lienzo-vivo canvas { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; cursor: crosshair; touch-action: none; }
+.lectura { display: flex; flex-wrap: wrap; gap: 6px 22px; font-family: var(--mono); font-size: 0.82rem; color: var(--lapiz); margin-top: 10px; }
+.lectura b { color: var(--grafito); font-weight: 600; }
+.leyenda-lienzo { font-size: 0.9rem; color: var(--lapiz); margin: 6px 0 0; }
+
+/* Mapa de dependencias */
+.mapa { display: grid; gap: 10px; margin: 14px 0; }
+.mapa-fila { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.nodo {
+  font: inherit; font-family: var(--mono); font-size: 0.86rem; border: 1.5px solid var(--tinta); background: var(--hoja);
+  color: var(--tinta); padding: 8px 12px; border-radius: var(--radio); cursor: pointer; min-width: 132px;
+}
+.nodo.visual { border-style: dashed; }
+.nodo[aria-pressed="true"] { background: var(--tinta); color: var(--hoja); }
+.capa { text-align: center; font-size: 0.8rem; color: var(--lapiz); }
+.flecha { text-align: center; color: var(--lapiz); line-height: 1; }
+
+/* Módulos de estudio */
+.pestanas { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 18px; }
+.pestana { font: inherit; font-size: 0.9rem; border: 1px solid var(--linea); background: var(--hoja); color: var(--grafito); padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+.pestana[aria-selected="true"] { border-color: var(--tinta); background: var(--tinta-suave); color: var(--tinta); font-weight: 700; }
+.pestana .hecho { color: var(--acierto); }
+.parte-titulo { font-size: 0.95rem; font-weight: 700; color: var(--lapiz); margin: 26px 0 6px; padding-bottom: 4px; border-bottom: 1px solid var(--linea); }
+
+/* Calculadora y demos */
+.rejilla-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 10px 0; }
+.campo label { display: block; font-size: 0.82rem; color: var(--lapiz); margin-bottom: 2px; }
+.campo input, .campo select {
+  width: 100%; font: inherit; font-family: var(--mono); font-size: 0.92rem; padding: 6px 8px;
+  border: 1px solid var(--linea); border-radius: 4px; background: var(--papel); color: var(--grafito);
+}
+.traza { font-family: var(--mono); font-size: 0.86rem; white-space: pre-wrap; background: var(--codigo-fondo); border: 1px solid var(--linea); border-radius: var(--radio); padding: 12px 14px; overflow-x: auto; }
+.traza .ok { color: var(--acierto); font-weight: 600; } .traza .mal { color: var(--correccion); font-weight: 600; }
+
+/* Evaluación */
+.niveles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+.nivel { text-align: left; font: inherit; background: var(--hoja); border: 1.5px solid var(--linea); border-radius: var(--radio); padding: 14px 16px; cursor: pointer; color: var(--grafito); }
+.nivel:hover:not(:disabled) { border-color: var(--tinta); }
+.nivel:disabled { cursor: not-allowed; opacity: .55; }
+.nivel strong { display: block; color: var(--tinta); font-size: 1.05rem; }
+.nivel span { font-size: 0.88rem; color: var(--lapiz); }
+.pregunta-num { font-size: 0.85rem; color: var(--lapiz); }
+.enunciado { font-size: 1.1rem; font-weight: 700; margin: 4px 0 14px; }
+.opcion {
+  display: block; width: 100%; text-align: left; font: inherit; background: var(--hoja); color: var(--grafito);
+  border: 1.5px solid var(--linea); border-radius: var(--radio); padding: 10px 14px; margin: 8px 0; cursor: pointer;
+}
+.opcion:hover:not(:disabled) { border-color: var(--tinta); }
+.opcion.correcta { border-color: var(--acierto); background: var(--acierto-suave); }
+.opcion.incorrecta { border-color: var(--correccion); background: var(--correccion-suave); }
+.opcion:disabled { cursor: default; }
+.retro { margin-top: 12px; padding: 12px 16px; border-radius: var(--radio); border: 1px solid var(--linea); background: var(--hoja); }
+.retro.bien { border-left: 4px solid var(--acierto); }
+.retro.mal { border-left: 4px solid var(--correccion); }
+.retro .veredicto { font-weight: 700; display: block; margin-bottom: 4px; }
+.retro.bien .veredicto { color: var(--acierto); } .retro.mal .veredicto { color: var(--correccion); }
+.marcador { font-family: var(--mono); font-size: 0.9rem; color: var(--lapiz); }
+
+/* Sustentación */
+.acordeon { border: 1px solid var(--linea); border-radius: var(--radio); background: var(--hoja); margin: 10px 0; }
+.acordeon summary { cursor: pointer; padding: 12px 16px; font-weight: 700; list-style: none; display: flex; gap: 10px; }
+.acordeon summary::-webkit-details-marker { display: none; }
+.acordeon summary::before { content: "+"; font-family: var(--mono); color: var(--tinta); }
+.acordeon[open] summary::before { content: "−"; }
+.acordeon .cuerpo { padding: 0 16px 14px 38px; }
+.etiqueta-tema { font-size: 0.78rem; font-weight: 400; color: var(--lapiz); margin-left: auto; white-space: nowrap; }
+.simulacro { text-align: center; }
+.reloj { font-family: var(--mono); font-size: 2.2rem; color: var(--tinta); margin: 6px 0; }
+.lista-errores li { margin-bottom: 10px; }
+
+/* Análisis de código línea por línea */
+.anotado { border: 1px solid var(--linea); border-radius: var(--radio); overflow: hidden; margin: 12px 0 22px; background: var(--hoja); }
+.linea-cod { display: grid; grid-template-columns: 2.6em minmax(0, 1.15fr) minmax(0, 1fr); border-bottom: 1px solid var(--linea); }
+.linea-cod:last-child { border-bottom: 0; }
+.linea-cod .num { font-family: var(--mono); font-size: 0.74rem; color: var(--lapiz); text-align: right; padding: 7px 6px 0 0; background: var(--codigo-fondo); }
+.linea-cod pre { margin: 0; padding: 6px 10px; font-family: var(--mono); font-size: 0.8rem; background: var(--codigo-fondo); overflow-x: auto; white-space: pre; }
+.linea-cod .exp { padding: 6px 12px; font-size: 0.9rem; line-height: 1.45; border-left: 1px solid var(--linea); }
+@media (max-width: 700px) {
+  .linea-cod { grid-template-columns: 2.4em minmax(0, 1fr); }
+  .linea-cod .exp { grid-column: 1 / -1; border-left: 0; border-top: 1px dashed var(--linea); }
+}
+.tabla-wrap { overflow-x: auto; margin: 12px 0 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; background: var(--hoja); }
+th, td { border-bottom: 1px solid var(--linea); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { color: var(--tinta); border-bottom: 2px solid var(--tinta); }
+td.mono { white-space: nowrap; }
+.oculto { display: none !important; }
+</style>
+</head>
+<body>
+<div class="encabezado-movil">
+  <button class="boton-chico" id="abrirMenu" aria-label="Abrir menú">Menú</button>
+  <strong>Estudio del perceptrón</strong>
+</div>
+<div class="marco">
+  <nav class="lateral" id="lateral" aria-label="Secciones">
+    <div class="marca">Estudio del perceptrón<small>Carlos Daniel Gómez Murcia · Inteligencia Computacional I</small></div>
+    <div class="progreso-general">Tu avance <span id="pctGeneral">0 %</span><div class="barra"><span id="barraGeneral"></span></div></div>
+    <div id="navegacion"></div>
+    <div class="pie">
+      <button class="boton-chico" id="cambiarTema">Cambiar tema</button>
+      <button class="boton-chico" id="borrarProgreso">Borrar avance</button>
+    </div>
+  </nav>
+  <main class="contenido"><div class="columna" id="vista"></div></main>
+</div>
+<script>
+/* =====================================================================
+   CONTENIDO DE ESTUDIO
+   Cada módulo tiene tres partes: la teoría, el fragmento real del proyecto
+   donde esa teoría se implementa ("en tu código") y la idea clave que hay
+   que poder decir en la sustentación. Si el módulo tiene una demostración
+   interactiva, el campo "demo" indica cuál se dibuja.
+   ===================================================================== */
+const MODULOS = [
+{
+  id: "neurona",
+  titulo: "La neurona y el perceptrón",
+  teoria: `
+<p>El perceptrón es el modelo más sencillo de neurona artificial. Su antecedente es la neurona lógica de McCulloch y Pitts (1943), que ya combinaba entradas y las comparaba con un umbral, pero fue Frank Rosenblatt (1958) quien le añadió algo decisivo: una regla para <span class="resaltado">ajustar los pesos a partir de los errores</span>, es decir, para aprender de ejemplos. Por eso se le considera el punto de partida del aprendizaje supervisado con redes neuronales.</p>
+<p>La neurona recibe un vector de entradas, en este proyecto tres coordenadas <code>x1, x2, x3</code> de un punto en el espacio, y a cada entrada le asigna un peso <code>wi</code> que mide cuánto influye en la decisión. Primero calcula la <b>suma ponderada</b>, que es una combinación lineal de las entradas, y después la pasa por una <b>función de activación</b>. En clasificación esa función es el escalón: si la suma alcanza el umbral la neurona responde con la salida alta, y si no, con la baja.</p>
+<div class="formula">F1  S = w1·x1 + w2·x2 + w3·x3 + θ·x0
+F2  y = salida_alta  si S ≥ umbral
+    y = salida_baja  si S &lt; umbral</div>
+<p>El término <code>θ·x0</code> es el sesgo. En la convención de la clase la entrada del sesgo es fija y vale <code>x0 = −1</code>, de modo que la suma queda como <code>S = Σwi·xi − θ</code>, y θ funciona como un umbral que se aprende. Otros libros usan <code>x0 = +1</code> y llaman <code>b</code> al sesgo. Las dos formas son equivalentes porque basta cambiar el signo del parámetro aprendido, y el proyecto permite elegir cualquiera de las dos, siempre que se use el mismo <code>x0</code> en la suma y en el ajuste del sesgo.</p>
+<p>Geométricamente, la ecuación <code>S = umbral</code> describe un plano en el espacio de tres dimensiones. Todo lo que el perceptrón hace al clasificar es decidir de qué lado de ese plano cae cada punto, y aprender consiste en mover y girar el plano hasta que deje cada clase en su lado.</p>`,
+  archivo: "formulas.py",
+  codigo: String.raw`def suma_ponderada(w, x, theta, x0):
+    """F1:  S = w1*x1 + w2*x2 + ... + wn*xn + theta*x0
+
+    Con x0 = -1 (convención de la clase):  S = w1*x1 + w2*x2 + w3*x3 - theta
+    Con x0 = +1 (otra bibliografía):       S = w1*x1 + w2*x2 + w3*x3 + b"""
+    S = 0.0
+    for i in range(len(w)):
+        S = S + w[i] * x[i]
+    S = S + theta * x0
+    return S
+
+
+def funcion_escalon(S, umbral, salida_alta, salida_baja):
+    """F2:  y = salida_alta  si S >= umbral
+            y = salida_baja  si S <  umbral"""
+    if S >= umbral:
+        return salida_alta
+    return salida_baja`,
+  idea: `La suma ponderada se calcula con un ciclo <code>for</code> sencillo y no con un producto punto de una librería, porque la regla del curso exige que la matemática se escriba a mano. El umbral y las dos salidas del escalón son configurables, así que el mismo código sirve para salidas 1/−1, como en la clase, o 1/0. La única condición, que valida la interfaz, es que la salida alta sea mayor que la baja; el módulo 2 explica por qué.`,
+  demo: null
+},
+{
+  id: "aprendizaje",
+  titulo: "Regla de aprendizaje y épocas",
+  teoria: `
+<p>Aprender, para el perceptrón, significa corregir los pesos cada vez que se equivoca. Para cada instancia se calcula la salida <code>y</code>, se compara con la salida deseada <code>d</code> y se obtiene el error <code>e = d − y</code>. Si el error es cero no se toca nada, y si no lo es, cada peso se mueve en la dirección que reduce ese error, en una cantidad proporcional a la tasa de aprendizaje γ y a la entrada que lo acompaña.</p>
+<div class="formula">F4  e = d − y
+F5  wi(nuevo) = wi + γ · e · xi
+F6  θ(nuevo)  = θ  + γ · e · x0
+F7  err = ½ · Σ e²         (error de la época)</div>
+<p>La intuición es sencilla. Si la neurona respondió −1 cuando debía responder 1, el error es positivo y los pesos se acercan al punto mal clasificado, lo que aumenta la suma la próxima vez. Si respondió 1 cuando debía responder −1, ocurre lo contrario. El sesgo se ajusta con exactamente la misma regla, porque desde el punto de vista matemático es un peso más cuya entrada siempre vale <code>x0</code>.</p>
+<p>Esa intuición depende de que la <span class="resaltado">salida alta sea mayor que la baja</span>. Si se escribieran al revés, por ejemplo alta 0 y baja 1, el signo del error se invertiría y cada corrección alejaría el plano de la solución en lugar de acercarlo. Con la semilla 7 y las clases separadas, un perceptrón con las salidas invertidas se queda en 50 % de exactitud y nunca converge, aunque el problema sea separable. Por eso <code>_config_clasificacion</code> de <code>main.py</code> rechaza ese caso con un mensaje, igual que rechaza dos salidas iguales; y por la misma razón <code>leer_tasa</code> exige que γ sea mayor que cero, porque una tasa negativa también invierte el sentido de cada corrección.</p>
+<p>Una <b>época</b> es una pasada completa por todas las instancias. Al terminar cada época el programa hace lo que en clase se llamó "la repasadita": recorre de nuevo todo el conjunto con los pesos ya ajustados y calcula el error F7. Ese valor es el que se dibuja en la gráfica de épocas. El entrenamiento se detiene cuando el error llega al mínimo permitido (convergió), cuando el error explota (divergió) o cuando se agotan las épocas (no convergió). En regresión hay un cuarto motivo, que el error deje de bajar (se estabilizó), y se explica en el módulo 5.</p>
+<p>Antes de cada época las instancias se <b>barajan</b> con el algoritmo de Fisher-Yates usando el generador propio. Esto evita que el orden fijo de los datos, que vienen agrupados por clase, sesgue el recorrido del plano, y puede desactivarse desde la interfaz para reproducir exactamente el ejemplo de las diapositivas.</p>`,
+  archivo: "perceptron.py",
+  codigo: String.raw`    def ajustar(self, x, d):
+        """Una iteración: multiplicar, sumar, comparar y ajustar."""
+        S = self.suma(x)                                                # F1
+        y = self.activacion(S)                                          # F2 / F3
+        e = error_instancia(d, y)                                       # F4
+        if e != 0:
+            for i in range(self.n_entradas):
+                self.w[i] = ajuste_peso(self.w[i], self.gamma, e, x[i])      # F5
+            self.theta = ajuste_sesgo(self.theta, self.gamma, e, self.x0)    # F6
+        return S, y, e`,
+  idea: `En la calculadora de abajo puedes reproducir el ajuste de la instancia 4 del ejemplo de clase. Con los pesos iniciales la suma da 17,31522, la neurona responde 1 cuando debía responder −1, el error vale −2 y los pesos pasan a (−3,65137; −0,73040) con θ = 0,69145. Saber hacer esta cuenta a mano es lo que más tranquilidad da en la sustentación.`,
+  demo: "calculadora"
+},
+{
+  id: "separabilidad",
+  titulo: "Separabilidad lineal y convergencia",
+  teoria: `
+<p>El perceptrón solo puede trazar un plano, así que solo puede resolver problemas <b>linealmente separables</b>, en los que existe al menos un plano que deja todas las instancias de una clase de un lado y todas las de la otra del lado contrario. El teorema de convergencia del perceptrón (Novikoff, 1962) garantiza que, si el conjunto es separable, la regla de ajuste encuentra un plano separador en un número finito de pasos.</p>
+<p>Lo interesante para la sustentación es la otra cara del teorema. Si las clases se solapan, no existe tal plano y el algoritmo <span class="resaltado">nunca se estabiliza</span>: cada corrección que arregla un punto mal clasificado desarregla otro, el plano sigue moviéndose y el error por época oscila sin llegar a cero. Minsky y Papert (1969) mostraron con el problema XOR que esta limitación es estructural y no se arregla con más épocas, lo que más tarde motivó las redes de varias capas.</p>
+<p>El simulador tiene los botones <b>Separadas</b>, <b>Cercanas</b> y <b>Solapadas</b> precisamente para "reventar" el perceptrón en vivo. Con las clases separadas y la semilla 7, el caso de dos clases convergió en 6 épocas con 100 % de exactitud. Con las clases solapadas, el mismo perceptrón llegó a las 100 épocas sin converger y se quedó en 61,5 % de exactitud, con una gráfica de error que sube y baja entre aproximadamente 130 y 200 sin ninguna tendencia.</p>
+<p>Hay una tercera forma de reventarlo, que el profesor mencionó en clase: el <b>desbalance</b>. Con el escenario <b>Desbalanceadas</b>, 100 instancias contra 10 en posiciones cercanas, la exactitud global sube a 95,5 %, pero la de la clase pequeña cae a 50 %, porque la clase grande genera casi todas las correcciones y arrastra el plano. Por eso el simulador reporta también la <span class="resaltado">exactitud de cada clase</span> (F18): la global, sola, haría creer que el modelo mejoró.</p>
+<p>La tasa de aprendizaje no cambia si el problema es separable o no, pero sí cambia cómo se comporta el plano. Una tasa grande produce saltos bruscos, y una pequeña produce movimientos suaves que tardan más épocas. En clasificación con escalón la tasa solo escala los pesos, así que su efecto es menor de lo que se suele pensar, mientras que en regresión, como se verá en el módulo 5, una tasa demasiado grande hace que el error explote.</p>`,
+  archivo: "perceptron.py",
+  codigo: String.raw`            err = self.error_conjunto(X, d)
+            self.historial_error.append(err)
+            self.epocas = epoca
+
+            if err != err or err > 1e100:                 # NaN o infinito
+                self.divergio = True
+                break
+            if err <= error_minimo:
+                self.convergio = True
+                break`,
+  idea: `Prueba el lienzo de abajo. Con las nubes separadas la recta deja de moverse en pocas épocas; con las nubes mezcladas sigue saltando para siempre. Esa diferencia es exactamente la que muestran tu gráfica de épocas y tu gráfica de pesos, y es la evidencia de que el perceptrón tiene un límite y no "aprende cualquier cosa".`,
+  demo: "lienzo"
+},
+{
+  id: "tresclases",
+  titulo: "Tres clases sin formar una red",
+  teoria: `
+<p>Un perceptrón tiene una sola salida binaria, así que por sí mismo solo separa dos clases. Para tres clases el profesor permitió usar varias neuronas, con la condición de que trabajen de forma <b>independiente</b>: cada una se entrena por separado con su propio objetivo y ninguna recibe como entrada la salida de otra. Por eso no se forma una red neuronal, sino un conjunto de clasificadores binarios combinados por una regla de decisión.</p>
+<p>La estrategia <b>en cascada</b> usa dos perceptrones y produce dos planos, que es lo que mencionó el profesor en clase. El primero separa la clase 1 del resto y se entrena con todos los datos. El segundo separa la clase 2 de la clase 3 y se entrena solo con las instancias de esas dos clases. Para clasificar un punto nuevo primero se consulta P1: si se activa, es clase 1; si no, decide P2.</p>
+<p>La estrategia <b>uno contra el resto</b> usa tres perceptrones y produce tres planos, uno por clase. Cada Pk aprende a distinguir su clase de las otras dos. El problema es que puede haber zonas donde se activan varias neuronas o ninguna, y el código lo resuelve asignando la clase cuya neurona tiene el mayor valor de <code>S − umbral</code>, es decir, la que "está más segura".</p>
+<p>Con las clases separadas y la semilla 7, la cascada convergió en una época para ambos perceptrones y uno contra el resto necesitó 1, 13 y 9 épocas, ambas con 100 % de exactitud. La cascada es más económica, pero depende del orden de las clases: si la clase 1 queda en el medio de las otras dos, un solo plano no puede separarla y P1 no converge.</p>`,
+  archivo: "perceptron.py",
+  codigo: String.raw`    if estrategia == "cascada":
+        d1 = [salida_alta if c == 0 else salida_baja for c in etiquetas]
+        p1 = crear_perceptron("P1 (clase 1 vs resto)")
+        p1.entrenar(X, d1, **parametros)
+        X2 = [x for x, c in zip(X, etiquetas) if c != 0]
+        d2 = [salida_alta if c == 1 else salida_baja for c in etiquetas if c != 0]
+        p2 = crear_perceptron("P2 (clase 2 vs clase 3)")
+        p2.entrenar(X2, d2, **parametros)
+        return [p1, p2]`,
+  idea: `La frase que debes tener lista es esta: "No es una red porque las neuronas no se conectan entre sí ni se entrenan juntas; cada una resuelve un problema binario distinto y solo al final se combinan sus respuestas con una regla de decisión".`,
+  demo: null
+},
+{
+  id: "regresion",
+  titulo: "Regresión con el perceptrón",
+  teoria: `
+<p>En regresión la salida deseada ya no es una etiqueta sino un número real, así que la función escalón se reemplaza por una <b>activación lineal</b>, <code>y = S</code>. Con ese cambio, la misma regla de ajuste <code>wi ← wi + γ·(d − y)·xi</code> se convierte en la regla delta o LMS de Widrow y Hoff (1960), que va reduciendo el error cuadrático instancia por instancia, como un descenso por gradiente estocástico. El perceptrón aprende entonces el plano (o hiperplano) que mejor sigue a la nube de puntos.</p>
+<p>Los datos se simulan con un modelo conocido, <code>y = 2·x1 − 1,5·x2 + 0,5·x3 + 3 + ruido</code>, y eso permite comprobar el aprendizaje: con la semilla 7 el perceptrón terminó con w1 = 2,002, w2 = −1,495, w3 = 0,454 y un sesgo efectivo θ·x0 = 3,169, muy cerca de los valores reales. Su error cuadrático medio fue 1,076, prácticamente igual a la varianza del ruido (1,0), que es el mínimo que cualquier modelo lineal puede alcanzar, y su <b>coeficiente de determinación</b> R² fue 0,964, es decir, el plano explica el 96,4 % de la variación de y. El R² (F19) se calcula en <code>coeficiente_determinacion</code> de <code>formulas.py</code>: vale 1 en un ajuste perfecto y 0 cuando el plano no mejora a predecir siempre la media, y puede ser negativo si lo hace peor que esa media.</p>
+<div class="formula">F3  y = S
+F8  ECM = (1/N) · Σ e²
+F19 R² = 1 − Σ(y − ŷ)² / Σ(y − media)²</div>
+<p>Como el ruido impide que el error llegue a cero, el criterio de parada es distinto: si en las últimas 20 épocas (la "paciencia") el mejor error no mejoró al menos un 0,01 % respecto al mejor anterior, el entrenamiento se detiene, el atributo <code>estancado</code> queda en <code>True</code> y la interfaz dice <span class="resaltado">«se estabilizó en N épocas (el error dejó de bajar)»</span>. No dice «convergió» a propósito: que el error deje de bajar no garantiza que el ajuste sea bueno, y eso solo lo dicen el ECM y el R², que aparecen en el resumen y en la barra de estado.</p>
+<p>La tasa por defecto es pequeña, 0,001, porque las entradas están alrededor de 5 y una tasa grande hace que cada corrección se pase del objetivo. Con la semilla 7, γ = 0,005 se estabiliza en 100 épocas con un ECM de 1,29 y γ = 0,01 en 63 épocas con un ECM de 2,43. El caso de γ = 0,02 es el que mejor muestra la diferencia entre estabilizarse y ajustar bien: se estabiliza en solo 24 épocas, pero con un ECM de 71,2 y un R² de −1,39, peor que predecir siempre la media, porque los pesos rebotan cerca del límite de estabilidad y el error deja de bajar sin haber encontrado el plano. Con γ = 0,05 el error explotó y el programa reportó divergencia en la primera época; si la tasa es tan grande que los pesos se vuelven infinitos o NaN, <code>graficas.py</code> lo detecta con <code>es_finito</code> (M8) y dibuja solo los datos, con un aviso de que no hay plano.</p>
+<p>Para "reventar" la regresión existe el modelo <b>cuadrático</b>, <code>y = a1·x1² + a2·x2² + a3·x3² + b</code>. Un plano no puede seguir una superficie curva: con la tasa por defecto el entrenamiento se estabiliza a las 181 épocas, igual que el lineal, pero con un ECM de 81,5, unas ochenta veces la varianza del ruido. Lo interesante es que el R² sigue siendo alto, 0,97, porque en el rango de los datos la parábola se parece bastante a una recta; el plano captura la tendencia general, pero deja un error sistemático que ninguna época adicional puede eliminar. Finalmente, con tres entradas el problema tiene cuatro dimensiones, así que la gráfica muestra un corte del hiperplano fijando x3 en su media y corrigiendo cada punto por el efecto de x3.</p>`,
+  archivo: "perceptron.py",
+  codigo: String.raw`            if tolerancia_cambio is not None and len(self.historial_error) > paciencia:
+                mejor_antes = minimo(self.historial_error[:-paciencia])
+                mejor_reciente = minimo(self.historial_error[-paciencia:])
+                if mejor_reciente >= (1.0 - tolerancia_cambio) * mejor_antes:
+                    self.estancado = True
+                    break`,
+  idea: `La clase <code>Perceptron</code> es la misma para clasificar y para hacer regresión; lo único que cambia es el objeto de activación que se le pasa (<code>Escalon</code> o <code>Lineal</code>). Esa decisión de diseño muestra que entiendes que la regresión y la clasificación comparten la misma neurona y la misma regla, y solo difieren en cómo se interpreta la salida. Ten presente además que en regresión el estado nunca dice «convergió», sino «se estabilizó»; para decir si el ajuste es bueno citas el ECM y el R².`,
+  demo: null
+},
+{
+  id: "nucleo",
+  titulo: "Matemática hecha a mano",
+  teoria: `
+<p>La regla más estricta del curso es que ninguna librería puede hacer la matemática. Por eso <code>formulas.py</code> no importa nada y calcula desde cero hasta las funciones que normalmente se dan por hechas. La <b>raíz cuadrada</b> se obtiene con Newton-Raphson, que aplicado a <code>r² = a</code> da la iteración <code>r ← ½(r + a/r)</code> y converge muy rápido. Mientras r está lejos de la raíz, cada paso apenas divide r a la mitad, y por eso el ciclo admite hasta 1100 pasos: un número tan grande como 10³⁰⁸ necesita unas 520 mitades antes de acercarse, aunque los números normales terminan en pocos pasos. El número <b>π</b> sale de la fórmula de Machin, <code>π = 16·atan(1/5) − 4·atan(1/239)</code>, usando la serie de Taylor de la arcotangente.</p>
+<p>El <b>logaritmo natural</b> usa una reducción de rango: el número se escribe como <code>a = m·2^k</code> con <code>1 ≤ m &lt; 2</code>, de modo que <code>ln a = k·ln 2 + ln m</code>, y <code>ln m</code> se calcula con la serie de la arcotangente hiperbólica, que converge rápido cerca de 1. El <b>coseno</b> lleva primero el ángulo al intervalo [−π, π] y luego suma su serie de Taylor. En ambos casos las series se detienen cuando el término es menor que 10⁻¹⁸.</p>
+<p>Los números aleatorios vienen de un <b>generador congruencial lineal</b>, <code>X(k+1) = (a·X(k) + c) mod m</code>, con las constantes de <i>Numerical Recipes</i> (a = 1664525, c = 1013904223, m = 2³²). Cada X se convierte en un número uniforme en (0, 1) con <code>U = (X + 0,5)/m</code>, que nunca vale exactamente 0, lo que protege al logaritmo. Sobre esa uniforme se construyen las cuatro distribuciones, todas parametrizadas por media μ y desviación σ.</p>
+<div class="formula">F12 Normal (Box-Muller)   Z = √(−2 ln U1) · cos(2π U2) ;  X = μ + σZ
+F13 Uniforme             X = (μ − a) + 2a·U ,  a = σ√3
+F14 Exponencial (inversa) X = (μ − σ) − σ ln U
+F15 Binomial estandarizada X = μ + σ (B − np) / √(np(1 − p))</div>
+<p>Solo hay tres <code>import</code> que no son de dibujo, y ninguno hace matemática: <code>time</code> en <code>aleatorio.py</code> toma una semilla distinta cuando el usuario la deja vacía, <code>copy</code> en <code>experimentos.py</code> duplica la configuración para no modificar los valores por defecto, y <code>ctypes</code> en <code>main.py</code> solo ajusta la nitidez de la ventana en Windows. Conviene decirlo antes de que el profesor lo pregunte.</p>
+<p>La regla se cumple incluso en los detalles: el proyecto no usa las funciones integradas de Python que calculan, como <code>min</code>, <code>max</code> o <code>sum</code>. En su lugar, <code>formulas.py</code> define <code>minimo</code> y <code>maximo</code> (M7), que comparan valor por valor, y calcula con ciclos la media (F16) y la desviación estándar (F17) con las que se comprueba que cada nube simulada quedó como se pidió. Con el mismo criterio está <code>es_finito</code> (M8), que reconoce un NaN porque es el único valor que no es igual a sí mismo y el infinito comparándolo con <code>float("inf")</code>, sin importar <code>math</code>. Es la misma idea de <code>err != err</code> que usa <code>entrenar</code> para detectar la divergencia, y la aprovechan <code>main.py</code>, para rechazar datos como nan o inf, y <code>graficas.py</code>, para no dibujar un plano con pesos infinitos.</p>`,
+  archivo: "formulas.py",
+  codigo: String.raw`def raiz_cuadrada(a):
+    """M2: Newton-Raphson para r^2 = a:
+           r(k+1) = 1/2 * ( r(k) + a / r(k) )
+    Se repite hasta que r deja de cambiar.
+    Mientras r está lejos de la raíz, cada paso solo divide r a la mitad; un
+    número tan grande como 1e308 necesita unas 520 mitades antes de acercarse,
+    por eso se permiten hasta 1100 pasos (los números normales terminan en pocos)."""
+    if a < 0:
+        raise ValueError("No existe raíz cuadrada real de un número negativo")
+    if a == 0:
+        return 0.0
+    r = a if a >= 1 else 1.0
+    for _ in range(1100):
+        r_nuevo = 0.5 * (r + a / r)
+        if valor_absoluto(r_nuevo - r) <= 1e-16 * r_nuevo:
+            return r_nuevo
+        r = r_nuevo
+    return r`,
+  idea: `La demostración de abajo ejecuta Newton-Raphson paso a paso. Fíjate en que el número de cifras correctas aproximadamente se duplica en cada iteración: eso se llama convergencia cuadrática y es la razón por la que bastan unas pocas vueltas del ciclo. Prueba también con un número enorme, como 1e120: verás cientos de pasos en los que r solo se divide a la mitad antes de que empiece la convergencia rápida, que es justo lo que explica el límite de 1100 pasos.`,
+  demo: "newton"
+},
+{
+  id: "interfaz",
+  titulo: "Gráficas, interfaz y organización",
+  teoria: `
+<p>El proyecto está organizado en capas para que la regla de "sin librerías" se vea con solo leer los <code>import</code>. En la base está <code>formulas.py</code>, que no depende de nada. Encima, <code>aleatorio.py</code> y <code>perceptron.py</code> usan únicamente esas fórmulas. <code>experimentos.py</code> une la simulación de datos con el entrenamiento y devuelve los resultados sin dibujar nada. Solo en la capa visual aparecen las librerías: <code>graficas.py</code> usa matplotlib y <code>main.py</code> usa tkinter.</p>
+<p>Las tres salidas que pidió el profesor están en <code>graficas.py</code>. El <b>espacio 3D</b> dibuja los puntos de cada clase y los planos de separación; para trazar un plano se despeja la coordenada con el peso de mayor valor absoluto, lo que evita dividir entre un número cercano a cero, se evalúa en las cuatro esquinas de la caja y el polígono resultante se recorta con el algoritmo de Sutherland-Hodgman, escrito a mano. La <b>gráfica de épocas</b> muestra el error F7 por época y la <b>gráfica de pesos</b> reúne w1, w2, w3 y θ en una sola figura para ver cómo cada uno se va quedando quieto.</p>
+<p>La interfaz de <code>main.py</code> tiene a la izquierda las pestañas Clasificación, Regresión y Ejemplo de clase, donde se cambian en vivo las instancias, la media en x1, x2 y x3, la desviación y la distribución de cada clase, la tasa, las épocas, el error mínimo, el umbral, las salidas, el valor de x0, la estrategia de tres clases y la semilla. Los botones <b>Separadas</b>, <b>Cercanas</b>, <b>Solapadas</b> y <b>Desbalanceadas</b> cargan escenarios listos, y la fila <b>Reventar</b> tiene Acercar clases, Alejar clases, Aumentar σ y Reducir σ, que modifican los datos actuales y entrenan de inmediato. Las salidas del escalón aceptan cualquier par de números, como pidió el profesor, siempre que la salida alta sea mayor que la baja. Antes de entrenar, la interfaz valida cada dato: <code>leer_float</code> rechaza textos como nan o inf con <code>es_finito</code> (M8), <code>leer_int</code> tampoco deja escribir épocas infinitas, <code>leer_no_negativo</code> exige que las desviaciones σ no sean negativas y <code>leer_tasa</code> exige que γ sea mayor que cero; en cada caso aparece un mensaje que explica el motivo, en lugar de un error en la consola. Después de entrenar, el recuadro <b>Clasificar un punto nuevo</b> dice a qué clase pertenece cualquier punto y lo marca con una estrella. A la derecha están las pestañas de resultados, incluida la de "Proceso paso a paso", que imprime cada suma, salida, error y ajuste. Abajo, una barra permite ver el plano en cualquier época y un botón anima el entrenamiento.</p>
+<p>En el espacio 3D una X marca el centroide de cada nube, y el resumen muestra para cada clase la media y la desviación pedidas frente a las obtenidas, junto con su exactitud. La barra de estado repite la exactitud global y la de cada clase, y en regresión muestra el ECM y el R². La semilla merece una mención: si se fija, por ejemplo en 7, todo el experimento es reproducible, porque el generador produce siempre la misma secuencia. Eso permite mostrar en la sustentación exactamente los mismos resultados del informe.</p>`,
+  archivo: "graficas.py",
+  codigo: String.raw`    k = 0
+    for j in range(1, 3):
+        if valor_absoluto(w[j]) > valor_absoluto(w[k]):
+            k = j
+    if valor_absoluto(w[k]) < 1e-12:
+        return []
+    a, b = [j for j in range(3) if j != k]`,
+  idea: `Matplotlib solo recibe listas de coordenadas ya calculadas por tus funciones. Incluso el plano que se dibuja sale de la fórmula F10 de <code>formulas.py</code>; la librería no calcula nada, solo pinta.`,
+  demo: null
+}
+];
+
+/* Mapa de archivos para la sección de inicio */
+const ARCHIVOS = {
+  "formulas.py": { capa: "Matemática", texto: "Contiene las fórmulas F1 a F19 y las funciones básicas M1 a M8: valor absoluto, raíz cuadrada por Newton-Raphson, arcotangente, π por Machin, logaritmo natural, coseno por series, mínimo y máximo, y es_finito, que reconoce los valores NaN e infinitos. También la desviación estándar, la exactitud por clase y el coeficiente de determinación R² de la regresión. No importa ninguna librería, ni siquiera math.", usa: "nada" },
+  "aleatorio.py": { capa: "Simulación de datos", texto: "Generador congruencial lineal con constantes de Numerical Recipes, barajado de Fisher-Yates y las distribuciones normal, uniforme, exponencial y binomial. También genera los conjuntos de clasificación y de regresión. Solo importa time para la semilla automática.", usa: "formulas.py" },
+  "perceptron.py": { capa: "Modelo", texto: "Clases Escalon, Lineal y Perceptron, con la suma ponderada, el ajuste por instancia, el entrenamiento por épocas y los criterios de parada: convergió, se estabilizó (en regresión), divergió o no convergió. Incluye las dos estrategias de tres clases y la regla para predecir con ellas.", usa: "formulas.py" },
+  "experimentos.py": { capa: "Coordinación", texto: "Guarda la configuración por defecto, ejecuta los experimentos de clasificación, regresión y el ejemplo de las diapositivas, calcula la media, la desviación y la exactitud de cada clase, el ECM y el R² de la regresión, clasifica puntos nuevos y arma el resumen. Las cuentas las hace con formulas.py.", usa: "aleatorio.py, perceptron.py, formulas.py" },
+  "graficas.py": { capa: "Visual", texto: "Único archivo con matplotlib. Dibuja el espacio 3D con los planos, la gráfica de épocas y la de pesos. Marca con una X el centroide de cada nube y con una estrella el punto nuevo. Los valores que se dibujan se calculan con formulas.py, y el recorte de los planos usa Sutherland-Hodgman escrito a mano. Si una regresión diverge hasta pesos infinitos, lo detecta con es_finito y dibuja solo los datos.", usa: "formulas.py + matplotlib" },
+  "main.py": { capa: "Visual", texto: "Interfaz en tkinter con las pestañas de configuración y de resultados, cuatro escenarios, los botones para acercar, alejar y cambiar σ, salidas configurables con la alta mayor que la baja, clasificación de un punto nuevo, la barra de épocas, la animación y el botón para reiniciar todo. Valida cada dato antes de entrenar: rechaza nan e inf, desviaciones negativas y tasas que no sean positivas. Es el archivo que se ejecuta.", usa: "experimentos.py, graficas.py, aleatorio.py, formulas.py, tkinter, matplotlib" }
+};
+/* =====================================================================
+   EVALUACIÓN
+   Tres niveles que se desbloquean en orden (hace falta 70 % en el anterior).
+   tipo "opcion": cada opción trae su propia explicación, para que la
+   retroalimentación diga por qué la elegida es correcta o incorrecta.
+   tipo "numero": ejercicio de traza; se acepta una tolerancia.
+   ===================================================================== */
+const NIVELES = [
+{
+  nombre: "Nivel 1 · Conceptos",
+  descripcion: "Preguntas sobre la teoría del perceptrón y las decisiones generales del proyecto.",
+  preguntas: [
+    { tipo: "opcion", enunciado: "¿Qué aporte de Rosenblatt (1958) diferencia al perceptrón de la neurona de McCulloch y Pitts?",
+      opciones: [
+        ["Una regla para ajustar los pesos a partir de los errores", true, "Correcto: la neurona de McCulloch y Pitts ya sumaba y comparaba con un umbral, pero sus pesos eran fijos. Rosenblatt añadió el aprendizaje."],
+        ["El uso de la función escalón", false, "La función escalón ya estaba en la neurona de McCulloch y Pitts; no es lo nuevo del perceptrón."],
+        ["La conexión de varias capas de neuronas", false, "Eso corresponde al perceptrón multicapa, muy posterior. El perceptrón de Rosenblatt es una sola neurona."],
+        ["La activación lineal para regresión", false, "La activación lineal con la regla delta es de Widrow y Hoff (1960), no de Rosenblatt."] ] },
+    { tipo: "opcion", enunciado: "Con la convención de la clase (x0 = −1), ¿cómo queda la suma ponderada?",
+      opciones: [
+        ["S = Σwi·xi − θ", true, "Correcto: θ·x0 con x0 = −1 equivale a restar θ, que así actúa como un umbral aprendido."],
+        ["S = Σwi·xi + θ", false, "Esa es la forma con x0 = +1, la que usan otros libros con el sesgo b."],
+        ["S = Σwi·xi", false, "Falta el sesgo; sin él el plano estaría obligado a pasar por el origen."],
+        ["S = θ − Σwi·xi", false, "El signo está invertido: el sesgo se resta, pero las entradas ponderadas se suman."] ] },
+    { tipo: "opcion", enunciado: "Geométricamente, ¿qué representa la ecuación S = umbral en el espacio de entrada de tres dimensiones?",
+      opciones: [
+        ["Un plano de separación", true, "Correcto: w1x1 + w2x2 + w3x3 + θx0 = umbral es una ecuación lineal en tres variables, es decir, un plano (fórmula F10)."],
+        ["Una esfera alrededor de cada clase", false, "Una esfera necesitaría términos cuadráticos; la suma ponderada es lineal."],
+        ["Una recta", false, "Sería una recta con dos entradas, como en el ejemplo de clase, pero con tres entradas es un plano."],
+        ["El centro de cada clase", false, "El centro es la media de los puntos; el perceptrón no la calcula para decidir."] ] },
+    { tipo: "opcion", enunciado: "¿Qué es una época?",
+      opciones: [
+        ["Una pasada completa por todas las instancias del conjunto", true, "Correcto: en cada época el perceptrón ve una vez cada instancia y ajusta cuando se equivoca."],
+        ["Un ajuste de pesos", false, "En una época puede haber muchos ajustes, uno por cada instancia mal clasificada."],
+        ["El momento en que el error llega a cero", false, "Eso es la convergencia, que ocurre al final de alguna época, si ocurre."],
+        ["Un recorrido por los datos de una sola clase", false, "La época recorre todas las clases; además, las instancias se barajan."] ] },
+    { tipo: "opcion", enunciado: "¿Qué garantiza el teorema de convergencia del perceptrón?",
+      opciones: [
+        ["Que si las clases son linealmente separables, el entrenamiento encuentra un plano separador en un número finito de pasos", true, "Correcto: es el resultado de Novikoff (1962). Fíjate en la condición: solo vale si el problema es separable."],
+        ["Que el perceptrón siempre llega a error cero", false, "Solo si las clases son separables. Con clases solapadas el error oscila para siempre."],
+        ["Que encuentra el plano con mayor margen", false, "Eso lo buscan las máquinas de vectores de soporte; el perceptrón se detiene en cualquier plano que separe."],
+        ["Que converge en menos de 100 épocas", false, "El teorema no da un número fijo; depende del margen y del tamaño de los datos."] ] },
+    { tipo: "opcion", enunciado: "¿Por qué en el problema de tres clases no se forma una red neuronal?",
+      opciones: [
+        ["Porque cada perceptrón se entrena por separado y ninguno recibe la salida de otro", true, "Correcto: son clasificadores binarios independientes combinados al final por una regla de decisión."],
+        ["Porque se usan solo dos neuronas", false, "El número de neuronas no define si hay red; incluso en uno contra el resto hay tres y tampoco es una red."],
+        ["Porque se usa la función escalón", false, "Una red también puede usar escalón; lo que la define es la conexión y el entrenamiento conjunto."],
+        ["Porque las clases están separadas", false, "La separabilidad no tiene que ver con la arquitectura."] ] },
+    { tipo: "opcion", enunciado: "¿Qué cambia entre el perceptrón de clasificación y el de regresión en tu proyecto?",
+      opciones: [
+        ["Solo la función de activación: escalón en clasificación y lineal en regresión", true, "Correcto: la clase Perceptron es la misma y la regla de ajuste también; cambia el objeto de activación que se le pasa."],
+        ["La regla de ajuste de los pesos", false, "La regla wi ← wi + γ(d − y)xi es la misma; con activación lineal se convierte en la regla LMS."],
+        ["El número de neuronas", false, "Ambos usan una sola neurona (salvo las tres clases)."],
+        ["Que la regresión no usa sesgo", false, "La regresión también usa θ; aprendió un sesgo efectivo de 3,169 frente al 3 real."] ] },
+    { tipo: "opcion", enunciado: "¿Qué gráfica permite saber si el perceptrón convergió o no?",
+      opciones: [
+        ["La gráfica de épocas, que muestra el error F7 en cada época", true, "Correcto: si llega a cero y se queda ahí, convergió; si oscila sin tendencia, no hay plano separador."],
+        ["Solo el espacio 3D", false, "El espacio 3D ayuda a intuirlo, pero la evidencia directa es el error por época."],
+        ["La gráfica del ruido", false, "No existe esa gráfica en el proyecto."],
+        ["La tabla de distribuciones", false, "Las distribuciones generan los datos, no muestran el entrenamiento."] ] },
+    { tipo: "opcion", enunciado: "En regresión el programa dice «se estabilizó en 265 épocas (el error dejó de bajar)». ¿Qué significa?",
+      opciones: [
+        ["Que en las últimas 20 épocas el error no mejoró al menos un 0,01 %, lo que no dice por sí solo si el ajuste es bueno", true, "Correcto: es el criterio de estancamiento. Para juzgar el ajuste se miran el ECM y el R²; en este caso son 1,076 y 0,964, así que el ajuste sí es bueno."],
+        ["Que el error llegó a cero", false, "Con ruido el error nunca llega a cero; por eso la regresión usa el criterio de estancamiento."],
+        ["Que el perceptrón divergió", false, "La divergencia se informa como «DIVERGIÓ en la época N», cuando el error es NaN o mayor que 10¹⁰⁰."],
+        ["Que encontró el plano perfecto", false, "Que el error deje de bajar no garantiza un buen plano: con γ = 0,02 también se estabiliza, en 24 épocas, pero con un R² negativo."] ] },
+    { tipo: "opcion", enunciado: "¿Por qué en el proyecto la salida alta del escalón tiene que ser mayor que la baja?",
+      opciones: [
+        ["Porque la regla wi ← wi + γ·(d − y)·xi supone ese orden; al revés, el signo del error se invierte y cada corrección aleja el plano de la solución", true, "Correcto: con las salidas invertidas y la semilla 7, incluso las clases separadas se quedan en 50 % sin converger. Por eso la interfaz rechaza ese caso con un mensaje."],
+        ["Porque matplotlib no puede dibujar salidas negativas", false, "El dibujo no tiene que ver; el problema está en el sentido de la regla de ajuste."],
+        ["Porque el profesor exigió usar 1 y −1", false, "El profesor dijo que las salidas podían ser «las que quieran»; el proyecto acepta cualquier par con la alta mayor que la baja, como 1/0 o 5/2,5."],
+        ["No hace falta, es solo una costumbre", false, "Sí hace falta: con las salidas al revés el perceptrón nunca aprende, aunque las clases sean separables."] ] },
+    { tipo: "opcion", enunciado: "¿Para qué sirve fijar la semilla del generador?",
+      opciones: [
+        ["Para que el experimento sea reproducible y dé siempre los mismos datos y pesos iniciales", true, "Correcto: el generador congruencial es determinista; con la semilla 7 se repiten exactamente los resultados del informe."],
+        ["Para que el perceptrón converja más rápido", false, "La semilla cambia los datos y los pesos iniciales, pero no garantiza velocidad."],
+        ["Para que las clases sean separables", false, "La separabilidad depende de las medias y desviaciones, no de la semilla."],
+        ["No sirve para nada, es decorativa", false, "Es clave para poder mostrar en vivo los mismos resultados del informe."] ] },
+    { tipo: "opcion", enunciado: "¿Por qué el simulador muestra la exactitud de cada clase además de la global?",
+      opciones: [
+        ["Porque con clases desbalanceadas la global puede verse alta aunque la clase pequeña quede mal clasificada", true, "Correcto: con 100 contra 10, la global fue 95,5 % pero la clase pequeña solo 50 %. La exactitud por clase (F18) lo revela."],
+        ["Porque la global se calcula mal", false, "La global (F9) está bien calculada; el problema es que oculta lo que pasa con cada clase."],
+        ["Porque el perceptrón entrena cada clase por separado", false, "Con dos clases hay una sola neurona; la medida por clase es para evaluar, no para entrenar."],
+        ["Es solo decorativo", false, "Es la evidencia del efecto del desbalance que pidió probar el profesor."] ] },
+    { tipo: "opcion", enunciado: "¿Cuál es el único papel de matplotlib y tkinter en el proyecto?",
+      opciones: [
+        ["Dibujar y mostrar la interfaz; no calculan nada del modelo", true, "Correcto: solo aparecen en graficas.py y main.py, y reciben valores ya calculados con formulas.py."],
+        ["Calcular los planos de separación", false, "Los planos salen de coordenada_del_plano (F10) en formulas.py; matplotlib solo los pinta."],
+        ["Generar los números aleatorios", false, "Eso lo hace el generador congruencial propio de aleatorio.py."],
+        ["Entrenar el perceptrón más rápido", false, "El entrenamiento está escrito a mano en perceptron.py."] ] }
+  ]
+},
+{
+  nombre: "Nivel 2 · Código y cálculos",
+  descripcion: "Trazas a mano de la regla de ajuste y preguntas sobre cómo está escrito tu código.",
+  preguntas: [
+    { tipo: "numero", enunciado: "Ejemplo de clase, instancia 4. Con w = (−2,10137; 3,11960), θ = 0,191448, x0 = −1 y x = (3,1; 7,7), ¿cuánto vale la suma ponderada S? (usa 3 decimales)",
+      respuesta: 17.315, tolerancia: 0.01,
+      explicacion: "S = (−2,10137)(3,1) + (3,11960)(7,7) + (0,191448)(−1) = −6,51425 + 24,02092 − 0,19145 = 17,31522. Como S ≥ 0, la neurona responde 1." },
+    { tipo: "numero", enunciado: "Siguiendo con la instancia 4: la salida fue y = 1 y la deseada era d = −1. Con γ = 0,25, ¿cuánto vale el nuevo w1? (3 decimales)",
+      respuesta: -3.651, tolerancia: 0.005,
+      explicacion: "e = d − y = −1 − 1 = −2. Entonces w1 = −2,10137 + 0,25·(−2)·(3,1) = −2,10137 − 1,55 = −3,65137, que es el mismo valor que imprime el programa." },
+    { tipo: "numero", enunciado: "Y el nuevo θ, con la misma instancia (e = −2, γ = 0,25, x0 = −1). (3 decimales)",
+      respuesta: 0.691, tolerancia: 0.005,
+      explicacion: "θ = 0,191448 + 0,25·(−2)·(−1) = 0,191448 + 0,5 = 0,691448. Como x0 es −1, un error negativo hace crecer θ, es decir, sube el umbral efectivo." },
+    { tipo: "opcion", enunciado: "En Perceptron.ajustar, ¿qué pasa cuando e = 0?",
+      opciones: [
+        ["No se modifica ningún peso ni el sesgo", true, "Correcto: el bloque if e != 0 protege el ajuste; además, aunque se aplicara, sumaría cero."],
+        ["Se reinician los pesos", false, "Los pesos solo se inicializan una vez, en el constructor."],
+        ["Se termina el entrenamiento", false, "Una instancia bien clasificada no detiene nada; la parada se decide al final de la época."],
+        ["Se ajusta solo θ", false, "θ se ajusta junto con los pesos y con la misma regla, y solo cuando hay error."] ] },
+    { tipo: "opcion", enunciado: "¿Por qué uniforme_01 devuelve (X + 0,5)/m en lugar de X/m?",
+      opciones: [
+        ["Para que U nunca valga 0 y el logaritmo de Box-Muller y de la exponencial no falle", true, "Correcto: ln(0) no existe; con el 0,5 el valor queda en el intervalo abierto (0, 1)."],
+        ["Para que los números sean más aleatorios", false, "El desplazamiento no mejora la aleatoriedad; solo evita los extremos."],
+        ["Porque m es impar", false, "m = 2³² es par; el motivo es evitar U = 0."],
+        ["Para redondear al entero más cercano", false, "U es un número real; no se redondea."] ] },
+    { tipo: "opcion", enunciado: "En la distribución uniforme, ¿por qué el semiancho es a = σ·√3?",
+      opciones: [
+        ["Porque la varianza de una uniforme en [−a, a] es a²/3, y así la desviación queda en σ", true, "Correcto: a²/3 = σ² implica a = σ√3, de modo que todas las distribuciones comparten media μ y desviación σ."],
+        ["Porque √3 es la raíz de la dimensión del espacio", false, "Coincide que hay tres entradas, pero el √3 viene de la varianza de la uniforme."],
+        ["Es una constante arbitraria", false, "No es arbitraria: está deducida para igualar la desviación estándar."],
+        ["Porque así los datos no se solapan", false, "El solapamiento depende de las medias y de σ, no de este factor."] ] },
+    { tipo: "opcion", enunciado: "¿Qué hace la condición err != err dentro de entrenar?",
+      opciones: [
+        ["Detecta un NaN, porque NaN es el único valor que no es igual a sí mismo", true, "Correcto: es una forma de detectar divergencia sin importar math.isnan."],
+        ["Siempre es falsa, es un error del código", false, "Para un número normal es falsa, pero para NaN es verdadera; por eso sirve. La misma idea está en es_finito (M8) de formulas.py."],
+        ["Compara el error con el de la época anterior", false, "Compara el error consigo mismo, no con otra época."],
+        ["Detecta si el error es negativo", false, "F7 es una suma de cuadrados, nunca negativa."] ] },
+    { tipo: "opcion", enunciado: "En graficas.py, ¿por qué se despeja la coordenada del plano cuyo peso tiene mayor valor absoluto?",
+      opciones: [
+        ["Para no dividir entre un número cercano a cero y obtener un plano estable", true, "Correcto: en F10 se divide entre wk; si wk es casi cero el plano sale casi vertical y los valores se disparan."],
+        ["Porque esa es la coordenada más importante para clasificar", false, "Es una decisión numérica para dibujar, no de clasificación."],
+        ["Porque matplotlib lo exige", false, "Matplotlib no impone eso; es una decisión del código propio."],
+        ["Para que el plano pase por el origen", false, "El plano pasa por donde indique θ; no se fuerza el origen."] ] },
+    { tipo: "opcion", enunciado: "¿Qué calcula coeficiente_determinacion (F19) en formulas.py?",
+      opciones: [
+        ["R² = 1 − Σ(y − ŷ)² / Σ(y − media)², la fracción de la variación de y que explica el plano", true, "Correcto: vale 1 en un ajuste perfecto, 0 si el plano no mejora a predecir la media y puede ser negativo si lo hace peor. Con la semilla 7 la regresión lineal da 0,964."],
+        ["El error cuadrático medio", false, "Ese es F8, error_cuadratico_medio; el R² compara ese error con la variación total de y."],
+        ["La exactitud de la regresión", false, "La exactitud (F9) es de clasificación; en regresión no hay aciertos exactos, por eso se usan el ECM y el R²."],
+        ["La correlación entre x1 y x2", false, "El R² compara la salida real con la predicha, no dos entradas entre sí."] ] },
+    { tipo: "opcion", enunciado: "¿Cómo reconoce es_finito (M8) que un valor es NaN sin importar math?",
+      opciones: [
+        ["Con v != v, porque NaN es el único valor que no es igual a sí mismo", true, "Correcto: para el infinito compara con INFINITO = float(«inf»). La usan leer_float para rechazar nan e inf y graficas.py para no dibujar pesos infinitos."],
+        ["Con math.isnan", false, "Eso rompería la regla del curso; formulas.py no importa nada."],
+        ["Preguntando si v es negativo", false, "Un NaN no es ni positivo ni negativo; cualquier comparación con él da falso, salvo !=."],
+        ["Con un try/except", false, "Las operaciones con NaN no lanzan errores; por eso hay que detectarlo con una comparación."] ] },
+    { tipo: "opcion", enunciado: "¿Por qué raiz_cuadrada permite hasta 1100 pasos si Newton-Raphson converge tan rápido?",
+      opciones: [
+        ["Porque mientras r está lejos de la raíz cada paso solo divide r a la mitad, y un número como 1e308 necesita unas 520 mitades antes de acercarse", true, "Correcto: la convergencia cuadrática solo empieza cerca de la raíz. Los números normales terminan en pocos pasos, así que el límite no los hace más lentos."],
+        ["Porque cada paso solo gana un decimal", false, "Cerca de la raíz cada paso duplica las cifras correctas; el problema son los pasos previos con números enormes."],
+        ["Para que el cálculo sea más preciso que el de math", false, "La precisión la decide la condición de parada con 1e-16, no el número máximo de pasos."],
+        ["Es un número arbitrario", false, "Está pensado para cubrir hasta los números más grandes que admite un float, cerca de 1e308."] ] }
+  ]
+},
+{
+  nombre: "Nivel 3 · Casos de análisis",
+  descripcion: "Situaciones como las que el profesor puede provocar en vivo y errores en el código.",
+  preguntas: [
+    { tipo: "opcion", enunciado: "El profesor pulsa «Solapadas» y entrena. La gráfica de épocas sube y baja entre aproximadamente 130 y 200 hasta la época 100. ¿Qué explicas?",
+      opciones: [
+        ["Que las clases ya no son linealmente separables, así que no existe un plano que las divida y el algoritmo nunca se estabiliza", true, "Correcto: es la otra cara del teorema de convergencia. Cada corrección arregla un punto y desarregla otro."],
+        ["Que la tasa de aprendizaje es muy pequeña", false, "Con una tasa pequeña el error bajaría despacio, no oscilaría sin tendencia."],
+        ["Que hace falta entrenar más épocas", false, "Más épocas solo producirían más oscilación; el problema no tiene solución lineal."],
+        ["Que el programa tiene un error", false, "Es el comportamiento esperado, y precisamente lo que el profesor quiere ver."] ] },
+    { tipo: "opcion", enunciado: "En regresión subes la tasa de 0,001 a 0,05 y el programa dice «DIVERGIÓ en la época 1». ¿Por qué?",
+      opciones: [
+        ["Porque con entradas alrededor de 5, cada corrección se pasa del objetivo y el error crece en cada paso hasta explotar", true, "Correcto: en la regla LMS la tasa debe ser pequeña respecto a la escala de las entradas; si no, los pesos oscilan con amplitud creciente."],
+        ["Porque el modelo es cuadrático", false, "Pasa incluso con el modelo lineal; el problema es la tasa."],
+        ["Porque el ruido es demasiado grande", false, "El ruido limita el error mínimo, pero no provoca divergencia."],
+        ["Porque la activación lineal no puede aprender", false, "Con γ = 0,001 aprendió casi exactamente los coeficientes reales."] ] },
+    { tipo: "opcion", enunciado: "Con el modelo cuadrático el ECM sube a 81,5 cuando en el lineal era 1,08, aunque el R² sigue en 0,97. ¿Qué conclusión es la correcta?",
+      opciones: [
+        ["El plano captura la tendencia general, pero no la curvatura: queda un error sistemático que el perceptrón no puede eliminar", true, "Correcto: el R² alto dice que la tendencia se parece a una recta en ese rango, y el ECM ochenta veces mayor que el ruido dice que falta la curvatura. Es la misma limitación lineal, ahora en regresión."],
+        ["Faltaron épocas de entrenamiento", false, "Aunque se entrene más, un plano no se curva; el error mínimo seguirá siendo alto."],
+        ["El generador de datos falló", false, "Los datos se generan bien; el modelo es el que no alcanza."],
+        ["El ECM se calcula mal en ese modo", false, "Es la misma fórmula F8 en los dos modos."] ] },
+    { tipo: "opcion", enunciado: "Pruebas γ = 0,02 en regresión y el programa dice «se estabilizó en 24 épocas», mucho antes que las 265 de γ = 0,001. ¿Es mejor esa tasa?",
+      opciones: [
+        ["No: con γ = 0,02 el ECM es 71,2 y el R² −1,39; los pesos rebotan cerca del límite de estabilidad y el error deja de bajar sin haber ajustado", true, "Correcto: «se estabilizó» solo dice que el error dejó de bajar. Con γ = 0,001 el ECM es 1,076 y el R² 0,964, que sí es un buen ajuste."],
+        ["Sí, porque terminó en menos épocas", false, "Terminar antes no significa ajustar mejor; hay que mirar el ECM y el R²."],
+        ["Sí, porque no divergió", false, "No divergió, pero su R² es negativo: predice peor que la media de y."],
+        ["No se puede saber sin más épocas", false, "Sí se puede: el ECM y el R² que muestra el programa ya dicen que el ajuste es malo."] ] },
+    { tipo: "opcion", enunciado: "El profesor escribe como salidas «alta 0» y «baja 1» y pulsa Entrenar. ¿Qué pasa y cómo lo explicas?",
+      opciones: [
+        ["Aparece un mensaje que lo rechaza, porque con las salidas invertidas la regla empuja los pesos en la dirección contraria y la neurona nunca aprendería", true, "Correcto: si el programa lo dejara pasar, con la semilla 7 y clases separadas se quedaría en 50 % sin converger. La validación está en _config_clasificacion de main.py."],
+        ["Entrena igual y converge en 6 épocas", false, "Con las salidas invertidas la regla no puede converger; por eso la interfaz no lo permite."],
+        ["El programa se cierra con un error", false, "No se cierra: muestra un mensaje que explica el motivo y deja corregir el dato."],
+        ["Entrena, pero intercambia los colores de las clases", false, "El problema no es visual, sino del sentido de la corrección de los pesos."] ] },
+    { tipo: "opcion", enunciado: "El profesor escribe una tasa de aprendizaje de −0,1, o «nan» en una media. ¿Qué hace el simulador?",
+      opciones: [
+        ["Muestra un mensaje y no entrena: leer_tasa exige γ > 0 y leer_float rechaza nan e inf con es_finito", true, "Correcto: con γ negativa cada ajuste iría en la dirección contraria (con la semilla 7 quedaría en 50 %), y un nan en los datos haría imposible dibujar. Las validaciones lo impiden antes de entrenar."],
+        ["Entrena normalmente", false, "Esos datos se validan antes de entrenar y se rechazan con un mensaje."],
+        ["Toma el valor absoluto de la tasa", false, "El programa no corrige el dato por su cuenta; explica el problema para que lo corrija el usuario."],
+        ["Se cierra la ventana", false, "La interfaz atrapa el error de validación y muestra un cuadro de diálogo."] ] },
+    { tipo: "opcion", enunciado: "Usas la cascada y P1 no converge aunque las tres nubes están bien separadas. ¿Qué pudo pasar?",
+      opciones: [
+        ["Que la clase 1 quedó en medio de las otras dos, y un solo plano no puede dejarla sola de un lado", true, "Correcto: la cascada depende del orden de las clases. Con uno contra el resto o reordenando las clases se resuelve."],
+        ["Que P2 no se entrenó", false, "P2 se entrena después y no afecta a P1."],
+        ["Que hay que usar x0 = +1", false, "Cambiar x0 no cambia la capacidad del plano."],
+        ["Que la exactitud se calcula mal", false, "La exactitud es un resultado; el problema es geométrico."] ] },
+    { tipo: "opcion", enunciado: "Alguien cambia F6 por θ = θ + γ·e (sin multiplicar por x0) y deja x0 = −1 en la suma. ¿Qué ocurre?",
+      opciones: [
+        ["El sesgo se corrige en la dirección equivocada y el plano se desplaza hacia el lado contrario al que debería", true, "Correcto: la entrada del sesgo es x0; si la suma usa −1 y el ajuste usa +1, las dos convenciones se contradicen."],
+        ["Nada, es equivalente", false, "Sería equivalente solo con x0 = +1. Por eso el código insiste en usar el mismo x0 en F1 y F6."],
+        ["El programa lanza un error de sintaxis", false, "Es un error lógico, no de sintaxis; el programa corre pero aprende mal."],
+        ["Solo cambia la velocidad de convergencia", false, "Cambia el sentido de la corrección, no solo su tamaño."] ] },
+    { tipo: "opcion", enunciado: "En uno contra el resto, un punto activa a P1 y a P3 a la vez. ¿Qué clase asigna tu código?",
+      opciones: [
+        ["La de la neurona con mayor S − umbral", true, "Correcto: predecir_tres_clases elige la neurona «más segura», y así resuelve las zonas ambiguas."],
+        ["Siempre la clase 1, por ser la primera", false, "Eso pasaría en la cascada; en uno contra el resto se compara S − umbral."],
+        ["Ninguna, devuelve error", false, "El código siempre devuelve una clase."],
+        ["La que tenga más instancias", false, "El tamaño de las clases no interviene en la predicción."] ] },
+    { tipo: "opcion", enunciado: "El profesor pregunta por qué en aleatorio.py hay un «import time» si estaba prohibido usar librerías. ¿Qué respondes?",
+      opciones: [
+        ["Que time solo se usa para tomar una semilla distinta cuando el usuario la deja vacía; no interviene en ningún cálculo", true, "Correcto: la prohibición es sobre la matemática. Lo mismo vale para copy (duplicar la configuración) y ctypes (nitidez de la ventana)."],
+        ["Que time genera los números aleatorios", false, "Falso: los números salen del generador congruencial propio."],
+        ["Que fue un error y no se usa", false, "Sí se usa, con un propósito no matemático que conviene explicar."],
+        ["Que time mide la velocidad del entrenamiento", false, "En el proyecto no se mide el tiempo de entrenamiento."] ] },
+    { tipo: "opcion", enunciado: "El profesor pulsa «Desbalanceadas» (100 contra 10) y ve 95,5 % de exactitud, más que el 89 % del caso balanceado. Dice: «entonces el desbalance mejora el modelo». ¿Qué respondes?",
+      opciones: [
+        ["Que no: la clase pequeña quedó en 50 %; la clase grande genera casi todas las correcciones y arrastra el plano, y la global sube solo porque casi todas las instancias son de la clase grande", true, "Correcto: es el caso típico en que la exactitud global engaña. Por eso el simulador reporta F18 para cada clase."],
+        ["Que sí, porque hay menos datos que clasificar", false, "Menos datos de una clase no hace al modelo mejor; hace que esa clase pese menos en la medida global."],
+        ["Que el perceptrón convergió gracias al desbalance", false, "En ese escenario no convergió; las clases siguen solapándose."],
+        ["Que hay que subir la tasa de aprendizaje", false, "La tasa no corrige el sesgo hacia la clase mayoritaria."] ] },
+    { tipo: "opcion", enunciado: "En regresión con tres entradas, ¿por qué la gráfica dice «y corregido» y fija x3 en su media?",
+      opciones: [
+        ["Porque el problema tiene cuatro dimensiones (x1, x2, x3, y) y solo se pueden dibujar tres; se muestra un corte del hiperplano", true, "Correcto: a cada punto se le resta el efecto de x3 respecto a su media, y así se ve el plano en x1, x2 e y."],
+        ["Porque x3 no influye en el modelo", false, "Sí influye: su coeficiente real es 0,5 y el aprendido 0,454."],
+        ["Porque matplotlib no admite tres entradas", false, "Es una limitación de dibujar cuatro dimensiones, no de la librería."],
+        ["Para ocultar el ruido", false, "El ruido sigue visible como dispersión alrededor del plano."] ] }
+  ]
+}
+];
+
+/* =====================================================================
+   PREPARACIÓN PARA LA SUSTENTACIÓN
+   ===================================================================== */
+const SUSTENTACION = [
+  { tema: "General", p: "Explíqueme en dos minutos qué hace su proyecto.", r: "Es un simulador del perceptrón escrito en Python que genera nubes de puntos en tres dimensiones con distribuciones de probabilidad propias y entrena una sola neurona para tres tareas: clasificar dos clases, clasificar tres clases con neuronas independientes y ajustar un plano en regresión. Toda la matemática, desde la raíz cuadrada hasta el generador aleatorio, está escrita a mano en formulas.py, y las librerías solo aparecen para dibujar. La interfaz permite cambiar en vivo los parámetros de los datos y del entrenamiento, y muestra las tres gráficas que usted pidió: el espacio 3D con los planos, el error por época y la evolución de los pesos." },
+  { tema: "General", p: "¿Cómo demuestra que no usó librerías para la matemática?", r: "Basta revisar los import. formulas.py no importa nada; aleatorio.py y perceptron.py solo importan formulas.py; experimentos.py importa los módulos propios y copy, que duplica la configuración. Matplotlib y tkinter solo están en graficas.py y main.py, y reciben valores ya calculados. Los otros dos import, time y ctypes, tienen funciones ajenas a la matemática: tomar una semilla automática y mejorar la nitidez de la ventana en Windows." },
+  { tema: "Teoría", p: "¿Qué es un perceptrón y quién lo propuso?", r: "Es el modelo más sencillo de neurona artificial: calcula una suma ponderada de sus entradas más un sesgo y la pasa por una función de activación. Lo propuso Frank Rosenblatt en 1958, a partir de la neurona lógica de McCulloch y Pitts, y su aporte fue una regla para aprender los pesos a partir de los errores." },
+  { tema: "Teoría", p: "¿Qué papel cumple el sesgo y por qué x0 = −1?", r: "El sesgo permite que el plano no esté obligado a pasar por el origen. Con x0 = −1 la suma queda S = Σwi·xi − θ, de modo que θ actúa como un umbral que se aprende, que es la convención de la clase. Con x0 = +1 se obtiene la forma S = Σwi·xi + b de otros libros. Son equivalentes porque solo cambia el signo del parámetro, y el programa deja elegir cualquiera, usando siempre el mismo x0 en la suma y en el ajuste." },
+  { tema: "Teoría", p: "¿Cuál es la diferencia entre el umbral de la función escalón y θ?", r: "El umbral es un valor fijo que el usuario configura y con el que se compara S; θ es un parámetro que el perceptrón aprende. Por defecto el umbral es 0 y θ hace todo el trabajo de desplazar el plano, pero si se cambia el umbral el plano F10 queda como Σwi·xi + θ·x0 = umbral, y el programa lo tiene en cuenta al dibujar." },
+  { tema: "Teoría", p: "Explique la regla de aprendizaje.", r: "Para cada instancia se calcula y, se obtiene el error e = d − y y, si es distinto de cero, cada peso se actualiza con wi ← wi + γ·e·xi y el sesgo con θ ← θ + γ·e·x0. La corrección es proporcional a la tasa y a la entrada, y su signo depende del error: si la neurona respondió bajo cuando debía responder alto, los pesos se acercan al punto, y al revés en el caso contrario." },
+  { tema: "Teoría", p: "¿Cuándo converge el perceptrón y cuándo no?", r: "El teorema de convergencia de Novikoff garantiza que converge en un número finito de pasos si las clases son linealmente separables. Si se solapan, no existe un plano separador y el error oscila indefinidamente; eso es lo que se ve con el escenario Solapadas, que llegó a 100 épocas sin converger y con 61,5 % de exactitud." },
+  { tema: "Teoría", p: "¿Qué limitación tiene el perceptrón?", r: "Solo puede representar fronteras lineales. No resuelve problemas como XOR ni clases que se entrelazan, que fue lo que señalaron Minsky y Papert en 1969. En el proyecto se ve tanto en clasificación, con las clases solapadas, como en regresión, con el modelo cuadrático, donde el ECM sube de 1,08 a 81,5 porque el plano no puede seguir la curvatura." },
+  { tema: "Implementación", p: "Muéstreme dónde está la suma ponderada y explíquela.", r: "Está en suma_ponderada de formulas.py. Inicia S en cero, recorre los pesos con un for acumulando w[i]·x[i] y al final suma θ·x0. La llama el método suma de la clase Perceptron, y la usan tanto el entrenamiento como la predicción y el dibujo de los planos." },
+  { tema: "Implementación", p: "¿Cómo calcula el error de cada época?", r: "Al terminar la época, error_conjunto recorre de nuevo todas las instancias con los pesos ya ajustados, calcula el error de cada una y aplica F7, err = ½·Σe². Es la «repasadita» de la clase. Ese valor se guarda en historial_error y es el que se dibuja en la gráfica de épocas, con la época 0 correspondiente a los pesos iniciales." },
+  { tema: "Implementación", p: "¿Cómo inicializa los pesos?", r: "En el constructor de Perceptron, cada peso y el sesgo se toman uniformes en (−1, 1) con el generador propio, que equivale al w ← rand() del pseudocódigo. En el ejemplo de clase, en cambio, se cargan los pesos de las diapositivas para reproducir las mismas cuentas." },
+  { tema: "Implementación", p: "¿Por qué baraja las instancias en cada época?", r: "Porque los datos se generan agrupados por clase, y si siempre se recorren en el mismo orden el plano se mueve primero solo por una clase y luego por la otra. Barajar con Fisher-Yates hace que el recorrido sea más equilibrado. Se puede desactivar, y de hecho el ejemplo de clase lo hace para respetar el orden de las diapositivas." },
+  { tema: "Implementación", p: "¿Cuáles son los criterios de parada?", r: "Hay cuatro: que el error llegue al mínimo permitido (convergió), que en regresión el mejor error de las últimas 20 épocas no mejore al menos un 0,01 % (se estabilizó, porque el ruido impide llegar a cero), que el error se vuelva NaN o mayor que 10¹⁰⁰ (divergió) o que se agoten las épocas (no convergió). En regresión el programa dice «se estabilizó» y no «convergió» a propósito, porque que el error deje de bajar no garantiza un buen ajuste; eso lo juzgo con el ECM y el R²." },
+  { tema: "Implementación", p: "¿Cómo resolvió las tres clases?", r: "Con dos estrategias seleccionables. En cascada, P1 separa la clase 1 del resto con todos los datos y P2 separa la 2 de la 3 usando solo esas dos clases, lo que da los dos planos que usted mencionó. En uno contra el resto hay tres perceptrones, cada uno separando su clase de las demás, y en las zonas ambiguas gana la neurona con mayor S − umbral. En ambos casos las neuronas se entrenan por separado, así que no es una red." },
+  { tema: "Implementación", p: "¿Cómo generó los datos sin la librería random?", r: "Con un generador congruencial lineal, X(k+1) = (a·X(k) + c) mod 2³², con las constantes de Numerical Recipes. Cada valor se convierte en U = (X + 0,5)/m, que está en (0, 1) sin tocar los extremos. Con U se construyen la normal por Box-Muller, la uniforme con semiancho σ√3, la exponencial por transformada inversa y la binomial estandarizada, todas con media μ y desviación σ." },
+  { tema: "Implementación", p: "¿Cómo calculó el logaritmo y el coseno que necesita Box-Muller?", r: "El logaritmo reduce el número a la forma m·2^k con m entre 1 y 2, usa ln a = k·ln 2 + ln m y calcula ln m con la serie de la arcotangente hiperbólica. El coseno lleva el ángulo al intervalo [−π, π] y suma su serie de Taylor. π se obtiene con la fórmula de Machin y la raíz con Newton-Raphson. Todas las series paran cuando el término es menor que 10⁻¹⁸." },
+  { tema: "Implementación", p: "¿Por qué la exponencial usa (μ − σ) − σ ln U?", r: "Porque −σ ln U es una exponencial con media σ y desviación σ, obtenida por la transformada inversa. Al sumarle μ − σ la media pasa a ser μ y la desviación sigue siendo σ, así todas las distribuciones se controlan con los mismos dos parámetros desde la interfaz." },
+  { tema: "Regresión", p: "¿Cómo hace regresión con un perceptrón?", r: "Cambiando la activación escalón por la lineal, y = S. La misma regla de ajuste se convierte en la regla LMS de Widrow y Hoff, que reduce el error cuadrático instancia por instancia. Con datos simulados de y = 2x1 − 1,5x2 + 0,5x3 + 3 + ruido aprendió w1 = 2,002, w2 = −1,495, w3 = 0,454 y un sesgo de 3,169, con un ECM de 1,076, prácticamente la varianza del ruido, y un R² de 0,964." },
+  { tema: "Regresión", p: "¿Por qué la tasa de regresión es tan pequeña?", r: "Porque con activación lineal el tamaño de cada corrección depende del error, que puede ser grande, y de las entradas, que están alrededor de 5. Con γ = 0,05 cada paso se pasaba del objetivo y el error explotó en la primera época; con 0,001 baja de forma estable. Hay un caso intermedio que vale la pena mostrar: con γ = 0,02 el programa dice que se estabilizó en solo 24 épocas, pero el ECM es 71,2 y el R² −1,39, porque los pesos rebotan sin llegar al plano." },
+  { tema: "Regresión", p: "¿Por qué en regresión dice «se estabilizó» y no «convergió»?", r: "Porque el ruido impide que el error llegue a cero, así que la regresión se detiene cuando en 20 épocas el error no mejora al menos un 0,01 %. Eso solo dice que el error dejó de bajar, no que el plano sea bueno. Por eso el atributo se llama estancado y el estado dice «se estabilizó». Para juzgar el ajuste miro el ECM y el R²: con γ = 0,001 se estabiliza en 265 épocas con un R² de 0,964, pero con γ = 0,02 también se estabiliza, en 24 épocas, con un R² de −1,39." },
+  { tema: "Regresión", p: "¿Qué es el R² y por qué lo calcula además del ECM?", r: "Es el coeficiente de determinación, F19: R² = 1 − Σ(y − ŷ)² / Σ(y − media)². Dice qué fracción de la variación de y explica el plano: 1 es un ajuste perfecto, 0 equivale a predecir siempre la media y un valor negativo es peor que eso. Lo calculo en coeficiente_determinacion de formulas.py porque el ECM depende de la escala de y y el R² no. Los dos juntos cuentan la historia completa: en el modelo cuadrático el R² es 0,972, alto porque el plano sigue la tendencia, pero el ECM de 81,5 delata el error sistemático por la curvatura." },
+  { tema: "Regresión", p: "¿Cómo dibuja un problema de cuatro dimensiones?", r: "Con tres entradas hay x1, x2, x3 e y. La gráfica fija x3 en su media y a cada punto le resta el efecto de x3, y_corregido = y − w3·(x3 − media_x3); así se ve un corte del hiperplano sobre x1, x2 e y. Al lado se muestra la gráfica de real contra predicho, donde un buen ajuste queda sobre la diagonal." },
+  { tema: "Gráficas", p: "¿Qué muestra la gráfica de pesos y qué debo ver en ella?", r: "Muestra w1, w2, w3 y θ en una sola figura, uno por cada ajuste, con el eje en épocas. Cuando el perceptrón converge, las curvas dejan de moverse y se vuelven horizontales; en clases solapadas siguen saltando hasta el final. Es la forma de ver cuál peso se estabiliza primero." },
+  { tema: "Gráficas", p: "¿Cómo dibuja el plano de separación?", r: "Despeja de F10 la coordenada cuyo peso tiene mayor valor absoluto, para no dividir entre un número cercano a cero, la evalúa en las cuatro esquinas de la caja de los datos y recorta el polígono resultante a esa caja con el algoritmo de Sutherland-Hodgman, escrito a mano. Matplotlib solo pinta el polígono." },
+  { tema: "En vivo", p: "Reviéntelo: acerque las clases.", r: "Pulso Cercanas o Solapadas, o reduzco la distancia entre las medias y aumento la desviación, y entreno. Lo que debe verse es que el error por época deja de llegar a cero y oscila, que los pesos no se estabilizan y que la exactitud baja. Lo explico como la consecuencia directa de que ya no existe un plano separador." },
+  { tema: "En vivo", p: "Ponga una clase con muchas más instancias que la otra.", r: "Uso el escenario Desbalanceadas, que deja 100 instancias contra 10. Si las clases fueran separables el perceptrón seguiría convergiendo, porque el teorema no depende del tamaño de cada clase. Pero como están cercanas, el plano favorece a la clase mayoritaria, que recibe casi todas las correcciones: la exactitud global sube a 95,5 %, más que el 89 % del caso balanceado, mientras la clase pequeña cae a 50 %. Por eso el simulador muestra la exactitud de cada clase; la global sola es engañosa." },
+  { tema: "En vivo", p: "Clasifique este punto que le doy.", r: "Después de entrenar escribo sus coordenadas en el recuadro Clasificar un punto nuevo. El programa usa los mismos perceptrones: con dos clases mira de qué lado del plano cae; en cascada consulta primero a P1 y luego a P2; en uno contra el resto elige la neurona con mayor S − umbral. El punto aparece como una estrella del color de su clase en el espacio 3D." },
+  { tema: "En vivo", p: "Use como salidas 5 y 2,5.", r: "Las salidas del escalón aceptan cualquier par de números, como dijo usted en clase, con la condición de que la salida alta sea mayor que la baja, y 5 es mayor que 2,5. Con 5 y 2,5 el error de una instancia mal clasificada vale ±2,5 en lugar de ±2, así que cada corrección cambia de tamaño, pero el plano y la lógica son los mismos; con la semilla 7 y las clases separadas converge en 5 épocas, frente a 6 con 1 y −1." },
+  { tema: "Implementación", p: "¿Cómo sabe que los datos simulados quedaron como los pidió?", r: "Después de generarlos calculo para cada nube la media de cada coordenada (F16) y la desviación estándar (F17), y el resumen las compara con las pedidas. Por ejemplo, la clase 1 se pidió en (2, 2, 2) con σ = 1 y se obtuvo (1,99; 2,09; 2,07) con σ = 1,03. El centroide se marca con una X en el espacio 3D." },
+  { tema: "Implementación", p: "¿Usó funciones de Python como min, max o sum?", r: "No en los cálculos. formulas.py define minimo y maximo, que recorren la lista comparando valor por valor, y la media y la desviación se calculan con ciclos. Se usan en el criterio de parada de la regresión, en los límites de las gráficas y en la interfaz." },
+  { tema: "En vivo", p: "Cambie la distribución a exponencial. ¿Qué pasa?", r: "La exponencial es asimétrica, con una cola larga hacia valores grandes. Aunque tiene la misma media y desviación que la normal, produce puntos alejados en una dirección que pueden invadir la otra clase. Por eso el escenario Solapadas usa una exponencial en la clase 2." },
+  { tema: "En vivo", p: "¿Qué pasa si las dos salidas del escalón son iguales?", r: "El programa no lo permite y muestra un mensaje, porque la neurona respondería lo mismo para cualquier punto y el error nunca podría corregirse. Tampoco permite que la salida alta sea menor que la baja, porque entonces la regla de ajuste empujaría los pesos en la dirección contraria. Las dos validaciones están en _config_clasificacion de main.py." },
+  { tema: "En vivo", p: "Usted dijo que las salidas podían ser las que quisiéramos. ¿Por qué no deja poner la alta menor que la baja?", r: "Porque la regla wi ← wi + γ·(d − y)·xi supone que la salida alta es la mayor. Si respondió la baja cuando debía responder la alta, el error es positivo y los pesos se acercan al punto, lo que sube su suma. Con las salidas al revés el signo del error se invierte y cada corrección aleja el plano de la solución. Lo comprobé: con la semilla 7 y las clases separadas, con las salidas invertidas el perceptrón se queda en 50 % y nunca converge. Por eso acepto cualquier par, como 1 y −1, 1 y 0 o 5 y 2,5, siempre que la alta sea mayor." },
+  { tema: "En vivo", p: "¿Qué pasa si escribo una tasa negativa, o nan en un campo?", r: "El programa no entrena y muestra un mensaje. leer_tasa exige que γ sea mayor que cero, porque con γ = 0 los pesos nunca cambian y con γ negativa cada ajuste va en la dirección contraria: con la semilla 7 se quedaría en 50 %. leer_float rechaza nan e inf usando es_finito, la función M8 de formulas.py, que reconoce un NaN porque es el único valor distinto de sí mismo. También se rechazan las desviaciones negativas, con leer_no_negativo." },
+  { tema: "Mejoras", p: "¿Qué mejoraría si tuviera más tiempo?", r: "Separaría datos de entrenamiento y de prueba para medir la generalización, ya que hoy la exactitud se calcula sobre los mismos datos con que se entrena; añadiría el algoritmo del perceptrón con bolsillo, que guarda el mejor plano cuando las clases no son separables; normalizaría las entradas para que la tasa de regresión no dependa de su escala; y agregaría pruebas automáticas para las funciones de formulas.py." }
+];
+
+const ERRORES_COMUNES = [
+  ["Decir que el perceptrón «aprende cualquier cosa»", "Solo resuelve problemas linealmente separables. Si el profesor solapa las clases, esa frase se derrumba en vivo; mejor anticiparlo tú."],
+  ["Confundir el umbral con θ", "El umbral es fijo y lo pone el usuario; θ se aprende. Si los mezclas, la explicación de x0 = −1 pierde sentido."],
+  ["Llamar «red» a las tres clases", "Son neuronas independientes. Decir red contradice la condición que puso el profesor."],
+  ["Negar o esconder los import de time, copy y ctypes", "Es mejor mencionarlos tú mismo y explicar que no hacen matemática, antes de que parezca que los ocultaste."],
+  ["Decir que el error de la época se suma durante la época", "En tu código se calcula después de la época, recorriendo todo el conjunto con los pesos ya ajustados."],
+  ["Hablar de Park-Miller o de numpy", "Tu generador es congruencial lineal con constantes de Numerical Recipes. Nombra exactamente lo que está en el código."],
+  ["No saber hacer una cuenta a mano", "El profesor puede pedir que verifiques un ajuste. Practica la instancia 4 del ejemplo de clase hasta hacerla sin mirar."],
+  ["Leer el código en vez de explicarlo", "Explica la idea primero y luego señala la línea. La lectura literal da la impresión de que no lo escribiste."],
+  ["Entrenar en vivo sin fijar la semilla", "Con la semilla vacía cada ejecución cambia. Usa la semilla 7 si quieres mostrar los mismos resultados del informe."],
+  ["Reportar solo la exactitud global", "Con clases desbalanceadas engaña: 95,5 % global con 50 % en la clase pequeña. Muestra siempre la exactitud por clase."],
+  ["Subir la tasa de regresión sin avisar", "Con 0,05 diverge en la primera época. Si el profesor lo pide, explica antes por qué va a pasar."],
+  ["Decir que la regresión «convergió»", "El programa dice «se estabilizó»: el error dejó de bajar, lo que no garantiza un buen ajuste. Con γ = 0,02 se estabiliza en 24 épocas con un R² negativo. Para juzgar el ajuste, cita el ECM y el R²."],
+  ["Decir que las salidas pueden ser «cualquier par» sin más", "Pueden ser cualquier par con la salida alta mayor que la baja. Al revés, la regla empuja los pesos en la dirección contraria, y por eso la interfaz lo rechaza."]
+];
+
+/* =====================================================================
+   ANÁLISIS DE CÓDIGO LÍNEA POR LÍNEA
+   Cada bloque: líneas reales del proyecto con su explicación, la decisión
+   de diseño que justifica el bloque y, al final, mejoras y buenas prácticas.
+   ===================================================================== */
+const ANALISIS = [
+{
+  archivo: "perceptron.py", titulo: "Perceptron.ajustar: una iteración del aprendizaje",
+  lineas: [
+    [String.raw`def ajustar(self, x, d):`, "Recibe una instancia x (lista de entradas) y su salida deseada d."],
+    [String.raw`    S = self.suma(x)                                                # F1`, "Calcula la suma ponderada llamando a suma_ponderada con los pesos, θ y x0 actuales."],
+    [String.raw`    y = self.activacion(S)                                          # F2 / F3`, "Aplica la activación. Es un objeto: Escalon en clasificación o Lineal en regresión, gracias a su método __call__."],
+    [String.raw`    e = error_instancia(d, y)                                       # F4`, "Error de la instancia, e = d − y."],
+    [String.raw`    if e != 0:`, "Solo se ajusta cuando hay error; si la instancia está bien clasificada no se toca nada."],
+    [String.raw`        for i in range(self.n_entradas):`, "Recorre cada peso; n_entradas es 3 en los datos simulados y 2 en el ejemplo de clase."],
+    [String.raw`            self.w[i] = ajuste_peso(self.w[i], self.gamma, e, x[i])      # F5`, "F5: wi ← wi + γ·e·xi."],
+    [String.raw`        self.theta = ajuste_sesgo(self.theta, self.gamma, e, self.x0)    # F6`, "F6: el sesgo usa la misma regla con su entrada x0, que debe ser la misma que en F1."],
+    [String.raw`    return S, y, e`, "Devuelve los valores para que entrenar pueda registrar el proceso paso a paso."]
+  ],
+  decision: "Separar ajustar de entrenar permite que el registro paso a paso y el ejemplo de clase reutilicen exactamente la misma lógica que el entrenamiento normal, y que cada fórmula viva en formulas.py con su número, lo que facilita referenciarla en el informe."
+},
+{
+  archivo: "perceptron.py", titulo: "Perceptron.entrenar: el ciclo por épocas",
+  lineas: [
+    [String.raw`self.historial_error = [self.error_conjunto(X, d)]   # época 0`, "Antes de entrenar se mide el error con los pesos iniciales; por eso las gráficas empiezan en la época 0."],
+    [String.raw`self.historial_pesos = [self.pesos_actuales()]`, "Guarda [w1, …, wn, θ] iniciales para la gráfica de pesos."],
+    [String.raw`orden = list(range(len(X)))`, "Lista de índices que se baraja, en lugar de mover los datos."],
+    [String.raw`for epoca in range(1, max_epocas + 1):`, "Cada vuelta es una época completa."],
+    [String.raw`    if barajar:`, ""],
+    [String.raw`        self.generador.barajar(orden)`, "Fisher-Yates con el generador propio; cambia el orden de visita en cada época."],
+    [String.raw`    for i in orden:`, "Recorre todas las instancias en el orden barajado."],
+    [String.raw`        S, y, e = self.ajustar(X[i], d[i])`, "Una iteración de aprendizaje por instancia."],
+    [String.raw`        self.historial_pesos.append(self.pesos_actuales())`, "Guarda los pesos después de cada instancia; así la gráfica muestra cada ajuste y no solo el final de la época."],
+    [String.raw`    err = self.error_conjunto(X, d)`, "La «repasadita»: F7 sobre todo el conjunto con los pesos ya ajustados."],
+    [String.raw`    if err != err or err > 1e100:                 # NaN o infinito`, "Detecta NaN (no es igual a sí mismo) o un error enorme: divergencia. Es la misma idea de es_finito (M8)."],
+    [String.raw`    if err <= error_minimo:`, "Convergencia en clasificación: por defecto el mínimo es 0."],
+    [String.raw`    if tolerancia_cambio is not None and len(self.historial_error) > paciencia:`, "Criterio de regresión: compara el mejor error reciente con el mejor anterior."],
+    [String.raw`        mejor_antes = minimo(self.historial_error[:-paciencia])`, "El mejor error antes de las últimas 20 épocas, con minimo (M7) en lugar de min."],
+    [String.raw`        mejor_reciente = minimo(self.historial_error[-paciencia:])`, "El mejor error de las últimas 20 épocas."],
+    [String.raw`        if mejor_reciente >= (1.0 - tolerancia_cambio) * mejor_antes:`, "Si no mejoró al menos un 0,01 %…"],
+    [String.raw`            self.estancado = True`, "…el error se estabilizó: estado() dirá «se estabilizó en N épocas», no «convergió», porque eso no garantiza un buen ajuste."]
+  ],
+  decision: "Guardar el historial completo de pesos, y no solo el final, es lo que permite la barra «Época mostrada» y la animación: el método pesos_en_epoca toma la fila k·n_instancias para dibujar el plano tal como estaba al final de cualquier época."
+},
+{
+  archivo: "perceptron.py", titulo: "predecir_tres_clases: la regla de decisión",
+  lineas: [
+    [String.raw`if estrategia == "cascada":`, "En cascada la decisión es secuencial."],
+    [String.raw`    if perceptrones[0].predecir(x) == salida_alta:`, "Si P1 se activa, el punto es de la clase 1 y no se consulta a P2."],
+    [String.raw`        return 0`, ""],
+    [String.raw`    if perceptrones[1].predecir(x) == salida_alta:`, "Si P1 no se activó, P2 decide entre la clase 2 y la 3."],
+    [String.raw`        return 1`, ""],
+    [String.raw`    return 2`, ""],
+    [String.raw`mejor, mejor_valor = 0, None`, "Uno contra el resto: se busca la neurona con mayor confianza."],
+    [String.raw`for k, p in enumerate(perceptrones):`, ""],
+    [String.raw`    valor = p.suma(x) - p.activacion.umbral`, "Distancia con signo a cada plano (sin normalizar): cuánto supera S al umbral."],
+    [String.raw`    if mejor_valor is None or valor > mejor_valor:`, "Se queda con el mayor; así se resuelven los casos en que se activan varias neuronas o ninguna."],
+    [String.raw`        mejor, mejor_valor = k, valor`, ""]
+  ],
+  decision: "Usar S − umbral en vez de la salida del escalón evita empates: el escalón solo dice sí o no, mientras que S dice qué tan lejos del plano está el punto."
+},
+{
+  archivo: "aleatorio.py", titulo: "GeneradorAleatorio: números aleatorios sin random",
+  lineas: [
+    [String.raw`A = 1664525`, "Multiplicador del generador congruencial (constantes de Numerical Recipes)."],
+    [String.raw`C = 1013904223`, "Incremento."],
+    [String.raw`M = 2 ** 32`, "Módulo; el periodo máximo es 2³² valores."],
+    [String.raw`if semilla is None:`, "Si el usuario deja la semilla vacía…"],
+    [String.raw`    semilla = time.time_ns()`, "…se toma la hora en nanosegundos. Es el único uso de time y no es un cálculo matemático."],
+    [String.raw`self.X = int(semilla) % self.M`, "Estado inicial del generador."],
+    [String.raw`self.X = congruencial_lineal(self.X, self.A, self.C, self.M)`, "F11: X(k+1) = (a·X(k) + c) mod m."],
+    [String.raw`return uniforme_01(self.X, self.M)`, "U = (X + 0,5)/m, en el intervalo abierto (0, 1)."],
+    [String.raw`for i in range(len(lista) - 1, 0, -1):`, "Fisher-Yates: recorre la lista desde el final."],
+    [String.raw`    j = self.entero(i + 1)`, "Elige una posición al azar entre 0 e i."],
+    [String.raw`    lista[i], lista[j] = lista[j], lista[i]`, "Intercambia; cada permutación queda con la misma probabilidad."]
+  ],
+  decision: "Envolver el estado en una clase permite pasar el mismo generador a la simulación de datos, a la inicialización de pesos y al barajado, de modo que una sola semilla reproduce todo el experimento."
+},
+{
+  archivo: "formulas.py", titulo: "logaritmo_natural: reducción de rango y serie",
+  lineas: [
+    [String.raw`if a <= 0:`, "El logaritmo solo existe para positivos; se lanza un error explícito."],
+    [String.raw`k = 0`, "Exponente de 2 que se irá sacando."],
+    [String.raw`m = a`, ""],
+    [String.raw`while m >= 2.0:`, "Divide entre 2 hasta que m quede por debajo de 2…"],
+    [String.raw`    m = m / 2.0`, ""],
+    [String.raw`    k += 1`, ""],
+    [String.raw`while m < 1.0:`, "…o multiplica por 2 hasta que quede en [1, 2)."],
+    [String.raw`    m = m * 2.0`, ""],
+    [String.raw`    k -= 1`, ""],
+    [String.raw`return k * LN2 + _serie_ln(m)`, "ln a = k·ln 2 + ln m; ln 2 se precalculó con la misma serie."]
+  ],
+  decision: "La serie de la arcotangente hiperbólica converge muy rápido cuando m está cerca de 1. Sin la reducción de rango, para valores grandes la serie necesitaría miles de términos o perdería precisión."
+},
+{
+  archivo: "formulas.py", titulo: "normal_box_muller: de dos uniformes a una normal",
+  lineas: [
+    [String.raw`def normal_box_muller(U1, U2, mu, sigma):`, "Recibe dos uniformes independientes en (0, 1)."],
+    [String.raw`    Z = raiz_cuadrada(-2.0 * logaritmo_natural(U1)) * coseno(2.0 * PI * U2)`, "F12: transformación de Box-Muller. Usa la raíz, el logaritmo, el coseno y π propios."],
+    [String.raw`    return mu + sigma * Z`, "Z es normal estándar; se escala con σ y se desplaza a μ."]
+  ],
+  decision: "Box-Muller es exacta, a diferencia de aproximar la normal sumando uniformes, y solo necesita funciones que el proyecto ya tenía escritas a mano."
+},
+{
+  archivo: "experimentos.py", titulo: "ejecutar_clasificacion: une datos y modelo",
+  lineas: [
+    [String.raw`gen = GeneradorAleatorio(config["semilla"])`, "Un solo generador para todo el experimento."],
+    [String.raw`clases = config["clases"][:config["n_clases"]]`, "Toma 2 o 3 clases según la configuración."],
+    [String.raw`X, etiquetas = generar_datos_clasificacion(gen, clases)`, "Simula los puntos con la distribución, media y desviación de cada clase."],
+    [String.raw`escalon = Escalon(config["umbral"], alta, baja)`, "Activación con el umbral y las salidas que elige el usuario."],
+    [String.raw`def crear(nombre):`, "Fábrica de perceptrones: todos comparten configuración pero son objetos independientes."],
+    [String.raw`    return Perceptron(3, config["tasa"], escalon, gen, nombre, config["x0"])`, ""],
+    [String.raw`d = [alta if c == 0 else baja for c in etiquetas]`, "Dos clases: la clase 1 recibe la salida alta y la clase 2 la baja."],
+    [String.raw`"exactitud": exactitud(predicciones, etiquetas),                       # F9`, "Porcentaje de aciertos sobre los mismos datos."]
+  ],
+  decision: "La función crear se pasa a entrenar_tres_clases para que perceptron.py no tenga que conocer la configuración de la interfaz. Así cada módulo tiene una sola responsabilidad."
+},
+{
+  archivo: "graficas.py", titulo: "poligono_plano: el plano que se dibuja",
+  lineas: [
+    [String.raw`k = 0`, "Índice de la coordenada que se va a despejar."],
+    [String.raw`for j in range(1, 3):`, ""],
+    [String.raw`    if valor_absoluto(w[j]) > valor_absoluto(w[k]):`, "Elige el peso de mayor valor absoluto."],
+    [String.raw`        k = j`, ""],
+    [String.raw`if valor_absoluto(w[k]) < 1e-12:`, "Si todos los pesos son casi cero no hay plano que dibujar."],
+    [String.raw`    return []`, ""],
+    [String.raw`a, b = [j for j in range(3) if j != k]`, "Las otras dos coordenadas definen el rectángulo base."],
+    [String.raw`punto[k] = coordenada_del_plano(w, theta, x0, umbral, k, {a: va, b: vb})   # F10`, "Despeje de F10 en cada esquina."],
+    [String.raw`poligono = _recortar(poligono, k, limites[k][0], True)`, "Sutherland-Hodgman: recorta por debajo…"],
+    [String.raw`    poligono = _recortar(poligono, k, limites[k][1], False)`, "…y por encima, para que el plano no se salga de la caja de los datos."]
+  ],
+  decision: "Recortar el polígono hace que el plano se vea dentro de la nube y no como una lámina gigante que aplasta la escala de los ejes."
+}
+];
+
+ANALISIS.push({
+  archivo: "formulas.py", titulo: "exactitud_por_clase: la medida que delata el desbalance",
+  lineas: [
+    [String.raw`def exactitud_por_clase(predicciones, reales, clase):`, "Recibe las predicciones, las clases reales y la clase k que se quiere evaluar."],
+    [String.raw`    aciertos = 0`, ""],
+    [String.raw`    total = 0`, ""],
+    [String.raw`    for p, r in zip(predicciones, reales):`, "Recorre las instancias en pareja: predicción y valor real."],
+    [String.raw`        if r == clase:`, "Solo cuentan las instancias que realmente son de la clase k."],
+    [String.raw`            total += 1`, "N_k: cuántas hay de esa clase."],
+    [String.raw`            if p == r:`, ""],
+    [String.raw`                aciertos += 1`, "Aciertos dentro de la clase k."],
+    [String.raw`    if total == 0:`, "Evita dividir entre cero si una clase quedó vacía."],
+    [String.raw`        return 0.0`, ""],
+    [String.raw`    return 100.0 * aciertos / total`, "F18: porcentaje de aciertos de esa clase."]
+  ],
+  decision: "La exactitud global divide entre todas las instancias, así que una clase con 10 instancias apenas pesa. Medir cada clase por separado muestra el costo real del desbalance."
+});
+ANALISIS.push({
+  archivo: "formulas.py", titulo: "coeficiente_determinacion: el R² de la regresión (F19)",
+  lineas: [
+    [String.raw`def coeficiente_determinacion(reales, predichos):`, "Recibe los valores reales de y y los que predice el perceptrón con los pesos finales."],
+    [String.raw`    m = media(reales)`, "Media de y con F16; es la predicción más simple posible."],
+    [String.raw`    suma_residuos = 0.0`, "Acumulará Σ(y − ŷ)², el error que deja el plano."],
+    [String.raw`    suma_total = 0.0`, "Acumulará Σ(y − media)², la variación total de y."],
+    [String.raw`    for y, y_pred in zip(reales, predichos):`, "Recorre cada instancia con su valor real y su predicción."],
+    [String.raw`        suma_residuos = suma_residuos + (y - y_pred) * (y - y_pred)`, "Cuadrado del error de la instancia, multiplicando a mano en lugar de usar potencias."],
+    [String.raw`        suma_total = suma_total + (y - m) * (y - m)`, "Cuadrado de la distancia a la media."],
+    [String.raw`    if suma_total == 0:`, "Si todos los y son iguales no hay variación que explicar…"],
+    [String.raw`        return 0.0`, "…y se evita dividir entre cero."],
+    [String.raw`    return 1.0 - suma_residuos / suma_total`, "F19: 1 es un ajuste perfecto, 0 equivale a predecir la media y un valor negativo es peor que eso."]
+  ],
+  decision: "El ECM depende de la escala de y, así que por sí solo no dice si un error de 1,076 es mucho o poco. El R² lo compara con la variación total, y los dos juntos distinguen un buen ajuste (ECM 1,076 y R² 0,964) de uno que solo sigue la tendencia (modelo cuadrático: R² 0,972 pero ECM 81,5)."
+});
+ANALISIS.push({
+  archivo: "formulas.py", titulo: "es_finito: reconocer NaN e infinito sin math (M8)",
+  lineas: [
+    [String.raw`def es_finito(v):`, "Recibe cualquier número y dice si es finito."],
+    [String.raw`    if v != v:`, "NaN es el único valor que no es igual a sí mismo; así se detecta sin math.isnan."],
+    [String.raw`        return False`, ""],
+    [String.raw`    return v != INFINITO and v != -INFINITO`, "INFINITO = float(«inf»); un número es finito si no es ni infinito positivo ni negativo."]
+  ],
+  decision: "Se escribió en formulas.py, con su código M8, para que la interfaz (leer_float) y las gráficas (dibujar_regresion) usen la misma comprobación sin importar ninguna librería."
+});
+ANALISIS.push({
+  archivo: "main.py", titulo: "Validación de los datos antes de entrenar",
+  lineas: [
+    [String.raw`    if not es_finito(valor):`, "En leer_float: rechaza nan, inf y números que no caben en un float."],
+    [String.raw`    valor = leer_float(var, "Tasa de aprendizaje")`, "En leer_tasa: primero se lee como cualquier número…"],
+    [String.raw`    if valor <= 0:`, "…y luego se exige γ > 0: con 0 los pesos no cambian y con γ negativa cada ajuste va en la dirección contraria."],
+    [String.raw`        if cfg["salida_alta"] == cfg["salida_baja"]:`, "En _config_clasificacion: dos salidas iguales no permiten corregir ningún error."],
+    [String.raw`        if cfg["salida_alta"] < cfg["salida_baja"]:`, "Las salidas invertidas tampoco: la regla supone que la alta es la mayor."]
+  ],
+  decision: "Cada validación lanza un ValueError con un mensaje claro, y _ejecutar lo atrapa y lo muestra en un cuadro de diálogo. Así un dato inválido nunca llega al perceptrón ni deja la ventana en un estado roto."
+});
+ANALISIS.push({
+  archivo: "main.py", titulo: "_mover_medias: el botón para acercar o alejar las clases",
+  lineas: [
+    [String.raw`filas = self.c_clases[:self.c_nclases.get()]`, "Solo las clases activas (2 o 3)."],
+    [String.raw`centros = [[leer_float(v, "Media") for v in fila["centro"]] for fila in filas]`, "Lee las medias que hay escritas en la interfaz."],
+    [String.raw`comun = [media([c[j] for c in centros]) for j in range(3)]           # F16`, "Centro común: la media de los centros en cada coordenada."],
+    [String.raw`for fila, c in zip(filas, centros):`, ""],
+    [String.raw`    for j, var in enumerate(fila["centro"]):`, ""],
+    [String.raw`        var.set("%.3g" % (comun[j] + factor * (c[j] - comun[j])))`, "c_nuevo = común + f·(c − común): con f = 0,75 se acercan y con 1,33 se alejan."],
+    [String.raw`self.entrenar_clasificacion()`, "Entrena de inmediato para ver el efecto en vivo."]
+  ],
+  decision: "Mover cada centro respecto al centro común conserva la forma del grupo de clases y solo cambia la distancia entre ellas, que es exactamente la variable que decide si son separables."
+});
+
+const MEJORAS = [
+  ["Separar entrenamiento y prueba", "Hoy la exactitud se mide con los mismos datos de entrenamiento. Reservar un 20 o 30 % para prueba mostraría la capacidad de generalizar."],
+  ["Perceptrón con bolsillo (pocket)", "Guarda el mejor plano encontrado; con clases solapadas devolvería ese y no el último, que puede ser peor."],
+  ["Normalizar las entradas", "Restar la media y dividir por la desviación haría que la tasa de regresión no dependiera de la escala de los datos."],
+  ["Pruebas automáticas", "Comparar raiz_cuadrada, logaritmo_natural y coseno con valores conocidos daría evidencia formal de que las fórmulas son correctas."],
+  ["Exportar resultados", "Guardar pesos, errores y configuración en un archivo de texto facilitaría armar el informe y comparar ejecuciones."]
+];
+const BUENAS_PRACTICAS = [
+  "Arquitectura por capas con dependencias en un solo sentido: la matemática no conoce a la interfaz.",
+  "Cada fórmula con su número (F1 a F19 y M1 a M8), lo que conecta el código con el informe.",
+  "Docstrings en todas las funciones, con la fórmula escrita.",
+  "Validación de entradas en la interfaz: salidas iguales o invertidas, nan e inf, desviaciones negativas, tasas no positivas y decimales con coma o punto.",
+  "Configuración por defecto copiada con deepcopy para no alterar los valores originales al reiniciar.",
+  "Semilla para hacer reproducible cualquier experimento.",
+  "Funciones propias minimo y maximo en lugar de min y max de Python.",
+  "Comprobación de los datos simulados: media y desviación pedidas frente a obtenidas."
+];
+
+/* Fórmulas para el repaso final */
+const REPASO = [
+  ["F1", "S = w1x1 + w2x2 + w3x3 + θx0", "Suma ponderada"],
+  ["F2", "y = alta si S ≥ umbral, si no baja", "Escalón (clasificación)"],
+  ["F3", "y = S", "Lineal (regresión)"],
+  ["F4", "e = d − y", "Error de una instancia"],
+  ["F5", "wi ← wi + γ·e·xi", "Ajuste de cada peso"],
+  ["F6", "θ ← θ + γ·e·x0", "Ajuste del sesgo"],
+  ["F7", "err = ½ Σ e²", "Error de la época"],
+  ["F8", "ECM = (1/N) Σ e²", "Error cuadrático medio"],
+  ["F9", "100 · aciertos / N", "Exactitud"],
+  ["F10", "w1x1 + w2x2 + w3x3 + θx0 = umbral", "Plano de separación"],
+  ["F11", "X ← (aX + c) mod m ; U = (X + 0,5)/m", "Generador congruencial"],
+  ["F12", "X = μ + σ √(−2 ln U1) cos(2πU2)", "Normal, Box-Muller"],
+  ["F13", "X = (μ − a) + 2aU, a = σ√3", "Uniforme"],
+  ["F14", "X = (μ − σ) − σ ln U", "Exponencial, transformada inversa"],
+  ["F15", "X = μ + σ (B − np)/√(np(1 − p))", "Binomial estandarizada"],
+  ["F16", "media = (1/N) Σ x", "Media y centroide"],
+  ["F17", "σ = √[(1/N) Σ (x − media)²]", "Desviación de cada nube"],
+  ["F18", "100 · aciertos_k / N_k", "Exactitud por clase"],
+  ["F19", "R² = 1 − Σ(y − ŷ)² / Σ(y − media)²", "Coeficiente de determinación (regresión)"]
+];
+const FRASES_CLAVE = [
+  "El perceptrón es una sola neurona que separa con un plano, y por eso solo resuelve problemas linealmente separables.",
+  "Toda la matemática está en formulas.py, que no importa nada; las librerías solo dibujan.",
+  "Las tres clases usan neuronas independientes: no se conectan ni se entrenan juntas, así que no hay red.",
+  "Con clases solapadas el error oscila porque no existe un plano separador; no es un fallo del programa.",
+  "La regresión es la misma neurona con activación lineal, y la regla se convierte en la regla LMS."
+];
+/* =====================================================================
+   ESTADO Y PERSISTENCIA
+   El avance se guarda en localStorage del navegador. Toda lectura y
+   escritura va dentro de try/catch porque el almacenamiento puede no estar
+   disponible; en ese caso la app funciona igual, solo que sin recordar.
+   ===================================================================== */
+const CLAVE = "estudio-perceptron-v1";
+const estadoInicial = () => ({ modulos: {}, niveles: [0, 0, 0], repasadas: {} });
+let estado = estadoInicial();
+try {
+  const guardado = localStorage.getItem(CLAVE);
+  if (guardado) estado = Object.assign(estadoInicial(), JSON.parse(guardado));
+} catch (e) { /* sin almacenamiento: se usa el estado en memoria */ }
+
+function guardar() {
+  try { localStorage.setItem(CLAVE, JSON.stringify(estado)); } catch (e) {}
+  actualizarProgreso();
+}
+
+/* Avance general: 40 % módulos, 40 % niveles aprobados, 20 % preguntas repasadas */
+function actualizarProgreso() {
+  const m = Object.keys(estado.modulos).length / MODULOS.length;
+  const n = estado.niveles.filter(p => p >= 70).length / NIVELES.length;
+  const s = Math.min(1, Object.keys(estado.repasadas).length / SUSTENTACION.length);
+  const pct = Math.round((m * 0.4 + n * 0.4 + s * 0.2) * 100);
+  document.getElementById("pctGeneral").textContent = pct + " %";
+  document.getElementById("barraGeneral").style.width = pct + "%";
+}
+
+/* =====================================================================
+   UTILIDADES
+   ===================================================================== */
+const $ = (sel, raiz = document) => raiz.querySelector(sel);
+function el(etiqueta, atributos = {}, html = "") {
+  const nodo = document.createElement(etiqueta);
+  for (const [k, v] of Object.entries(atributos)) {
+    if (k.startsWith("on")) nodo.addEventListener(k.slice(2), v);
+    else nodo.setAttribute(k, v);
+  }
+  if (html) nodo.innerHTML = html;
+  return nodo;
+}
+const escapar = t => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+/* Números al estilo colombiano: coma decimal */
+const fmt = (v, d = 5) => Number(v).toFixed(d).replace(".", ",");
+const leerNumero = t => parseFloat(String(t).trim().replace(",", "."));
+
+/* Resaltado de sintaxis mínimo para Python. Una sola expresión regular con
+   alternativas evita que un patrón coloree dentro de lo que ya coloreó otro. */
+const PALABRAS = "def|class|return|if|elif|else|for|while|in|not|and|or|is|None|True|False|import|from|as|raise|break|lambda|self";
+function resaltarPython(codigo) {
+  const patron = new RegExp(`("""[\\s\\S]*?"""|"[^"\\n]*"|'[^'\\n]*')|(#[^\\n]*)|\\b(${PALABRAS})\\b|\\b(\\d+\\.?\\d*(?:e-?\\d+)?)\\b`, "g");
+  let salida = "", ultimo = 0, m;
+  while ((m = patron.exec(codigo)) !== null) {
+    salida += escapar(codigo.slice(ultimo, m.index));
+    const t = escapar(m[0]);
+    if (m[1]) salida += `<span class="st">${t}</span>`;
+    else if (m[2]) salida += `<span class="cm">${t}</span>`;
+    else if (m[3]) salida += `<span class="kw">${t}</span>`;
+    else salida += `<span class="nu">${t}</span>`;
+    ultimo = patron.lastIndex;
+  }
+  return salida + escapar(codigo.slice(ultimo));
+}
+
+/* =====================================================================
+   NAVEGACIÓN
+   ===================================================================== */
+const SECCIONES = [
+  ["inicio", "Inicio", vistaInicio],
+  ["estudio", "Modo de estudio", vistaEstudio],
+  ["evaluacion", "Evaluación", vistaEvaluacion],
+  ["sustentacion", "Sustentación", vistaSustentacion],
+  ["codigo", "Análisis de código", vistaCodigo],
+  ["repaso", "Repaso final", vistaRepaso]
+];
+let seccionActual = "inicio";
+let lienzosActivos = [];   // para detener animaciones al cambiar de sección
+
+function construirNavegacion() {
+  const nav = $("#navegacion");
+  SECCIONES.forEach(([id, nombre], i) => {
+    nav.appendChild(el("button", { class: "nav-btn", "data-id": id, onclick: () => ir(id) },
+      `<span class="n">${i + 1}</span>${nombre}`));
+  });
+}
+function ir(id, opciones) {
+  lienzosActivos.forEach(l => l.detener());
+  lienzosActivos = [];
+  seccionActual = id;
+  document.querySelectorAll(".nav-btn").forEach(b => {
+    if (b.dataset.id === id) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+  });
+  const vista = $("#vista");
+  vista.innerHTML = "";
+  SECCIONES.find(s => s[0] === id)[2](vista, opciones);
+  $("#lateral").classList.remove("abierta");
+  window.scrollTo({ top: 0 });
+  try { sessionStorage.setItem(CLAVE + "-seccion", id); } catch (e) {}
+}
+
+/* =====================================================================
+   DEMO: PERCEPTRÓN EN VIVO SOBRE UN LIENZO 2D
+   Es el mismo algoritmo del proyecto en dos dimensiones: suma ponderada con
+   x0 = −1, escalón con salidas 1 / −1 y la regla wi ← wi + γ·e·xi. Cada
+   cuadro de animación procesa una instancia; al terminar el recorrido se
+   calcula el error de la época (F7) como en perceptron.py.
+   ===================================================================== */
+function crearLienzo(contenedor, { escenario = "separadas", leyenda = "" } = {}) {
+  const caja = el("div", { class: "lienzo-vivo" });
+  const canvas = el("canvas", { width: 960, height: 540, "aria-label": "Perceptrón entrenando en dos dimensiones" });
+  const lectura = el("div", { class: "lectura" });
+  const botones = el("div", { class: "fila-botones" });
+  caja.append(canvas, lectura);
+  if (leyenda) caja.appendChild(el("p", { class: "leyenda-lienzo" }, leyenda));
+  caja.appendChild(botones);
+  contenedor.appendChild(caja);
+
+  const ctx = canvas.getContext("2d");
+  const GAMMA = 0.1, X0 = -1;
+  let puntos = [], w = [0, 0], theta = 0, epoca = 0, errores = [], orden = [], paso = 0;
+  let corriendo = false, idAnim = null, claseNueva = 1, estadoTexto = "listo";
+
+  // Generador congruencial propio, igual que en aleatorio.py, para que la demo
+  // tampoco dependa de Math.random.
+  let X = 12345;
+  const U = () => { X = (1664525 * X + 1013904223) % 4294967296; return (X + 0.5) / 4294967296; };
+  const normal = (mu, s) => mu + s * Math.sqrt(-2 * Math.log(U())) * Math.cos(2 * Math.PI * U());
+
+  function generar(tipo) {
+    puntos = [];
+    const sep = tipo === "separadas";
+    const cA = sep ? [-0.45, -0.3] : [-0.12, -0.05], cB = sep ? [0.45, 0.35] : [0.12, 0.08];
+    const s = sep ? 0.15 : 0.28;
+    for (let i = 0; i < 40; i++) puntos.push({ x: [normal(cA[0], s), normal(cA[1], s)], d: 1 });
+    for (let i = 0; i < 40; i++) puntos.push({ x: [normal(cB[0], s), normal(cB[1], s)], d: -1 });
+    reiniciarPesos();
+  }
+  function reiniciarPesos() {
+    w = [U() * 2 - 1, U() * 2 - 1]; theta = U() * 2 - 1;
+    epoca = 0; errores = []; paso = 0; nuevoOrden(); estadoTexto = "listo"; dibujar();
+  }
+  function nuevoOrden() {   // Fisher-Yates
+    orden = puntos.map((_, i) => i);
+    for (let i = orden.length - 1; i > 0; i--) { const j = Math.floor(U() * (i + 1)); [orden[i], orden[j]] = [orden[j], orden[i]]; }
+  }
+  const S = x => w[0] * x[0] + w[1] * x[1] + theta * X0;          // F1
+  const y = x => (S(x) >= 0 ? 1 : -1);                             // F2
+  function errorEpoca() { let s = 0; for (const p of puntos) { const e = p.d - y(p.x); s += e * e; } return 0.5 * s; }  // F7
+
+  function unPaso() {
+    if (!puntos.length) return;
+    const p = puntos[orden[paso]];
+    const e = p.d - y(p.x);                                          // F4
+    if (e !== 0) {
+      w[0] += GAMMA * e * p.x[0]; w[1] += GAMMA * e * p.x[1];        // F5
+      theta += GAMMA * e * X0;                                        // F6
+    }
+    paso++;
+    if (paso >= orden.length) {
+      paso = 0; epoca++; const err = errorEpoca(); errores.push(err); nuevoOrden();
+      if (err === 0) { estadoTexto = "convergió en " + epoca + (epoca === 1 ? " época" : " épocas"); detener(); }
+      else if (epoca >= 150) { estadoTexto = "no convergió (150 épocas)"; detener(); }
+      else estadoTexto = "entrenando";
+    }
+  }
+
+  // Conversión entre coordenadas del modelo [-1, 1] y píxeles
+  const W = canvas.width, H = canvas.height, ESC = H / 2.2;
+  const aPx = (a, b) => [W / 2 + a * ESC, H / 2 - b * ESC];
+  const dePx = (px, py) => [(px - W / 2) / ESC, (H / 2 - py) / ESC];
+
+  function color(nombre) { return getComputedStyle(document.documentElement).getPropertyValue(nombre).trim(); }
+  function dibujar() {
+    const tinta = color("--tinta"), roja = color("--correccion"), lapiz = color("--lapiz"), hoja = color("--hoja");
+    ctx.fillStyle = hoja; ctx.fillRect(0, 0, W, H);
+    // cuadrícula
+    ctx.strokeStyle = color("--linea"); ctx.lineWidth = 1;
+    for (let gx = -2; gx <= 2; gx += 0.25) { const [px] = aPx(gx, 0); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke(); }
+    for (let gy = -1.25; gy <= 1.25; gy += 0.25) { const [, py] = aPx(0, gy); ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke(); }
+    // semiplano de la clase 1, sombreado muy tenue
+    if (Math.abs(w[1]) > 1e-9 || Math.abs(w[0]) > 1e-9) {
+      ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = tinta;
+      for (let px = 0; px < W; px += 12) for (let py = 0; py < H; py += 12) {
+        if (y(dePx(px + 6, py + 6)) === 1) ctx.fillRect(px, py, 12, 12);
+      }
+      ctx.restore();
+    }
+    // recta de separación F10 en 2D: w1·x1 + w2·x2 − θ = 0
+    ctx.strokeStyle = color("--grafito"); ctx.lineWidth = 3;
+    if (Math.abs(w[1]) > 1e-9) {
+      const x1a = -2.2, x1b = 2.2;
+      const [ax, ay] = aPx(x1a, (theta - w[0] * x1a) / w[1]), [bx, by] = aPx(x1b, (theta - w[0] * x1b) / w[1]);
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+    } else if (Math.abs(w[0]) > 1e-9) {
+      const [px] = aPx(theta / w[0], 0); ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+    }
+    // puntos: clase 1 círculos azules, clase 2 cruces rojas; un aro marca los mal clasificados
+    for (const p of puntos) {
+      const [px, py] = aPx(p.x[0], p.x[1]);
+      if (p.d === 1) { ctx.fillStyle = tinta; ctx.beginPath(); ctx.arc(px, py, 6, 0, 7); ctx.fill(); }
+      else { ctx.strokeStyle = roja; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(px - 6, py - 6); ctx.lineTo(px + 6, py + 6); ctx.moveTo(px + 6, py - 6); ctx.lineTo(px - 6, py + 6); ctx.stroke(); }
+      if (y(p.x) !== p.d) { ctx.strokeStyle = lapiz; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(px, py, 11, 0, 7); ctx.stroke(); }
+    }
+    const err = puntos.length ? errorEpoca() : 0;
+    lectura.innerHTML = `<span>época <b>${epoca}</b></span><span>err (F7) <b>${fmt(err, 1)}</b></span>` +
+      `<span>w1 <b>${fmt(w[0], 3)}</b></span><span>w2 <b>${fmt(w[1], 3)}</b></span><span>θ <b>${fmt(theta, 3)}</b></span><span>estado <b>${estadoTexto}</b></span>`;
+  }
+  function bucle() {
+    for (let k = 0; k < 6 && corriendo; k++) unPaso();
+    dibujar();
+    if (corriendo) idAnim = requestAnimationFrame(bucle);
+  }
+  function iniciar() { if (corriendo) return; corriendo = true; estadoTexto = "entrenando"; btnEntrenar.textContent = "Pausar"; bucle(); }
+  function detener() { corriendo = false; if (idAnim) cancelAnimationFrame(idAnim); btnEntrenar.textContent = "Entrenar"; dibujar(); }
+
+  const btnEntrenar = el("button", { class: "boton", onclick: () => (corriendo ? detener() : iniciar()) }, "Entrenar");
+  const btnClase = el("button", { class: "boton secundario", onclick: () => { claseNueva = -claseNueva; btnClase.textContent = claseNueva === 1 ? "Al tocar: clase 1 (círculo)" : "Al tocar: clase 2 (cruz)"; } }, "Al tocar: clase 1 (círculo)");
+  botones.append(
+    btnEntrenar,
+    el("button", { class: "boton secundario", onclick: () => { detener(); reiniciarPesos(); } }, "Pesos nuevos"),
+    el("button", { class: "boton secundario", onclick: () => { detener(); generar("separadas"); } }, "Separadas"),
+    el("button", { class: "boton secundario", onclick: () => { detener(); generar("solapadas"); } }, "Solapadas"),
+    btnClase
+  );
+  canvas.addEventListener("pointerdown", ev => {
+    const r = canvas.getBoundingClientRect();
+    const px = (ev.clientX - r.left) * (W / r.width), py = (ev.clientY - r.top) * (H / r.height);
+    puntos.push({ x: dePx(px, py), d: claseNueva });
+    epoca = 0; errores = []; paso = 0; nuevoOrden(); estadoTexto = "punto agregado"; dibujar();
+  });
+  generar(escenario);
+  const control = { detener };
+  lienzosActivos.push(control);
+  return control;
+}
+
+/* =====================================================================
+   DEMO: CALCULADORA DE UN AJUSTE (F1 a F6)
+   ===================================================================== */
+function crearCalculadora(contenedor) {
+  const caja = el("div", { class: "hoja" });
+  caja.appendChild(el("p", {}, "<b>Calculadora de un ajuste.</b> Viene cargada con la instancia 4 del ejemplo de clase. Cambia cualquier valor y pulsa Calcular para ver la traza completa."));
+  const campos = [["w1", "-2,10137"], ["w2", "3,11960"], ["θ", "0,191448"], ["x1", "3,1"], ["x2", "7,7"], ["x0", "-1"], ["γ", "0,25"], ["d", "-1"], ["umbral", "0"]];
+  const rejilla = el("div", { class: "rejilla-campos" });
+  const entradas = {};
+  campos.forEach(([n, v]) => {
+    const c = el("div", { class: "campo" });
+    const id = "calc-" + n.replace("θ", "theta").replace("γ", "gamma");
+    c.append(el("label", { for: id }, n), entradas[n] = el("input", { id, value: v, inputmode: "decimal" }));
+    rejilla.appendChild(c);
+  });
+  const salida = el("div", { class: "traza", "aria-live": "polite" }, "Pulsa Calcular.");
+  const fila = el("div", { class: "fila-botones" });
+  let ultimo = null;
+  const calcular = () => {
+    const v = {}; for (const n in entradas) v[n] = leerNumero(entradas[n].value);
+    if (Object.values(v).some(Number.isNaN)) { salida.innerHTML = '<span class="mal">Hay un campo que no es un número. Revisa que uses coma o punto decimal.</span>'; return; }
+    const S = v.w1 * v.x1 + v.w2 * v.x2 + v["θ"] * v.x0;
+    const yv = S >= v.umbral ? 1 : -1, e = v.d - yv;
+    const nw1 = v.w1 + v["γ"] * e * v.x1, nw2 = v.w2 + v["γ"] * e * v.x2, nt = v["θ"] + v["γ"] * e * v.x0;
+    let t = `F1  S = (${fmt(v.w1)})(${fmt(v.x1, 3)}) + (${fmt(v.w2)})(${fmt(v.x2, 3)}) + (${fmt(v["θ"])})(${fmt(v.x0, 0)})\n      = ${fmt(S)}\n`;
+    t += `F2  S ${S >= v.umbral ? "≥" : "<"} ${fmt(v.umbral, 2)}  →  y = ${yv}\n`;
+    t += `F4  e = d − y = ${v.d} − (${yv}) = ${e}\n`;
+    if (e === 0) t += `<span class="ok">e = 0: la instancia está bien clasificada y los pesos no cambian.</span>`;
+    else {
+      t += `<span class="mal">e ≠ 0: hay que ajustar.</span>\n`;
+      t += `F5  w1 = ${fmt(v.w1)} + ${fmt(v["γ"], 2)}·(${e})·(${fmt(v.x1, 3)}) = ${fmt(nw1)}\n`;
+      t += `F5  w2 = ${fmt(v.w2)} + ${fmt(v["γ"], 2)}·(${e})·(${fmt(v.x2, 3)}) = ${fmt(nw2)}\n`;
+      t += `F6  θ  = ${fmt(v["θ"])} + ${fmt(v["γ"], 2)}·(${e})·(${fmt(v.x0, 0)}) = ${fmt(nt)}`;
+    }
+    salida.innerHTML = t;
+    ultimo = { nw1, nw2, nt };
+  };
+  fila.append(
+    el("button", { class: "boton", onclick: calcular }, "Calcular"),
+    el("button", { class: "boton secundario", onclick: () => {
+      if (!ultimo) calcular();
+      // 6 decimales para no perder el último dígito de θ (0,691448) y obtener el mismo S5 que el programa
+      entradas.w1.value = fmt(ultimo.nw1, 6); entradas.w2.value = fmt(ultimo.nw2, 6); entradas["θ"].value = fmt(ultimo.nt, 6);
+      entradas.x1.value = "5,1"; entradas.x2.value = "6,3"; entradas.d.value = "-1"; calcular();
+    } }, "Siguiente: instancia 5 con los pesos nuevos")
+  );
+  caja.append(rejilla, fila, salida);
+  contenedor.appendChild(caja);
+}
+
+/* =====================================================================
+   DEMO: NEWTON-RAPHSON PASO A PASO
+   ===================================================================== */
+function crearNewton(contenedor) {
+  const caja = el("div", { class: "hoja" });
+  caja.appendChild(el("p", {}, "<b>Raíz cuadrada a mano.</b> Escribe un número positivo y mira cómo la iteración r ← ½(r + a/r) se acerca a la raíz, igual que en <code>raiz_cuadrada</code>."));
+  const c = el("div", { class: "campo" });
+  const entrada = el("input", { id: "newton-a", value: "3", inputmode: "decimal" });
+  c.append(el("label", { for: "newton-a" }, "a"), entrada);
+  const salida = el("div", { class: "traza" });
+  const correr = () => {
+    const a = leerNumero(entrada.value);
+    if (!(a > 0)) { salida.innerHTML = '<span class="mal">Escribe un número mayor que cero.</span>'; return; }
+    let r = a >= 1 ? a : 1, t = `r0 = ${r}\n`;
+    for (let k = 1; k <= 1100; k++) {
+      const nuevo = 0.5 * (r + a / r);
+      t += `r${k} = ½(${r.toPrecision(12)} + ${a}/${r.toPrecision(12)}) = ${nuevo.toPrecision(16)}\n`;
+      if (Math.abs(nuevo - r) <= 1e-16 * nuevo) { t += `<span class="ok">Se detiene: r ya no cambia. Raíz de ${a} ≈ ${nuevo.toPrecision(16)}</span>`; break; }
+      r = nuevo;
+    }
+    salida.innerHTML = t;
+  };
+  const fila = el("div", { class: "fila-botones" }, "");
+  fila.appendChild(el("button", { class: "boton", onclick: correr }, "Calcular paso a paso"));
+  caja.append(c, fila, salida);
+  contenedor.appendChild(caja);
+  correr();
+}
+
+/* =====================================================================
+   VISTA 1: INICIO
+   ===================================================================== */
+function vistaInicio(v) {
+  v.append(
+    el("h1", {}, "Una neurona que aprende a separar"),
+    el("p", { class: "entrada" }, "Esta aplicación te prepara para sustentar el simulador del perceptrón. Abajo hay un perceptrón entrenando con la misma regla de tu proyecto, en dos dimensiones para que se vea a simple vista. Pulsa Entrenar y observa cómo la recta se mueve hasta dejar los círculos de un lado y las cruces del otro.")
+  );
+  crearLienzo(v, { leyenda: "Los puntos con aro están mal clasificados. Toca el lienzo para agregar puntos y prueba con Solapadas para ver un perceptrón que nunca converge." });
+
+  v.appendChild(el("h2", {}, "Cómo está armado tu proyecto"));
+  v.appendChild(el("p", {}, "El código está organizado en capas que solo dependen de las de abajo. Toca cada archivo para ver qué hace y de qué depende. Los bordes punteados marcan la capa visual, la única donde aparecen librerías."));
+  const mapa = el("div", { class: "mapa" });
+  const detalle = el("div", { class: "hoja", "aria-live": "polite" }, "<p>Selecciona un archivo.</p>");
+  const filas = [
+    ["Visual: interfaz y dibujo", ["main.py", "graficas.py"], true],
+    ["Coordinación", ["experimentos.py"], false],
+    ["Modelo y simulación", ["perceptron.py", "aleatorio.py"], false],
+    ["Matemática sin librerías", ["formulas.py"], false]
+  ];
+  filas.forEach(([capa, archivos, visual], i) => {
+    if (i > 0) mapa.appendChild(el("div", { class: "flecha", "aria-hidden": "true" }, "↓ usa"));
+    mapa.appendChild(el("div", { class: "capa" }, capa));
+    const fila = el("div", { class: "mapa-fila" });
+    archivos.forEach(a => fila.appendChild(el("button", { class: "nodo" + (visual ? " visual" : ""), "aria-pressed": "false", onclick: ev => {
+      mapa.querySelectorAll(".nodo").forEach(n => n.setAttribute("aria-pressed", "false"));
+      ev.currentTarget.setAttribute("aria-pressed", "true");
+      const d = ARCHIVOS[a];
+      detalle.innerHTML = `<p><code>${a}</code> · capa ${d.capa.toLowerCase()}</p><p>${d.texto}</p><p class="marcador">Depende de: ${d.usa}</p>`;
+    } }, a)));
+    mapa.appendChild(fila);
+  });
+  v.append(mapa, detalle);
+
+  v.appendChild(el("h2", {}, "Cómo usar esta aplicación"));
+  v.appendChild(el("p", {}, "Empieza por el <b>modo de estudio</b>, que recorre siete módulos en el orden en que se construyó el sistema, y marca cada uno cuando lo domines. Después pasa a la <b>evaluación</b>, cuyos tres niveles se desbloquean con 70 % de aciertos. Cuando te sientas seguro, usa la sección de <b>sustentación</b> para practicar las preguntas del profesor con el simulacro cronometrado, y deja el <b>análisis de código</b> y el <b>repaso final</b> para el día anterior."));
+  v.appendChild(el("div", { class: "fila-botones" })).append(
+    el("button", { class: "boton", onclick: () => ir("estudio") }, "Empezar a estudiar"),
+    el("button", { class: "boton secundario", onclick: () => ir("sustentacion") }, "Ir al simulacro"));
+}
+
+/* =====================================================================
+   VISTA 2: MODO DE ESTUDIO
+   ===================================================================== */
+let moduloActual = 0;
+function vistaEstudio(v, opciones) {
+  if (opciones && typeof opciones.modulo === "number") moduloActual = opciones.modulo;
+  v.appendChild(el("h1", {}, "Modo de estudio"));
+  v.appendChild(el("p", { class: "entrada" }, "Cada módulo une la teoría con el lugar exacto de tu código donde se aplica, para que en la sustentación puedas pasar de la idea a la línea sin dudar."));
+  const pestanas = el("div", { class: "pestanas", role: "tablist" });
+  MODULOS.forEach((m, i) => {
+    const hecho = estado.modulos[m.id] ? ' <span class="hecho" aria-label="estudiado">✓</span>' : "";
+    pestanas.appendChild(el("button", { class: "pestana", role: "tab", "aria-selected": String(i === moduloActual), onclick: () => ir("estudio", { modulo: i }) }, `${i + 1}. ${m.titulo}${hecho}`));
+  });
+  v.appendChild(pestanas);
+
+  const m = MODULOS[moduloActual];
+  v.appendChild(el("h2", {}, `${moduloActual + 1}. ${m.titulo}`));
+  v.appendChild(el("div", { class: "parte-titulo" }, "Teoría"));
+  v.appendChild(el("div", {}, m.teoria));
+  v.appendChild(el("div", { class: "parte-titulo" }, "En tu código"));
+  v.appendChild(el("div", { class: "archivo" }, m.archivo));
+  v.appendChild(el("pre", { class: "codigo" }, resaltarPython(m.codigo)));
+  v.appendChild(el("div", { class: "nota-margen" }, `<strong>Idea clave para la sustentación</strong>${m.idea}`));
+  if (m.demo === "calculadora") crearCalculadora(v);
+  if (m.demo === "newton") crearNewton(v);
+  if (m.demo === "lienzo") crearLienzo(v, { escenario: "solapadas", leyenda: "Empieza con nubes solapadas: entrena y verás que la recta nunca se queda quieta. Luego pulsa Separadas y compara." });
+
+  const fila = el("div", { class: "fila-botones" });
+  const marcado = !!estado.modulos[m.id];
+  fila.appendChild(el("button", { class: "boton", onclick: () => {
+    estado.modulos[m.id] = true; guardar();
+    ir("estudio", { modulo: Math.min(moduloActual + 1, MODULOS.length - 1) });
+  } }, marcado ? "Estudiado · ir al siguiente" : "Marcar como estudiado y seguir"));
+  if (moduloActual > 0) fila.appendChild(el("button", { class: "boton secundario", onclick: () => ir("estudio", { modulo: moduloActual - 1 }) }, "Módulo anterior"));
+  if (moduloActual === MODULOS.length - 1) fila.appendChild(el("button", { class: "boton secundario", onclick: () => ir("evaluacion") }, "Pasar a la evaluación"));
+  v.appendChild(fila);
+}
+
+/* =====================================================================
+   VISTA 3: EVALUACIÓN
+   ===================================================================== */
+function vistaEvaluacion(v, opciones) {
+  v.appendChild(el("h1", {}, "Evaluación"));
+  v.appendChild(el("p", { class: "entrada" }, "Tres niveles de dificultad creciente. Cada respuesta explica por qué es correcta o incorrecta, y cada nivel se desbloquea al obtener 70 % o más en el anterior."));
+  if (opciones && typeof opciones.nivel === "number") return correrNivel(v, opciones.nivel);
+  const niveles = el("div", { class: "niveles" });
+  NIVELES.forEach((n, i) => {
+    const bloqueado = i > 0 && estado.niveles[i - 1] < 70;
+    const mejor = estado.niveles[i];
+    const boton = niveles.appendChild(el("button", { class: "nivel", onclick: () => ir("evaluacion", { nivel: i }) },
+      `<strong>${n.nombre}</strong><span>${n.descripcion}</span><br><span class="marcador">${bloqueado ? "Bloqueado: necesitas 70 % en el nivel anterior" : (mejor ? "Mejor resultado: " + mejor + " %" : n.preguntas.length + " preguntas")}</span>`));
+    boton.disabled = bloqueado;
+  });
+  v.appendChild(niveles);
+}
+
+function correrNivel(v, indice) {
+  const nivel = NIVELES[indice];
+  let actual = 0, aciertos = 0;
+  const zona = el("div", { class: "hoja" });
+  v.append(el("h2", {}, nivel.nombre), zona);
+
+  function pintar() {
+    zona.innerHTML = "";
+    if (actual >= nivel.preguntas.length) return final();
+    const p = nivel.preguntas[actual];
+    zona.append(el("div", { class: "pregunta-num" }, `Pregunta ${actual + 1} de ${nivel.preguntas.length} · aciertos ${aciertos}`),
+      el("div", { class: "enunciado" }, p.enunciado));
+    const retro = el("div", { "aria-live": "polite" });
+    const siguiente = el("button", { class: "boton oculto", onclick: () => { actual++; pintar(); } }, actual + 1 < nivel.preguntas.length ? "Siguiente pregunta" : "Ver resultado");
+
+    if (p.tipo === "opcion") {
+      const botones = p.opciones.map(([texto, correcta, porque]) => el("button", { class: "opcion" }, escapar(texto)));
+      botones.forEach((b, k) => b.addEventListener("click", () => {
+        const [, correcta, porque] = p.opciones[k];
+        if (correcta) aciertos++;
+        botones.forEach((x, j) => { x.disabled = true; if (p.opciones[j][1]) x.classList.add("correcta"); });
+        if (!correcta) b.classList.add("incorrecta");
+        const buena = p.opciones.find(o => o[1]);
+        retro.className = "retro " + (correcta ? "bien" : "mal");
+        retro.innerHTML = `<span class="veredicto">${correcta ? "Correcto." : "No es esa."}</span>${escapar(porque)}` +
+          (correcta ? "" : `<br><br><b>La correcta:</b> ${escapar(buena[2])}`);
+        siguiente.classList.remove("oculto"); siguiente.focus();
+      }));
+      zona.append(...botones);
+    } else {
+      const campo = el("div", { class: "campo" });
+      const entrada = el("input", { id: "resp-num", inputmode: "decimal", placeholder: "Escribe tu resultado" });
+      campo.append(el("label", { for: "resp-num" }, "Tu respuesta"), entrada);
+      const verificar = el("button", { class: "boton", onclick: () => {
+        const r = leerNumero(entrada.value);
+        if (Number.isNaN(r)) { retro.className = "retro mal"; retro.innerHTML = '<span class="veredicto">Falta un número.</span>Escribe tu resultado con coma o punto decimal.'; return; }
+        const bien = Math.abs(r - p.respuesta) <= p.tolerancia;
+        if (bien) aciertos++;
+        entrada.disabled = true; verificar.disabled = true;
+        retro.className = "retro " + (bien ? "bien" : "mal");
+        retro.innerHTML = `<span class="veredicto">${bien ? "Correcto." : "No coincide: esperaba " + fmt(p.respuesta, 3) + "."}</span>${escapar(p.explicacion)}`;
+        siguiente.classList.remove("oculto"); siguiente.focus();
+      } }, "Verificar");
+      entrada.addEventListener("keydown", e => { if (e.key === "Enter" && !verificar.disabled) verificar.click(); });
+      const filaV = el("div", { class: "fila-botones" }); filaV.appendChild(verificar);
+      zona.append(campo, filaV);
+    }
+    const filaS = el("div", { class: "fila-botones" }); filaS.appendChild(siguiente);
+    zona.append(retro, filaS);
+  }
+
+  function final() {
+    const pct = Math.round(100 * aciertos / nivel.preguntas.length);
+    estado.niveles[indice] = Math.max(estado.niveles[indice], pct); guardar();
+    const aprobado = pct >= 70;
+    zona.append(el("div", { class: "enunciado" }, `Obtuviste ${aciertos} de ${nivel.preguntas.length} (${pct} %).`),
+      el("p", {}, aprobado
+        ? (indice < NIVELES.length - 1 ? "Superaste el 70 %, así que el siguiente nivel quedó desbloqueado." : "Completaste el nivel más difícil. Ahora practica la sustentación en voz alta.")
+        : "Te faltó poco. Repasa los módulos relacionados con las preguntas que fallaste y vuelve a intentarlo."));
+    const fila = el("div", { class: "fila-botones" });
+    fila.appendChild(el("button", { class: "boton secundario", onclick: () => ir("evaluacion", { nivel: indice }) }, "Repetir nivel"));
+    if (aprobado && indice < NIVELES.length - 1) fila.appendChild(el("button", { class: "boton", onclick: () => ir("evaluacion", { nivel: indice + 1 }) }, "Ir al siguiente nivel"));
+    else if (aprobado) fila.appendChild(el("button", { class: "boton", onclick: () => ir("sustentacion") }, "Ir a la sustentación"));
+    fila.appendChild(el("button", { class: "boton secundario", onclick: () => ir("evaluacion") }, "Ver niveles"));
+    zona.appendChild(fila);
+  }
+  pintar();
+}
+
+/* =====================================================================
+   VISTA 4: SUSTENTACIÓN
+   ===================================================================== */
+function vistaSustentacion(v) {
+  v.appendChild(el("h1", {}, "Preparación para la sustentación"));
+  v.appendChild(el("p", { class: "entrada" }, "Intenta responder cada pregunta en voz alta antes de abrir la respuesta modelo. Al abrirla queda contada como repasada en tu avance."));
+
+  // Simulacro con cronómetro
+  v.appendChild(el("h2", {}, "Simulacro"));
+  const sim = el("div", { class: "hoja simulacro" });
+  let idReloj = null, restante = 120, preguntaSim = null;
+  const reloj = el("div", { class: "reloj", "aria-live": "off" }, "2:00");
+  const texto = el("div", { class: "enunciado" }, "Pulsa «Nueva pregunta» y responde en voz alta antes de que se acabe el tiempo.");
+  const resp = el("div", { class: "retro bien oculto", style: "text-align:left" });
+  const pintarReloj = () => { reloj.textContent = Math.floor(restante / 60) + ":" + String(restante % 60).padStart(2, "0"); };
+  const nueva = () => {
+    clearInterval(idReloj); restante = 120; pintarReloj();
+    let k; do { k = Math.floor(Math.random() * SUSTENTACION.length); } while (SUSTENTACION.length > 1 && SUSTENTACION[k] === preguntaSim);
+    preguntaSim = SUSTENTACION[k];
+    texto.textContent = preguntaSim.p; resp.classList.add("oculto");
+    idReloj = setInterval(() => { restante--; pintarReloj(); if (restante <= 0) { clearInterval(idReloj); mostrar(); } }, 1000);
+  };
+  const mostrar = () => {
+    if (!preguntaSim) return;
+    clearInterval(idReloj);
+    resp.innerHTML = `<span class="veredicto">Respuesta modelo</span>${escapar(preguntaSim.r)}`;
+    resp.classList.remove("oculto");
+    estado.repasadas[preguntaSim.p] = true; guardar();
+  };
+  const fila = el("div", { class: "fila-botones", style: "justify-content:center" });
+  fila.append(el("button", { class: "boton", onclick: nueva }, "Nueva pregunta"), el("button", { class: "boton secundario", onclick: mostrar }, "Ver respuesta modelo"));
+  sim.append(reloj, texto, fila, resp);
+  v.appendChild(sim);
+  lienzosActivos.push({ detener: () => clearInterval(idReloj) });
+
+  // Banco de preguntas por tema
+  v.appendChild(el("h2", {}, "Banco de preguntas probables"));
+  const temas = [...new Set(SUSTENTACION.map(s => s.tema))];
+  temas.forEach(t => {
+    v.appendChild(el("h3", {}, t));
+    SUSTENTACION.filter(s => s.tema === t).forEach(s => {
+      const d = el("details", { class: "acordeon" });
+      d.append(el("summary", {}, `${escapar(s.p)}${estado.repasadas[s.p] ? '<span class="etiqueta-tema">repasada</span>' : ""}`), el("div", { class: "cuerpo" }, `<p>${escapar(s.r)}</p>`));
+      d.addEventListener("toggle", () => { if (d.open && !estado.repasadas[s.p]) { estado.repasadas[s.p] = true; guardar(); } });
+      v.appendChild(d);
+    });
+  });
+
+  v.appendChild(el("h2", {}, "Errores comunes que debes evitar"));
+  const lista = el("ul", { class: "lista-errores" });
+  ERRORES_COMUNES.forEach(([t, d]) => lista.appendChild(el("li", {}, `<b>${t}.</b> ${d}`)));
+  v.appendChild(lista);
+}
+
+/* =====================================================================
+   VISTA 5: ANÁLISIS DE CÓDIGO
+   ===================================================================== */
+function vistaCodigo(v, opciones) {
+  v.appendChild(el("h1", {}, "Análisis de código"));
+  v.appendChild(el("p", { class: "entrada" }, "Las secciones más importantes de tu proyecto, explicadas línea por línea, con la razón de cada decisión de diseño. Filtra por archivo para ir directo al que te pregunten."));
+  const filtro = (opciones && opciones.archivo) || "todos";
+  const archivos = ["todos", ...new Set(ANALISIS.map(a => a.archivo))];
+  const pestanas = el("div", { class: "pestanas", role: "tablist" });
+  archivos.forEach(a => pestanas.appendChild(el("button", { class: "pestana", role: "tab", "aria-selected": String(a === filtro), onclick: () => ir("codigo", { archivo: a }) }, a === "todos" ? "Todos" : a)));
+  v.appendChild(pestanas);
+
+  ANALISIS.filter(b => filtro === "todos" || b.archivo === filtro).forEach(b => {
+    v.appendChild(el("h3", {}, escapar(b.titulo)));
+    v.appendChild(el("div", { class: "archivo" }, b.archivo));
+    const tabla = el("div", { class: "anotado" });
+    b.lineas.forEach(([codigo, exp], i) => {
+      const fila = el("div", { class: "linea-cod" });
+      fila.append(el("div", { class: "num" }, String(i + 1)), el("pre", {}, resaltarPython(codigo)), el("div", { class: "exp" }, exp ? escapar(exp) : ""));
+      tabla.appendChild(fila);
+    });
+    v.appendChild(tabla);
+    v.appendChild(el("div", { class: "nota-margen" }, `<strong>Por qué está hecho así</strong>${escapar(b.decision)}`));
+  });
+
+  v.appendChild(el("h2", {}, "Buenas prácticas aplicadas"));
+  const bp = el("ul", { class: "lista-errores" });
+  BUENAS_PRACTICAS.forEach(t => bp.appendChild(el("li", {}, escapar(t))));
+  v.appendChild(bp);
+  v.appendChild(el("h2", {}, "Mejoras futuras"));
+  const mj = el("ul", { class: "lista-errores" });
+  MEJORAS.forEach(([t, d]) => mj.appendChild(el("li", {}, `<b>${t}.</b> ${escapar(d)}`)));
+  v.appendChild(mj);
+}
+
+/* =====================================================================
+   VISTA 6: REPASO FINAL
+   ===================================================================== */
+function vistaRepaso(v) {
+  v.appendChild(el("h1", {}, "Repaso final"));
+  v.appendChild(el("p", { class: "entrada" }, "Todo lo que necesitas tener fresco antes de entrar a la sustentación, en una sola página."));
+  v.appendChild(el("h2", {}, "Las fórmulas del proyecto"));
+  const envoltura = el("div", { class: "tabla-wrap" });
+  const tabla = el("table");
+  tabla.innerHTML = "<thead><tr><th>Código</th><th>Fórmula</th><th>Para qué</th></tr></thead>";
+  const cuerpo = el("tbody");
+  REPASO.forEach(([c, f, d]) => cuerpo.appendChild(el("tr", {}, `<td class="mono">${c}</td><td class="mono">${escapar(f)}</td><td>${d}</td>`)));
+  tabla.appendChild(cuerpo); envoltura.appendChild(tabla); v.appendChild(envoltura);
+
+  v.appendChild(el("h2", {}, "Resultados que conviene recordar"));
+  v.appendChild(el("p", {}, "Con la semilla 7, dos clases separadas convergieron en 6 épocas con 100 % de exactitud, y las mismas clases solapadas llegaron a 100 épocas sin converger, con 61,5 %. Con 100 contra 10 instancias (Desbalanceadas) la exactitud global subió a 95,5 % pero la clase pequeña quedó en 50 %. En tres clases, la cascada convergió en una época por perceptrón y uno contra el resto en 1, 13 y 9 épocas, ambas con 100 %. En regresión lineal el error se estabilizó en 265 épocas y el perceptrón aprendió w = (2,002; −1,495; 0,454) y un sesgo de 3,169 frente a los valores reales (2; −1,5; 0,5) y 3, con un ECM de 1,076 y un R² de 0,964. Con el modelo cuadrático se estabilizó en 181 épocas con un ECM de 81,5, aunque el R² se mantuvo en 0,97. Con γ = 0,02 se estabilizó en solo 24 épocas pero con un R² de −1,39, y con γ = 0,05 la regresión divergió en la primera época."));
+  v.appendChild(el("h2", {}, "Cinco frases que no pueden faltar"));
+  const lista = el("ol", { class: "lista-errores" });
+  FRASES_CLAVE.forEach(f => lista.appendChild(el("li", {}, escapar(f))));
+  v.appendChild(lista);
+}
+
+/* =====================================================================
+   ARRANQUE
+   ===================================================================== */
+construirNavegacion();
+actualizarProgreso();
+$("#abrirMenu").addEventListener("click", () => $("#lateral").classList.toggle("abierta"));
+$("#cambiarTema").addEventListener("click", () => {
+  const raiz = document.documentElement;
+  const oscuroAhora = raiz.dataset.theme ? raiz.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  raiz.dataset.theme = oscuroAhora ? "light" : "dark";
+  try { localStorage.setItem(CLAVE + "-tema", raiz.dataset.theme); } catch (e) {}
+  ir(seccionActual);   // redibuja los lienzos con los colores nuevos
+});
+$("#borrarProgreso").addEventListener("click", () => {
+  if (!confirm("¿Borrar todo tu avance de estudio y evaluación?")) return;
+  estado = estadoInicial(); guardar(); ir(seccionActual);
+});
+try { const t = localStorage.getItem(CLAVE + "-tema"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+let inicial = "inicio";
+try { inicial = sessionStorage.getItem(CLAVE + "-seccion") || "inicio"; } catch (e) {}
+ir(SECCIONES.some(s => s[0] === inicial) ? inicial : "inicio");
+</script>
+</body>
+</html>

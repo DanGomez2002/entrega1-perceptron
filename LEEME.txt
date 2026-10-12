@@ -1,0 +1,72 @@
+PERCEPTRÓN - Entrega 1 (Carlos Daniel Gómez Murcia)
+====================================================
+
+Archivos
+--------
+  main.py         Interfaz gráfica (ejecutar este).
+  formulas.py     TODAS las fórmulas escritas a mano (F1-F19 y M1-M8), incluidas la
+                  raíz cuadrada, el logaritmo, el coseno, pi, la media, la
+                  desviación estándar, el mínimo, el máximo y la comprobación
+                  de número finito. Sin librerías.
+  perceptron.py   Clase Perceptron: usa las fórmulas de formulas.py.
+                  Estrategias de 3 clases (cascada y uno contra el resto).
+  aleatorio.py    Generador congruencial y distribuciones (normal, uniforme,
+                  exponencial, binomial) con las fórmulas de formulas.py.
+  experimentos.py Configuración por defecto, ejecución de los experimentos,
+                  estadísticas de cada clase y clasificación de puntos nuevos.
+  graficas.py     Único archivo que usa matplotlib (solo para dibujar).
+  Informe_Perceptron_Carlos_Gomez_Murcia.docx   Informe de la entrega.
+
+Requisitos
+----------
+  Python 3.8 o superior (tkinter viene incluido)
+  matplotlib  ->  pip install -r requirements.txt
+
+Ejecución en Visual Studio Code
+-------------------------------
+  1. Archivo > Abrir carpeta... > Perceptron_Computacional_I
+  2. Si la carpeta .venv no existe: Terminal > Ejecutar tarea > "Preparar entorno"
+     (crea el entorno e instala matplotlib).
+  3. Elegir el intérprete ".venv" si VS Code lo pregunta
+     (Ctrl+Shift+P > Python: Select Interpreter).
+  4. Abrir main.py y presionar F5 (o Ctrl+Shift+B). Se abre la ventana.
+  Sin VS Code:  pip install -r requirements.txt   y luego   python main.py
+
+Uso de la interfaz
+------------------
+  Izquierda: pestañas Clasificación / Regresión / Ejemplo de clase.
+    - Clasificación: 2 o 3 clases; por clase: instancias, media (x1, x2, x3),
+      desviación y distribución.
+      Escenarios: Separadas, Cercanas, Solapadas y Desbalanceadas (100 contra 10).
+      Reventar: Acercar clases, Alejar clases, Aumentar σ, Reducir σ (entrenan
+      de inmediato con los valores nuevos).
+      Tasa de aprendizaje, épocas, error mínimo, umbral, salidas del escalón
+      (cualquier par de números con la salida alta mayor que la baja: 1/-1,
+      1/0, 5/2...), entrada del sesgo x0 (-1/+1), estrategia de 3 clases y
+      semilla.
+      "Clasificar un punto nuevo": después de entrenar, indica la clase de un
+      punto (x1, x2, x3) y lo marca con una estrella en el espacio 3D.
+    - Regresión: 2 o 3 entradas, modelo lineal o cuadrático, ruido. Muestra el
+      ECM (F8) y el R² (F19); cuando el error deja de bajar informa que "se
+      estabilizó" (eso no significa que el ajuste sea bueno: eso lo dicen
+      el ECM y el R²).
+    - Ejemplo de clase: reproduce las cuentas de las diapositivas.
+  Derecha: Espacio 3D (se rota con el mouse; la X marca el centroide de cada
+    nube), Épocas, Pesos, Proceso paso a paso (activar "Registrar proceso") y
+    Resumen, que muestra la media y la desviación pedidas y obtenidas en cada
+    clase y la exactitud de cada clase.
+  Barra de estado: estado de cada perceptrón y exactitud global y por clase.
+  Abajo: barra "Época mostrada" y "Animar entrenamiento".
+  Arriba a la derecha: "Reiniciar todo" (o Ctrl+R).
+  Los números decimales se pueden escribir con coma o con punto.
+  Validaciones: no se aceptan 'nan' ni 'inf', las desviaciones no pueden ser
+  negativas, la tasa γ debe ser mayor que cero y la salida alta del escalón
+  debe ser mayor que la baja (al revés, la regla de ajuste no aprende).
+  Si la regresión diverge hasta pesos infinitos, el espacio 3D muestra solo
+  los datos y avisa que no hay plano.
+
+Qué se envía
+------------
+  Informe en Word y una carpeta comprimida con los seis archivos .py,
+  LEEME.txt, requirements.txt y la carpeta .vscode. La carpeta .venv NO se
+  envía: pesa mucho y solo sirve en el computador donde se creó.
