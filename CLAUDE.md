@@ -223,14 +223,16 @@ Solo se tocan si hace falta un tipo de contenido nuevo.
 
 1. Identificar qué cambió en el código: funciones, fórmulas, valores por defecto, interfaz y resultados.
 2. Recalcular con la semilla 7 los resultados que pudieron cambiar, usando experimentos.py. Nunca se escribe un número que no haya salido de una ejecución real.
-3. Buscar en todo el HTML cada dato o nombre que cambió y corregir todas sus apariciones. Un mismo resultado suele aparecer en el módulo, en preguntas de varios niveles, en la sustentación, en los errores comunes y en el repaso.
+3. Buscar en todo el HTML cada dato o nombre que cambió y corregir todas sus apariciones. Un mismo resultado suele aparecer en el módulo, en las lecciones de «Desde cero», en preguntas de varios niveles, en la sustentación, en los errores comunes y en el repaso.
 4. Copiar los fragmentos de código tal cual de los .py, con su sangría, y revisar las explicaciones de cada línea.
 5. Para algo nuevo, agregar lo siguiente:
    - una mención en el módulo correspondiente y en `ARCHIVOS`;
    - al menos una pregunta en `NIVELES`;
    - una pregunta con respuesta modelo en `SUSTENTACION`;
+   - su fila en `FUNCIONES` si es una función, clase o constante (el catálogo debe cubrir todo lo que hay en cada .py);
    - un bloque de `ANALISIS` si es una función importante;
-   - su fila en `REPASO` si es una fórmula.
+   - su fila en `REPASO` si es una fórmula;
+   - una explicación sencilla en la lección de `FUNDAMENTOS` que corresponda, y su término en `GLOSARIO`, si introduce un concepto o una palabra técnica nueva.
 6. Validar y avisarle a Daniel qué secciones cambiaron, para que vuelva a estudiarlas.
 
 ### Reglas de contenido
