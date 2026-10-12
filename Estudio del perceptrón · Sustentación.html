@@ -101,7 +101,7 @@ a { color: var(--tinta); }
 .encabezado-movil { display: none; }
 
 @media (max-width: 860px) {
-  .marco { grid-template-columns: 1fr; }
+  .marco { grid-template-columns: minmax(0, 1fr); }
   .lateral {
     position: fixed; inset: 0 auto 0 0; width: min(290px, 86vw); z-index: 30;
     transform: translateX(-102%); transition: transform .25s; height: 100%;
@@ -244,6 +244,21 @@ table { border-collapse: collapse; width: 100%; font-size: 0.92rem; background: 
 th, td { border-bottom: 1px solid var(--linea); padding: 8px 10px; text-align: left; vertical-align: top; }
 th { color: var(--tinta); border-bottom: 2px solid var(--tinta); }
 td.mono { white-space: nowrap; }
+
+/* Desde cero: controles deslizantes, pasos, buscador y glosario */
+.campo input[type="range"] { padding: 0; border: 0; background: transparent; accent-color: var(--tinta); }
+.lienzo-vivo .traza { margin-top: 10px; }
+.lienzo-vivo .rejilla-campos { margin-top: 0; }
+ol.pasos { padding-left: 1.4em; }
+ol.pasos li { margin-bottom: 10px; }
+.buscador {
+  width: 100%; font: inherit; padding: 8px 12px; margin: 6px 0 14px; border: 1px solid var(--linea);
+  border-radius: var(--radio); background: var(--hoja); color: var(--grafito);
+}
+.glosario { margin: 0; }
+.glosario dt { font-weight: 700; color: var(--tinta); margin-top: 12px; }
+.glosario dd { margin: 2px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--linea); }
+table.catalogo td.mono { white-space: normal; min-width: 11em; overflow-wrap: anywhere; }
 .oculto { display: none !important; }
 </style>
 </head>
@@ -474,8 +489,38 @@ const ARCHIVOS = {
 const NIVELES = [
 {
   nombre: "Nivel 1 · Conceptos",
-  descripcion: "Preguntas sobre la teoría del perceptrón y las decisiones generales del proyecto.",
+  descripcion: "Preguntas sobre las bases, la teoría del perceptrón y las decisiones generales del proyecto.",
   preguntas: [
+    { tipo: "opcion", enunciado: "¿Qué tipo de aprendizaje hace tu perceptrón?",
+      opciones: [
+        ["Supervisado: aprende de ejemplos cuya salida deseada d ya se conoce", true, "Correcto: cada instancia trae su respuesta correcta, y el error d − y guía cada corrección."],
+        ["No supervisado: agrupa los puntos sin conocer sus clases", false, "Tu perceptrón sí conoce la clase de cada punto; sin d no podría calcular el error."],
+        ["Por refuerzo: recibe premios y castigos", false, "No hay premios ni castigos, sino una salida deseada para cada instancia."],
+        ["Ninguno, porque los pesos los fija el usuario", false, "Los pesos empiezan al azar y se aprenden; el usuario no los escribe."] ] },
+    { tipo: "opcion", enunciado: "En Python, ¿cuál de estas expresiones corresponde al peso w1?",
+      opciones: [
+        ["self.w[0]", true, "Correcto: los índices empiezan en 0, así que w1 es w[0], w2 es w[1] y w3 es w[2]."],
+        ["self.w[1]", false, "Ese es w2, el segundo elemento."],
+        ["self.w1", false, "El código guarda los pesos en una lista llamada w, no en variables separadas."],
+        ["self.theta", false, "theta es el sesgo θ, no un peso de entrada."] ] },
+    { tipo: "opcion", enunciado: "¿Qué significa que la frontera del perceptrón sea un plano?",
+      opciones: [
+        ["Que los puntos con S ≥ umbral quedan de un lado y los demás del otro, y clasificar es ver de qué lado cae cada punto", true, "Correcto: los pesos giran el plano y θ lo desplaza; entrenar es moverlo hasta que cada clase quede de su lado."],
+        ["Que el perceptrón dibuja una lámina decorativa", false, "El plano es la regla de decisión misma, no un adorno."],
+        ["Que todas las instancias están sobre el plano", false, "Sobre el plano solo están los puntos con S exactamente igual al umbral."],
+        ["Que el perceptrón solo funciona en dos dimensiones", false, "Con dos entradas la frontera es una recta; con tres, un plano."] ] },
+    { tipo: "opcion", enunciado: "¿Qué es la semilla en tu proyecto?",
+      opciones: [
+        ["El primer valor del generador congruencial; con la misma semilla salen los mismos números y resultados", true, "Correcto: por eso la semilla 7 reproduce los resultados del informe."],
+        ["El número de épocas", false, "Las épocas se configuran en otro campo."],
+        ["El peso inicial de la neurona", false, "Los pesos iniciales se sortean con el generador, pero no son la semilla."],
+        ["Un número que hace más aleatorios los datos", false, "La semilla no cambia qué tan aleatorios son, sino cuál secuencia se produce."] ] },
+    { tipo: "opcion", enunciado: "¿Para qué sirve la distribución exponencial en el escenario Solapadas?",
+      opciones: [
+        ["Su cola larga hacia valores grandes lanza puntos de la clase 2 que invaden a la otra clase", true, "Correcto: aunque tenga la misma media y σ que la normal, es asimétrica y produce puntos alejados en una dirección."],
+        ["Hace que los puntos queden en una rejilla", false, "Eso pasa con la binomial, cuyos valores son discretos."],
+        ["Reduce la desviación de la clase", false, "La desviación sigue siendo la σ pedida."],
+        ["Es necesaria para que el perceptrón converja", false, "Al contrario: ayuda a que no converja."] ] },
     { tipo: "opcion", enunciado: "¿Qué aporte de Rosenblatt (1958) diferencia al perceptrón de la neurona de McCulloch y Pitts?",
       opciones: [
         ["Una regla para ajustar los pesos a partir de los errores", true, "Correcto: la neurona de McCulloch y Pitts ya sumaba y comparaba con un umbral, pero sus pesos eran fijos. Rosenblatt añadió el aprendizaje."],
@@ -705,6 +750,11 @@ const NIVELES = [
 const SUSTENTACION = [
   { tema: "General", p: "Explíqueme en dos minutos qué hace su proyecto.", r: "Es un simulador del perceptrón escrito en Python que genera nubes de puntos en tres dimensiones con distribuciones de probabilidad propias y entrena una sola neurona para tres tareas: clasificar dos clases, clasificar tres clases con neuronas independientes y ajustar un plano en regresión. Toda la matemática, desde la raíz cuadrada hasta el generador aleatorio, está escrita a mano en formulas.py, y las librerías solo aparecen para dibujar. La interfaz permite cambiar en vivo los parámetros de los datos y del entrenamiento, y muestra las tres gráficas que usted pidió: el espacio 3D con los planos, el error por época y la evolución de los pesos." },
   { tema: "General", p: "¿Cómo demuestra que no usó librerías para la matemática?", r: "Basta revisar los import. formulas.py no importa nada; aleatorio.py y perceptron.py solo importan formulas.py; experimentos.py importa los módulos propios y copy, que duplica la configuración. Matplotlib y tkinter solo están en graficas.py y main.py, y reciben valores ya calculados. Los otros dos import, time y ctypes, tienen funciones ajenas a la matemática: tomar una semilla automática y mejorar la nitidez de la ventana en Windows." },
+  { tema: "General", p: "Cuénteme qué pasa desde que presiono Entrenar hasta que aparece la gráfica.", r: "El botón llama a entrenar_clasificacion de main.py, que lee y valida los campos en _config_clasificacion. Con esa configuración, ejecutar_clasificacion de experimentos.py crea un generador con la semilla, simula los puntos con generar_datos_clasificacion de aleatorio.py y crea el perceptrón con un escalón, con los pesos sorteados entre −1 y 1. Luego entrenar de perceptron.py recorre las épocas: baraja, ajusta cada instancia con F1 a F6 y al final de cada época calcula F7, hasta que converge o se agotan las épocas. Con los pesos finales se calculan la exactitud global y por clase y la media y desviación de cada nube, y todo vuelve a main.py en un diccionario. Por último, graficas.py dibuja el espacio 3D, las épocas y los pesos, y matplotlib solo pinta lo que ya se calculó." },
+  { tema: "Teoría", p: "¿Qué es el aprendizaje supervisado y por qué su proyecto lo es?", r: "Es aprender a partir de ejemplos de los que se conoce la respuesta correcta. En mi proyecto cada instancia trae su salida deseada d, que depende de la clase a la que pertenece, o del valor de y en la regresión, y el perceptrón corrige sus pesos según la diferencia entre lo que respondió y esa respuesta, e = d − y. Sin la salida deseada no habría error y la regla no podría aprender." },
+  { tema: "Implementación", p: "¿Qué es una distribución de probabilidad y cuáles usó?", r: "Es la descripción de qué valores puede tomar algo al azar y con qué frecuencia. Usé cuatro, todas controladas con la media μ y la desviación σ: la normal, con forma de campana, por Box-Muller; la uniforme, en la que todos los valores de un intervalo son igual de probables, con semiancho σ√3; la exponencial, asimétrica, por transformada inversa; y la binomial, que cuenta éxitos en 20 ensayos y luego se estandariza. Todas parten del número uniforme U que da mi generador congruencial." },
+  { tema: "Implementación", p: "¿Por qué usó clases en lugar de solo funciones?", r: "Porque un perceptrón tiene un estado que cambia, sus pesos, θ y sus historiales, y una clase permite guardar ese estado junto con los métodos que lo usan. Así cada objeto Perceptron tiene sus propios pesos, y en uno contra el resto puedo tener tres neuronas independientes sin que se mezclen. Además, la activación es un objeto, Escalon o Lineal, y gracias a su método __call__ la misma clase Perceptron sirve para clasificar y para hacer regresión. Lo mismo vale para GeneradorAleatorio, que guarda el estado X de la secuencia." },
+  { tema: "Gráficas", p: "¿Cómo funciona la interfaz por dentro?", r: "Está hecha con tkinter. main() crea la ventana y la Aplicacion arma los widgets: cajas de texto unidas a variables StringVar, listas desplegables, botones y pestañas. Cada botón tiene un command, la función que se ejecuta al pulsarlo, y raiz.mainloop() mantiene la ventana esperando esos eventos. Las gráficas son figuras de matplotlib que FigureCanvasTkAgg muestra dentro de la ventana, y para la animación uso after, que programa el siguiente cuadro sin congelar la interfaz. Nada de eso calcula: todo lo que se muestra viene de experimentos.py y formulas.py." },
   { tema: "Teoría", p: "¿Qué es un perceptrón y quién lo propuso?", r: "Es el modelo más sencillo de neurona artificial: calcula una suma ponderada de sus entradas más un sesgo y la pasa por una función de activación. Lo propuso Frank Rosenblatt en 1958, a partir de la neurona lógica de McCulloch y Pitts, y su aporte fue una regla para aprender los pesos a partir de los errores." },
   { tema: "Teoría", p: "¿Qué papel cumple el sesgo y por qué x0 = −1?", r: "El sesgo permite que el plano no esté obligado a pasar por el origen. Con x0 = −1 la suma queda S = Σwi·xi − θ, de modo que θ actúa como un umbral que se aprende, que es la convención de la clase. Con x0 = +1 se obtiene la forma S = Σwi·xi + b de otros libros. Son equivalentes porque solo cambia el signo del parámetro, y el programa deja elegir cualquiera, usando siempre el mismo x0 en la suma y en el ajuste." },
   { tema: "Teoría", p: "¿Cuál es la diferencia entre el umbral de la función escalón y θ?", r: "El umbral es un valor fijo que el usuario configura y con el que se compara S; θ es un parámetro que el perceptrón aprende. Por defecto el umbral es 0 y θ hace todo el trabajo de desplazar el plano, pero si se cambia el umbral el plano F10 queda como Σwi·xi + θ·x0 = umbral, y el programa lo tiene en cuenta al dibujar." },
@@ -753,6 +803,9 @@ const ERRORES_COMUNES = [
   ["Reportar solo la exactitud global", "Con clases desbalanceadas engaña: 95,5 % global con 50 % en la clase pequeña. Muestra siempre la exactitud por clase."],
   ["Subir la tasa de regresión sin avisar", "Con 0,05 diverge en la primera época. Si el profesor lo pide, explica antes por qué va a pasar."],
   ["Decir que la regresión «convergió»", "El programa dice «se estabilizó»: el error dejó de bajar, lo que no garantiza un buen ajuste. Con γ = 0,02 se estabiliza en 24 épocas con un R² negativo. Para juzgar el ajuste, cita el ECM y el R²."],
+  ["Confundir los índices de Python con la notación", "En el código w[0] es w1 y las clases 1, 2 y 3 son 0, 1 y 2. Si el profesor señala w[0], di «el peso w1»."],
+  ["Usar «instancia» con dos significados", "En tus datos una instancia es un punto; en programación también se llama así a un objeto. Para los perceptrones di «objeto» y deja «instancia» para los datos."],
+  ["Decir que matplotlib calcula el plano", "matplotlib solo pinta el polígono; sus esquinas las calcula poligono_plano con coordenada_del_plano (F10)."],
   ["Decir que las salidas pueden ser «cualquier par» sin más", "Pueden ser cualquier par con la salida alta mayor que la baja. Al revés, la regla empuja los pesos en la dirección contraria, y por eso la interfaz lo rechaza."]
 ];
 
@@ -1006,6 +1059,720 @@ const FRASES_CLAVE = [
   "Con clases solapadas el error oscila porque no existe un plano separador; no es un fallo del programa.",
   "La regresión es la misma neurona con activación lineal, y la regla se convierte en la regla LMS."
 ];
+
+/* =====================================================================
+   DESDE CERO
+   Lecciones para quien empieza sin saber nada: qué problema se resuelve,
+   la matemática básica, la notación, la estadística, el azar, Python,
+   tkinter y matplotlib, y el recorrido completo de un entrenamiento.
+   Cada lección: { id, titulo, html, ejemplos: [{archivo, codigo, nota}],
+   demo: null | "recta" | "histograma" | "generador" | "newton",
+   preguntas: [{ enunciado, opciones: [[texto, esCorrecta, explicación]] }] }
+   ===================================================================== */
+const FUNDAMENTOS = [
+{
+  id: "panorama",
+  titulo: "¿De qué trata todo esto?",
+  html: `
+<p>Antes de hablar de neuronas conviene entender qué problema se quiere resolver. La <b>inteligencia artificial</b> es el área que busca que una computadora haga tareas que parecen requerir inteligencia, y dentro de ella el <b>aprendizaje automático</b> estudia programas que no reciben las reglas escritas por una persona, sino que las descubren a partir de ejemplos. Tu proyecto pertenece al <b>aprendizaje supervisado</b>: a la computadora se le muestran muchos ejemplos de los que ya se conoce la respuesta correcta, y ella ajusta sus números internos hasta que sus respuestas se parecen a las correctas. Se llama «supervisado» porque cada ejemplo trae su respuesta, como si un profesor corrigiera cada intento.</p>
+<p>Cada ejemplo se llama <b>instancia</b>. En tu proyecto una instancia es un punto con tres números, <code>x1</code>, <code>x2</code> y <code>x3</code>, que se llaman <b>entradas</b> o características. Junto a cada instancia está la <b>salida deseada</b> <code>d</code>, que es la respuesta correcta que el modelo debería dar. Un ejemplo cotidiano ayuda a fijar las palabras: si quisieras distinguir mangos de limones por su peso, su diámetro y su color, cada fruta sería una instancia, esas tres medidas serían sus entradas y la palabra «mango» o «limón» sería su salida deseada.</p>
+<p>Hay dos tipos de tareas. En la <b>clasificación</b> la respuesta es una categoría, llamada <b>clase</b>, como mango o limón; en tu código las clases se numeran internamente 0, 1 y 2, y en pantalla se muestran como Clase 1, Clase 2 y Clase 3. En la <b>regresión</b> la respuesta es un número cualquiera, como el precio de una casa calculado a partir de su área, su número de cuartos y su antigüedad. Tu simulador hace las dos cosas, y lo interesante es que usa la misma neurona para ambas.</p>
+<p>Como no tienes datos reales de frutas ni de casas, el proyecto los <b>simula</b>: inventa nubes de puntos alrededor de un centro, con la dispersión que tú elijas, usando números aleatorios generados a mano. Después los usa para <b>entrenar</b> el perceptrón, es decir, se los muestra una y otra vez y corrige sus números cada vez que se equivoca, y al final <b>muestra</b> lo que aprendió en tres gráficas. Todo el proyecto se resume en esos tres verbos, simular, entrenar y mostrar, y cada uno vive en archivos distintos, como verás en la lección 13.</p>
+<p>El profesor pidió además poder «reventar» el perceptrón, es decir, ponerlo a propósito en situaciones donde falla, por ejemplo con clases que se mezclan. No es un capricho: entender cuándo falla un modelo es tan importante como saber cuándo funciona, y buena parte de tu sustentación consistirá en explicar esos fallos con calma.</p>`,
+  ejemplos: [{ archivo: "experimentos.py", codigo: String.raw`    "clases": [
+        {"nombre": "Clase 1", "n": 100, "centro": [2.0, 2.0, 2.0],
+         "desviacion": 1.0, "distribucion": "normal"},`,
+    nota: "Así describe tu código la primera clase por defecto: 100 instancias alrededor del punto (2, 2, 2), con desviación 1 y distribución normal. Al terminar esta ruta entenderás cada palabra de estas tres líneas." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "En tu proyecto, ¿qué es una instancia?", opciones: [
+      ["Un punto con sus entradas x1, x2 y x3, junto con su salida deseada", true, "Correcto: es un ejemplo del conjunto de datos. Con 100 instancias por clase y dos clases hay 200 puntos."],
+      ["Una de las neuronas del proyecto", false, "Las neuronas son los perceptrones; las instancias son los datos que reciben."],
+      ["Una pasada por todos los datos", false, "Eso es una época, que se explica en la lección 8."],
+      ["Uno de los archivos .py", false, "Los archivos son el código; las instancias son los datos que ese código simula."] ] },
+    { enunciado: "¿Cuál de estas tareas es una regresión?", opciones: [
+      ["Predecir la temperatura de mañana en grados", true, "Correcto: la respuesta es un número que puede tomar cualquier valor, no una categoría."],
+      ["Decidir si un correo es spam o no", false, "Hay dos categorías posibles, así que es clasificación de dos clases."],
+      ["Decidir si una fruta es mango, limón o naranja", false, "Son tres categorías: clasificación de tres clases."],
+      ["Separar los puntos de la Clase 1 y la Clase 2", false, "Es justo la clasificación de dos clases de tu simulador."] ] }
+  ]
+},
+{
+  id: "espacio",
+  titulo: "Puntos, coordenadas y nubes",
+  html: `
+<p>Una <b>coordenada</b> es un número que dice dónde está algo a lo largo de una dirección. En una hoja bastan dos, la posición horizontal y la vertical, y por eso un punto del plano se escribe como (x1, x2). En el espacio, como dentro de un salón, hace falta una tercera, la altura, y el punto se escribe (x1, x2, x3). Tu proyecto trabaja en tres dimensiones porque cada instancia tiene tres entradas, y por eso la gráfica principal es un espacio 3D que puedes rotar con el mouse. El ejemplo de clase, en cambio, tiene solo dos entradas, y por eso se dibuja en una hoja plana.</p>
+<p>En matemáticas una lista ordenada de números como (2, 2, 2) se llama <b>vector</b>. No hace falta imaginar nada más complicado: un vector es una lista en la que importa el orden, porque (8, 2, 5) y (5, 2, 8) son puntos distintos. Los pesos del perceptrón también forman un vector, w = (w1, w2, w3), y casi todo lo que hace la neurona consiste en combinar el vector de entradas con el vector de pesos, como verás en la lección siguiente.</p>
+<p>Una <b>nube de puntos</b> es un montón de puntos agrupados alrededor de un centro. En la interfaz cada clase tiene una media en x1, x2 y x3, que es precisamente ese centro, y una desviación σ, que dice qué tan dispersos quedan los puntos a su alrededor. Con σ pequeña la nube es compacta y con σ grande se desparrama. Si los centros de dos clases están lejos y sus nubes son compactas, se ven separadas; si los centros están cerca o las nubes son anchas, se mezclan, y ahí es donde el perceptrón empieza a sufrir. Los botones Acercar clases, Alejar clases, Aumentar σ y Reducir σ mueven justamente esas dos cosas.</p>
+<p>Con los valores por defecto la clase 1 está en (2, 2, 2) y la clase 2 en (8, 2, 5), ambas con σ = 1. Fíjate en que difieren mucho en x1 (2 frente a 8), algo en x3 (2 frente a 5) y nada en x2. Con la semilla 7 el perceptrón termina con w = (−2,30; 1,69; 0,15), y el peso más grande en tamaño es justamente w1, el de la coordenada que más diferencia a las clases. Los otros pesos no quedan en cero porque el perceptrón se detiene en el primer plano que separa, no en el más «lógico»; cualquier plano que deje cada nube de su lado le sirve.</p>
+<p>Un detalle importante del código: para generar un punto, <code>generar_clase</code> sortea cada coordenada por separado alrededor de su media, con la misma σ y la misma distribución. Por eso la nube tiene la misma dispersión en las tres direcciones, como una bola, y no como un huevo alargado.</p>`,
+  ejemplos: [{ archivo: "aleatorio.py", codigo: String.raw`def generar_clase(generador, n, centro, desviacion, distribucion):
+    """n puntos 3D alrededor de 'centro'; cada coordenada con la distribución elegida."""
+    puntos = []
+    for _ in range(n):
+        punto = []
+        for c in centro:
+            punto.append(generador.muestra(distribucion, c, desviacion))
+        puntos.append(punto)
+    return puntos`,
+    nota: "El ciclo de afuera se repite n veces, una por punto. El de adentro recorre las tres medias del centro y sortea una coordenada para cada una. Cada punto es una lista de tres números, y la nube es una lista de puntos." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "¿Qué indica la desviación σ de una clase en la interfaz?", opciones: [
+      ["Qué tan dispersos quedan los puntos alrededor del centro de la clase", true, "Correcto: con σ pequeña la nube es compacta y con σ grande se desparrama."],
+      ["Dónde está el centro de la clase", false, "El centro lo dan las medias en x1, x2 y x3."],
+      ["Cuántos puntos tiene la clase", false, "Eso lo indica el campo Instancias."],
+      ["Qué tan rápido aprende el perceptrón", false, "Eso depende de la tasa de aprendizaje γ, no de los datos."] ] },
+    { enunciado: "Dos clases tienen centros muy cercanos y σ grande. ¿Qué esperas al entrenar?", opciones: [
+      ["Que las nubes se mezclen y el perceptrón no logre separarlas por completo", true, "Correcto: es la forma de «reventar» el perceptrón; no existe un plano que deje cada nube de su lado."],
+      ["Que converja más rápido porque los puntos están juntos", false, "Al contrario: cuando se mezclan, ningún plano las separa."],
+      ["Que el programa muestre un error", false, "El programa entrena normalmente; simplemente no converge."],
+      ["Nada distinto, el perceptrón separa cualquier cosa", false, "Esa es justo la idea que debes evitar decir en la sustentación."] ] }
+  ]
+},
+{
+  id: "suma",
+  titulo: "Multiplicar y sumar: la suma ponderada",
+  html: `
+<p>«Ponderar» significa dar a cada cosa un peso según su importancia. Ya conoces una suma ponderada aunque no la llames así: si la nota final de un curso es 30 % del primer parcial, 30 % del segundo y 40 % del final, y sacaste 3,0, 4,0 y 5,0, tu nota es</p>
+<div class="formula">nota = 0,3·3,0 + 0,3·4,0 + 0,4·5,0 = 0,9 + 1,2 + 2,0 = 4,1</div>
+<p>Cada nota se multiplica por su peso y los resultados se suman. El perceptrón hace exactamente eso con las tres coordenadas del punto: multiplica cada entrada por su peso y suma. La diferencia es que sus pesos no los fija nadie; empiezan siendo números al azar entre −1 y 1 y el entrenamiento los va corrigiendo. Además, un peso puede ser negativo, lo que quiere decir que esa entrada empuja la suma hacia abajo en lugar de hacia arriba.</p>
+<div class="formula">F1  S = w1·x1 + w2·x2 + w3·x3 + θ·x0</div>
+<p>El último término, <code>θ·x0</code>, es el <b>sesgo</b>. Puedes pensarlo como un peso más cuya entrada vale siempre lo mismo, <code>x0 = −1</code> en la convención de la clase. Como θ por −1 es −θ, la fórmula queda <code>S = w1·x1 + w2·x2 + w3·x3 − θ</code>: el sesgo le resta a la suma una cantidad que también se aprende. Sin él la frontera que traza la neurona tendría que pasar siempre por el punto (0, 0, 0), y eso la limitaría muchísimo.</p>
+<p>La letra griega <b>Σ</b> (sigma mayúscula) es una abreviatura para «sumar todos». Cuando leas <code>Σwi·xi</code>, tradúcelo como «multiplicar cada peso por su entrada y sumar todo», es decir, <code>w1·x1 + w2·x2 + w3·x3</code>. La <code>i</code> es solo un contador que va pasando por 1, 2 y 3.</p>
+<p>Una vez calculada S, la neurona decide. En clasificación compara S con el <b>umbral</b> (por defecto 0): si S es mayor o igual responde la salida alta (1) y si no, la baja (−1). Eso es la <b>función escalón</b>, F2, y se llama así porque al dibujarla parece un escalón: vale −1 y de repente salta a 1. Por ejemplo, con w = (1, 1), θ = 0 y el punto x = (2, 1), la suma es S = 1·2 + 1·1 + 0·(−1) = 3; como 3 ≥ 0, la neurona responde 1.</p>`,
+  ejemplos: [{ archivo: "formulas.py", codigo: String.raw`def suma_ponderada(w, x, theta, x0):
+    S = 0.0
+    for i in range(len(w)):
+        S = S + w[i] * x[i]
+    S = S + theta * x0
+    return S`,
+    nota: "Es la nota del curso escrita en Python (se omitió el docstring). S empieza en cero, el ciclo for pasa por cada peso, le suma a S el producto del peso por su entrada y al final suma el sesgo. Esta función es el corazón del perceptrón." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "Con w = (2; −1), θ = 1, x0 = −1 y el punto x = (3; 4), ¿cuánto vale S?", opciones: [
+      ["1", true, "Correcto: S = 2·3 + (−1)·4 + 1·(−1) = 6 − 4 − 1 = 1."],
+      ["3", false, "Así sale si sumas θ en lugar de restarlo. Con x0 = −1, θ·x0 = −1."],
+      ["9", false, "Parece que se sumaron los productos sin respetar el signo de w2 = −1."],
+      ["−1", false, "Revisa el signo: 6 − 4 − 1 da 1."] ] },
+    { enunciado: "¿Para qué sirve el sesgo θ?", opciones: [
+      ["Para que la frontera no esté obligada a pasar por el origen (0, 0, 0)", true, "Correcto: θ desplaza la frontera. Con x0 = −1 actúa como un umbral que se aprende."],
+      ["Para que los pesos sean positivos", false, "Los pesos pueden ser negativos; θ no tiene que ver con eso."],
+      ["Para contar los errores", false, "Los errores se cuentan con F4 y F7."],
+      ["Para elegir la distribución de los datos", false, "La distribución se elige en la interfaz y la usa aleatorio.py."] ] }
+  ]
+},
+{
+  id: "frontera",
+  titulo: "Rectas, planos y los dos lados",
+  html: `
+<p>Ahora viene la idea geométrica que hace entendible todo el proyecto. Toma una neurona con dos entradas y pregúntate en qué puntos la suma vale exactamente el umbral, es decir, <code>w1·x1 + w2·x2 − θ = 0</code>. Esa ecuación describe una <b>recta</b>. Por ejemplo, con w = (1, 1) y θ = 3 la ecuación es <code>x1 + x2 − 3 = 0</code>, y la cumplen puntos como (3, 0), (0, 3) o (1,5; 1,5): todos están sobre la misma línea.</p>
+<p>Lo importante es lo que pasa fuera de la recta. Para el punto (3, 2) la suma vale 3 + 2 − 3 = 2, positiva; para el punto (0, 0) vale 0 + 0 − 3 = −3, negativa. Todos los puntos de un lado de la recta dan S positiva y todos los del otro dan S negativa. Por eso la recta es una <b>frontera de decisión</b>: el escalón responde la salida alta a un lado y la baja al otro. Clasificar, para el perceptrón, no es más que preguntar de qué lado de su frontera cae un punto.</p>
+<p>Con tres entradas pasa lo mismo, pero la ecuación <code>w1·x1 + w2·x2 + w3·x3 + θ·x0 = umbral</code> ya no es una recta sino un <b>plano</b>, una lámina plana dentro del espacio 3D. Esa es la fórmula F10 y es el plano que ves en la gráfica. Si hubiera cuatro o más entradas sería un «hiperplano», que no se puede dibujar pero funciona igual; por eso en la regresión con tres entradas la gráfica muestra solo un corte.</p>
+<p>Los números controlan la frontera de una forma muy concreta. Cambiar los pesos <b>gira</b> la recta o el plano, porque cambia su inclinación, y cambiar θ la <b>desplaza</b> sin girarla, paralela a sí misma. Entrenar consiste entonces en girar y mover la frontera hasta que cada clase quede de su lado. Prueba la demostración de abajo: mueve los controles, toca el lienzo para poner un punto y mira cómo cambian S y el lado.</p>
+<p>Para dibujar la frontera hay que <b>despejar</b> una coordenada, por ejemplo <code>x2 = (θ − w1·x1) / w2</code>, y eso obliga a dividir entre un peso. Si ese peso es casi cero la división se dispara, y por eso <code>graficas.py</code> despeja siempre la coordenada cuyo peso tiene el mayor valor absoluto. La función que hace el despeje es <code>coordenada_del_plano</code>.</p>`,
+  ejemplos: [{ archivo: "formulas.py", codigo: String.raw`def coordenada_del_plano(w, theta, x0, umbral, k, otros_valores):
+    suma_otros = 0.0
+    for j, valor in otros_valores.items():
+        suma_otros = suma_otros + w[j] * valor
+    return (umbral - theta * x0 - suma_otros) / w[k]`,
+    nota: "Es F10 despejada para la coordenada k (se omitió el docstring). Se suman los términos de las coordenadas conocidas, se pasan al otro lado restando y se divide entre el peso de la coordenada que se despeja." }],
+  demo: "recta",
+  preguntas: [
+    { enunciado: "Con la frontera x1 + x2 − 3 = 0, ¿qué responde el escalón (umbral 0, salidas 1 y −1) para el punto (0, 0)?", opciones: [
+      ["−1, porque S = −3 es menor que el umbral", true, "Correcto: el origen queda del lado negativo de la recta."],
+      ["1, porque está cerca de la recta", false, "La cercanía no importa, solo el signo de S − umbral."],
+      ["0, porque está en el origen", false, "El escalón solo responde la salida alta o la baja."],
+      ["No se puede saber sin entrenar", false, "Con los pesos dados basta calcular S."] ] },
+    { enunciado: "Si solo cambias θ y dejas los pesos quietos, ¿qué le pasa a la frontera?", opciones: [
+      ["Se desplaza paralela a sí misma, sin girar", true, "Correcto: los pesos fijan la inclinación y θ la posición."],
+      ["Gira alrededor del origen", false, "Girarla requiere cambiar los pesos."],
+      ["Desaparece", false, "Sigue existiendo mientras algún peso sea distinto de cero."],
+      ["Se vuelve curva", false, "La frontera del perceptrón siempre es recta (o plana)."] ] }
+  ]
+},
+{
+  id: "simbolos",
+  titulo: "Los símbolos que vas a leer",
+  html: `
+<p>Buena parte de la dificultad de la matemática está en la notación, no en las ideas. Esta tabla reúne todos los símbolos que aparecen en el proyecto, en el informe y en esta aplicación, con su lectura en voz alta, que te servirá en la sustentación.</p>
+<div class="tabla-wrap"><table>
+<thead><tr><th>Símbolo</th><th>Se lee</th><th>Qué significa en el proyecto</th></tr></thead>
+<tbody>
+<tr><td class="mono">x1, x2, x3</td><td>equis uno, dos, tres</td><td>Las entradas de una instancia, sus tres coordenadas.</td></tr>
+<tr><td class="mono">xi, wi</td><td>equis sub i, doble ve sub i</td><td>«Cualquiera de ellas»: la i es un contador que pasa por 1, 2 y 3.</td></tr>
+<tr><td class="mono">w1, w2, w3</td><td>doble ve uno, dos, tres</td><td>Los pesos (en inglés weights), uno por entrada.</td></tr>
+<tr><td class="mono">θ</td><td>theta</td><td>El sesgo; en el código se llama <code>theta</code>.</td></tr>
+<tr><td class="mono">x0</td><td>equis cero</td><td>La entrada fija del sesgo: −1 por defecto, o +1.</td></tr>
+<tr><td class="mono">S</td><td>ese</td><td>La suma ponderada, F1.</td></tr>
+<tr><td class="mono">y</td><td>ye</td><td>La salida que da la neurona (la obtenida).</td></tr>
+<tr><td class="mono">d</td><td>de</td><td>La salida deseada, la respuesta correcta.</td></tr>
+<tr><td class="mono">e</td><td>e</td><td>El error de una instancia, e = d − y.</td></tr>
+<tr><td class="mono">γ</td><td>gamma</td><td>La tasa de aprendizaje: qué tan grande es cada corrección.</td></tr>
+<tr><td class="mono">ε</td><td>épsilon</td><td>El error mínimo permitido para decir que convergió.</td></tr>
+<tr><td class="mono">μ</td><td>mu</td><td>La media, el centro de una distribución.</td></tr>
+<tr><td class="mono">σ</td><td>sigma</td><td>La desviación estándar, qué tan dispersos están los datos.</td></tr>
+<tr><td class="mono">Σ</td><td>sumatoria</td><td>«Sumar todos los términos».</td></tr>
+<tr><td class="mono">←</td><td>se reemplaza por</td><td>Actualizar un valor: wi ← wi + γ·e·xi significa «el nuevo wi es el viejo más la corrección».</td></tr>
+<tr><td class="mono">≥, &lt;</td><td>mayor o igual, menor</td><td>Comparaciones, como en el escalón.</td></tr>
+<tr><td class="mono">|v|</td><td>valor absoluto de v</td><td>El número sin signo: |−3| = 3. Es M1.</td></tr>
+<tr><td class="mono">√a</td><td>raíz cuadrada de a</td><td>El número que multiplicado por sí mismo da a. Es M2.</td></tr>
+<tr><td class="mono">x²</td><td>x al cuadrado</td><td>x·x. En Python se escribe <code>x * x</code> o <code>x ** 2</code>.</td></tr>
+<tr><td class="mono">ln a</td><td>logaritmo natural de a</td><td>La potencia a la que hay que elevar e ≈ 2,718 para obtener a. Es M5.</td></tr>
+<tr><td class="mono">cos t</td><td>coseno de t</td><td>Función trigonométrica que usa Box-Muller. Es M6.</td></tr>
+<tr><td class="mono">π</td><td>pi</td><td>3,14159…, calculado con la fórmula de Machin. Es M4.</td></tr>
+<tr><td class="mono">a mod m</td><td>a módulo m</td><td>El residuo de dividir a entre m. En Python, <code>a % m</code>.</td></tr>
+<tr><td class="mono">n!</td><td>n factorial</td><td>1·2·3·…·n; aparece en la serie del coseno.</td></tr>
+<tr><td class="mono">1e-16</td><td>uno por diez a la menos dieciséis</td><td>Notación científica: 0,0000000000000001. Igual, 1e100 es un 1 seguido de cien ceros.</td></tr>
+<tr><td class="mono">ŷ</td><td>ye gorro</td><td>El valor predicho por el modelo; en el código, <code>y_pred</code>.</td></tr>
+<tr><td class="mono">R²</td><td>erre cuadrado</td><td>Coeficiente de determinación de la regresión, F19.</td></tr>
+<tr><td class="mono">(0, 1) y [0, 1]</td><td>intervalo abierto y cerrado</td><td>Con paréntesis no incluye los extremos; con corchetes sí.</td></tr>
+<tr><td class="mono">NaN, inf</td><td>no es un número, infinito</td><td>Valores especiales que aparecen cuando una cuenta explota. Los detecta <code>es_finito</code>, M8.</td></tr>
+</tbody></table></div>
+<p>Dos aclaraciones evitan muchas confusiones. La primera es la diferencia entre <code>=</code> y <code>←</code>: en matemáticas «=» afirma que dos cosas son iguales, mientras que la flecha indica un cambio en el tiempo; en Python, curiosamente, el signo <code>=</code> significa la flecha (asignar), y para preguntar si dos cosas son iguales se usa <code>==</code>. La segunda es que los códigos F1 a F19 y M1 a M8 no son notación matemática, sino etiquetas que tú le pusiste a cada fórmula para poder citarla igual en el código, en la interfaz y en el informe.</p>`,
+  ejemplos: [],
+  demo: null,
+  preguntas: [
+    { enunciado: "¿Qué significa wi ← wi + γ·e·xi?", opciones: [
+      ["Que el nuevo valor de cada peso es el viejo más la corrección γ·e·xi", true, "Correcto: la flecha indica una actualización, no una igualdad. En Python se escribe con un solo =."],
+      ["Que wi es igual a wi + γ·e·xi, lo que obliga a que γ·e·xi sea 0", false, "Esa sería la lectura como ecuación; la flecha significa reemplazar."],
+      ["Que wi se compara con la corrección", false, "Comparar se hace con ==, ≥ o <."],
+      ["Que wi apunta hacia xi", false, "La flecha no es una dirección en el espacio."] ] },
+    { enunciado: "¿Cuánto es 17 mod 5?", opciones: [
+      ["2", true, "Correcto: 17 = 3·5 + 2, así que el residuo es 2."],
+      ["3", false, "3 es el cociente; mod da el residuo."],
+      ["3,4", false, "Esa es la división 17/5; mod se queda con lo que sobra."],
+      ["85", false, "Eso sería 17·5."] ] },
+    { enunciado: "¿Qué número es 1e-16?", opciones: [
+      ["0,0000000000000001, un número muy pequeño", true, "Correcto: e-16 significa «por diez a la menos 16». Se usa como tolerancia en la raíz cuadrada."],
+      ["El número e elevado a la −16", false, "En la notación científica de Python la e significa «por diez a la»."],
+      ["−16", false, "El signo menos va en el exponente, no en el número."],
+      ["Un error del programa", false, "Es una forma normal de escribir números muy pequeños."] ] }
+  ]
+},
+{
+  id: "estadistica",
+  titulo: "Media, desviación y distribuciones",
+  html: `
+<p>La <b>media</b> (F16) es el promedio de siempre: se suman los valores y se divide entre cuántos son. Para 3, 4 y 5 la media es (3 + 4 + 5)/3 = 4. En tu proyecto se calcula una media por coordenada, y las tres medias juntas forman el <b>centroide</b> de la nube, el punto que el espacio 3D marca con una X.</p>
+<p>La <b>desviación estándar</b> σ (F17) mide qué tan lejos de la media suelen quedar los valores. Se calcula en cuatro pasos: restar la media a cada valor, elevar cada diferencia al cuadrado (para que las negativas no cancelen a las positivas), promediar esos cuadrados y sacar la raíz. Con 3, 4 y 5 las diferencias son −1, 0 y 1, sus cuadrados 1, 0 y 1, su promedio 2/3 ≈ 0,667 y la raíz 0,816. El promedio de los cuadrados, antes de la raíz, se llama <b>varianza</b> y vale σ². Tu código divide entre N, el número de valores, como dice F17.</p>
+<div class="formula">F16  media = (x1 + x2 + … + xN) / N
+F17  σ = √[ ((x1 − media)² + … + (xN − media)²) / N ]</div>
+<p>Una <b>distribución de probabilidad</b> describe qué valores puede tomar algo al azar y con qué frecuencia. Si sorteas muchísimos valores y haces un <b>histograma</b>, un gráfico de barras que cuenta cuántos cayeron en cada tramo, la forma de las barras es la forma de la distribución. Tu proyecto tiene cuatro, y todas se controlan con los mismos dos números, la media μ y la desviación σ, para que la interfaz sea igual para cualquiera de ellas:</p>
+<ul class="lista-errores">
+<li><b>Normal</b> (F12): la famosa campana. La mayoría de valores cae cerca de la media y cada vez menos lejos de ella, igual a ambos lados; así se reparten, por ejemplo, las estaturas de las personas. Es la distribución por defecto de las clases y del ruido.</li>
+<li><b>Uniforme</b> (F13): todos los valores de un intervalo son igual de probables, como la ruleta. Con media μ y desviación σ, el intervalo va de μ − σ√3 a μ + σ√3, y nada cae fuera de él. Es la distribución por defecto de las entradas de la regresión.</li>
+<li><b>Exponencial</b> (F14): describe tiempos de espera, como cuánto tarda en llegar el próximo bus. Es asimétrica: nunca baja de μ − σ, se amontona cerca de ese mínimo y tiene una cola larga hacia valores grandes. Por eso el escenario Solapadas la usa en la clase 2, cuyos puntos lejanos invaden a la otra clase.</li>
+<li><b>Binomial</b> (F15): cuenta éxitos en ensayos repetidos, como cuántas caras salen al lanzar una moneda 20 veces. Tu código usa 20 ensayos con probabilidad 0,5 y luego la estandariza para que tenga media μ y desviación σ. Como el número de caras es un entero entre 0 y 20, cada coordenada solo puede tomar a lo sumo 21 valores distintos, así que la nube queda como una rejilla de puntos.</li>
+</ul>
+<p>El <b>ruido</b> de la regresión es un valor al azar, normal con media 0, que se suma a cada y para imitar los errores de medición del mundo real. Por culpa de ese ruido ningún plano puede pasar exactamente por todos los puntos, y por eso el error de la regresión nunca llega a cero. Usa la demostración de abajo para ver la forma de cada distribución y comprobar que la media y la desviación obtenidas quedan cerca de las pedidas, igual que lo comprueba el resumen de tu programa.</p>`,
+  ejemplos: [{ archivo: "formulas.py", codigo: String.raw`def desviacion_estandar(valores):
+    m = media(valores)
+    suma = 0.0
+    for v in valores:
+        suma = suma + (v - m) * (v - m)
+    return raiz_cuadrada(suma / len(valores))`,
+    nota: "Los cuatro pasos de F17 en seis líneas (se omitió el docstring): calcular la media, acumular los cuadrados de las diferencias, dividir entre N con len(valores) y sacar la raíz con raiz_cuadrada, la función M2 hecha a mano." }],
+  demo: "histograma",
+  preguntas: [
+    { enunciado: "¿Cuál es la media de 2, 4 y 9?", opciones: [
+      ["5", true, "Correcto: (2 + 4 + 9)/3 = 15/3 = 5."],
+      ["4", false, "4 es el valor del medio (la mediana), no la media."],
+      ["15", false, "15 es la suma; falta dividir entre 3."],
+      ["7", false, "Revisa la suma: 2 + 4 + 9 = 15."] ] },
+    { enunciado: "¿Cuál de las cuatro distribuciones es asimétrica, con una cola larga hacia valores grandes?", opciones: [
+      ["La exponencial", true, "Correcto: nunca baja de μ − σ y se extiende hacia arriba. Por eso sirve para solapar clases."],
+      ["La normal", false, "La normal es simétrica, una campana igual a ambos lados."],
+      ["La uniforme", false, "La uniforme es plana y simétrica, y no tiene colas."],
+      ["La binomial", false, "Con p = 0,5 la binomial es simétrica."] ] },
+    { enunciado: "¿Por qué la desviación eleva las diferencias al cuadrado?", opciones: [
+      ["Para que las diferencias negativas no cancelen a las positivas", true, "Correcto: −1 y +1 sumarían 0, pero sus cuadrados suman 2."],
+      ["Para que el resultado sea más grande", false, "La raíz final deshace ese crecimiento; el motivo es el signo."],
+      ["Porque Python no sabe restar", false, "Python resta sin problema; el cuadrado es parte de la definición."],
+      ["Para calcular la media", false, "La media se calcula antes y sin cuadrados."] ] }
+  ]
+},
+{
+  id: "azar",
+  titulo: "Azar hecho a mano",
+  html: `
+<p>Una computadora es una máquina obediente: con las mismas instrucciones y los mismos datos da siempre el mismo resultado. Por eso no puede producir azar verdadero, y lo que hace es fabricar números <b>pseudoaleatorios</b>: una secuencia calculada con una regla fija, pero tan revuelta que para cualquier uso práctico parece al azar. Como la regla prohíbe la librería <code>random</code>, tu proyecto tiene su propio fabricante, la clase <code>GeneradorAleatorio</code> de <code>aleatorio.py</code>.</p>
+<p>La regla que usa es el <b>generador congruencial lineal</b> (F11), que necesita la operación <b>mod</b>, el residuo de una división. Un reloj es el mejor ejemplo: 13 horas después de las 12 son la 1, porque 13 mod 12 = 1. La regla toma el número anterior X, lo multiplica por a = 1664525, le suma c = 1013904223 y se queda con el residuo de dividir entre m = 2³² = 4 294 967 296:</p>
+<div class="formula">F11  X(nuevo) = (a·X + c) mod m        U = (X + 0,5) / m</div>
+<p>El primer X es la <b>semilla</b>. Con la semilla 7 la primera cuenta da (1664525·7 + 1013904223) mod 2³² = 1 025 555 898, que dividido entre m da U = 0,238781; la siguiente da X = 3 923 423 697 y U = 0,913493. Cada U es un número entre 0 y 1, la materia prima de todo lo demás. El 0,5 sumado a X garantiza que U nunca sea exactamente 0, lo que importa porque después se le saca logaritmo y el logaritmo de 0 no existe. Puedes comprobar estas cuentas en la demostración de abajo.</p>
+<p>Como la secuencia depende solo de la semilla, <span class="resaltado">la misma semilla produce siempre los mismos datos, los mismos pesos iniciales y el mismo orden de barajado</span>. Eso hace que un experimento sea <b>reproducible</b>, y es la razón por la que el informe usa la semilla 7: si la escribes en la interfaz verás exactamente los mismos resultados. Si dejas la semilla vacía, el constructor toma la hora del reloj en nanosegundos con <code>time.time_ns()</code>, que es el único uso de la librería <code>time</code>, y cada ejecución sale distinta.</p>
+<p>A partir de U se fabrica todo. <code>uniforme(a, b)</code> estira U al intervalo deseado con a + (b − a)·U, y así se sortean los pesos iniciales entre −1 y 1. <code>entero(n)</code> multiplica U por n y le quita los decimales para obtener un entero entre 0 y n − 1. <code>barajar</code> usa el algoritmo de <b>Fisher-Yates</b>, que es como barajar cartas de forma justa: empieza por la última posición, la intercambia con una posición al azar entre las que quedan (incluida ella misma) y repite hacia el principio. Con un generador nuevo con semilla 7, la lista [0, 1, 2, 3, 4] queda como [0, 2, 4, 3, 1]. Las distribuciones normal, exponencial y binomial de la lección anterior también se construyen a partir de U.</p>`,
+  ejemplos: [{ archivo: "aleatorio.py", codigo: String.raw`    def uniforme01(self):
+        """F11: X(k+1) = (a X(k) + c) mod m ;  U = (X + 0.5) / m"""
+        self.X = congruencial_lineal(self.X, self.A, self.C, self.M)
+        return uniforme_01(self.X, self.M)
+
+    def barajar(self, lista):
+        """Algoritmo de Fisher-Yates: desordena la lista en el mismo sitio."""
+        for i in range(len(lista) - 1, 0, -1):
+            j = self.entero(i + 1)
+            lista[i], lista[j] = lista[j], lista[i]`,
+    nota: "uniforme01 avanza el estado X con F11 y lo convierte en U. barajar recorre la lista de atrás hacia adelante y en cada posición intercambia con otra elegida al azar. Fíjate en que self.X se guarda dentro del objeto: por eso cada llamada continúa la secuencia donde quedó la anterior." }],
+  demo: "generador",
+  preguntas: [
+    { enunciado: "Entrenas dos veces seguidas con la semilla 7 y los mismos parámetros. ¿Qué pasa?", opciones: [
+      ["Se obtiene exactamente el mismo resultado, porque la secuencia de números es la misma", true, "Correcto: el generador es determinista. Eso hace reproducible el experimento del informe."],
+      ["Se obtienen resultados distintos, porque los números son aleatorios", false, "Son pseudoaleatorios: con la misma semilla la secuencia se repite."],
+      ["La segunda vez converge más rápido porque ya aprendió", false, "Cada entrenamiento empieza de cero con un perceptrón nuevo."],
+      ["El programa no deja repetir la semilla", false, "Sí la deja; esa es su utilidad."] ] },
+    { enunciado: "¿Para qué usa el proyecto la librería time?", opciones: [
+      ["Solo para tomar una semilla distinta cuando el usuario la deja vacía", true, "Correcto: time.time_ns() da la hora en nanosegundos. Ningún cálculo matemático depende de time."],
+      ["Para generar los números aleatorios", false, "Los genera el congruencial lineal propio."],
+      ["Para medir cuánto tarda el entrenamiento", false, "El proyecto no mide tiempos."],
+      ["Para la animación", false, "La animación usa after de tkinter, no time."] ] }
+  ]
+},
+{
+  id: "aprender",
+  titulo: "Cómo aprende, contado despacio",
+  html: `
+<p>Piensa en cómo regulas el agua de una ducha. Abres la llave, pruebas, y si sale demasiado fría giras hacia el lado caliente; si te pasas, giras de vuelta. Cada corrección depende de dos cosas: hacia dónde te equivocaste y qué tanto. El perceptrón aprende exactamente así, y la regla de aprendizaje es la versión precisa de esa idea.</p>
+<p>Sigamos un ajuste completo con números sencillos. La neurona tiene w = (1, 1), θ = 0, x0 = −1 y una tasa γ = 0,5. Le llega el punto x = (2, 1), que es de la clase con salida deseada d = −1.</p>
+<div class="formula">F1  S = 1·2 + 1·1 + 0·(−1) = 3
+F2  3 ≥ 0, así que y = 1
+F4  e = d − y = −1 − 1 = −2          (se equivocó)
+F5  w1 = 1 + 0,5·(−2)·2 = −1
+F5  w2 = 1 + 0,5·(−2)·1 = 0
+F6  θ  = 0 + 0,5·(−2)·(−1) = 1</div>
+<p>Con los pesos nuevos, el mismo punto da S = (−1)·2 + 0·1 + 1·(−1) = −3, y como −3 &lt; 0 la neurona ahora responde −1: corrigió su error. Mira el papel de cada pieza. El <b>signo del error</b> dice hacia dónde corregir: un error negativo baja la suma de ese punto y uno positivo la sube. La <b>entrada xi</b> dice cuánto culpar a cada peso: w1 bajó más que w2 porque x1 = 2 contribuyó más a la suma que x2 = 1. La <b>tasa γ</b> decide el tamaño del paso: grande corrige mucho de golpe y pequeña corrige poco a poco. Y si el error es cero, la neurona acertó y no se toca nada.</p>
+<p>Una corrección arregla un punto, pero puede desarreglar otros. Por eso se repite el proceso con todos los puntos, uno por uno, y una pasada completa se llama <b>época</b>. Al terminar cada época el programa mide qué tan bien quedó con el <b>error de la época</b> F7, err = ½·Σe². Con salidas 1 y −1 cada punto mal clasificado tiene e = ±2, su cuadrado es 4 y la mitad es 2, así que <span class="resaltado">err vale el doble del número de puntos mal clasificados</span>. Con las clases separadas y la semilla 7 el error por época fue 200, 34, 16, 26, 2, 18 y 0: empezó con 100 de 200 puntos mal, subió a veces porque una corrección estropeaba otros puntos, y en la época 6 llegó a 0. En ese momento el plano separa todo y el entrenamiento se detiene: <b>convergió</b>.</p>
+<p>Si las clases se mezclan, el error nunca llega a cero y el entrenamiento sigue hasta agotar las épocas máximas; el programa dice entonces «NO convergió». En la regresión el error se mide con números reales, nunca es exactamente cero por el ruido, y por eso existe el criterio de «se estabilizó», que el módulo 5 del modo de estudio explica en detalle.</p>`,
+  ejemplos: [{ archivo: "perceptron.py", codigo: String.raw`    def ajustar(self, x, d):
+        """Una iteración: multiplicar, sumar, comparar y ajustar."""
+        S = self.suma(x)                                                # F1
+        y = self.activacion(S)                                          # F2 / F3
+        e = error_instancia(d, y)                                       # F4
+        if e != 0:
+            for i in range(self.n_entradas):
+                self.w[i] = ajuste_peso(self.w[i], self.gamma, e, x[i])      # F5
+            self.theta = ajuste_sesgo(self.theta, self.gamma, e, self.x0)    # F6
+        return S, y, e`,
+    nota: "Es el ejemplo de arriba en código: cada línea corresponde a una fila de la cuenta. El if e != 0 es «si se equivocó, corrige»." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "Con salidas 1 y −1, el error de una época vale 18. ¿Cuántos puntos quedaron mal clasificados?", opciones: [
+      ["9", true, "Correcto: cada punto mal clasificado aporta ½·(±2)² = 2, así que 18/2 = 9."],
+      ["18", false, "Cada error aporta 2, no 1, por el cuadrado y el ½."],
+      ["36", false, "Sería al revés: hay que dividir entre 2."],
+      ["No se puede saber", false, "Con salidas 1 y −1 sí se puede: err = 2 × errores."] ] },
+    { enunciado: "En el ejemplo, ¿por qué w1 cambió más que w2?", opciones: [
+      ["Porque x1 = 2 es mayor que x2 = 1, y la corrección es proporcional a la entrada", true, "Correcto: F5 multiplica por xi; la entrada que más contribuyó a la suma recibe más corrección."],
+      ["Porque w1 es el primer peso", false, "El orden no importa; importa el valor de la entrada."],
+      ["Porque γ es distinta para cada peso", false, "γ es la misma para todos los pesos."],
+      ["Fue casualidad", false, "Sale directamente de la fórmula F5."] ] }
+  ]
+},
+{
+  id: "series",
+  titulo: "Calcular sin calculadora: iteraciones y series",
+  html: `
+<p>Un procesador solo sabe sumar, restar, multiplicar, dividir y comparar. Funciones como la raíz cuadrada, el logaritmo o el coseno no vienen «de fábrica»: alguien tiene que escribir una receta que las calcule con esas operaciones básicas. Normalmente esas recetas vienen en la librería <code>math</code>, pero como la regla del curso la prohíbe, tu <code>formulas.py</code> trae las suyas. Las necesitas porque Box-Muller usa raíz, logaritmo, coseno y π, y la exponencial usa logaritmo.</p>
+<p>La primera técnica es la <b>iteración</b>: repetir una misma regla hasta que el resultado deja de cambiar. La raíz cuadrada (M2) usa el método de <b>Newton-Raphson</b>, que para √a repite r ← ½·(r + a/r). La idea se entiende sin cálculo: si r es demasiado grande, a/r queda demasiado pequeño, y el promedio de los dos cae en medio, más cerca de la raíz. Para √9 empezando en r = 9 los valores son 5; 3,4; 3,0235; 3,00009 y 3,0000000014, y el siguiente paso ya no cambia. Fíjate en que cerca de la respuesta los ceros después de la coma se duplican en cada paso; eso se llama convergencia cuadrática.</p>
+<p>La segunda técnica son las <b>series</b>: escribir una función como una suma infinita de términos que se van haciendo cada vez más pequeños, y sumar hasta que el término siguiente sea despreciable. El coseno (M6) usa la serie de Taylor:</p>
+<div class="formula">cos t = 1 − t²/2! + t⁴/4! − t⁶/6! + …      (cos 1 ≈ 0,5403)</div>
+<p>Tu código deja de sumar cuando el término es menor que 10⁻¹⁸, mucho más pequeño que lo que se nota en un resultado. Con el mismo espíritu, la arcotangente (M3) es una serie, y π (M4) se obtiene con la fórmula de Machin, π = 16·atan(1/5) − 4·atan(1/239), que combina dos arcotangentes que convergen muy rápido. El logaritmo (M5) usa un truco previo, la <b>reducción de rango</b>: divide o multiplica el número por 2 hasta dejarlo entre 1 y 2, porque cerca de 1 la serie converge rápido, y después suma tantas veces ln 2 como divisiones hizo. Así, por ejemplo, ln 10 da 2,302585.</p>
+<p>No necesitas recordar las series de memoria. Lo que sí debes poder explicar es la idea: ninguna librería calcula por ti, cada función es una repetición de sumas, productos y comparaciones que se detiene cuando el resultado ya no cambia de forma apreciable. Las funciones más sencillas siguen la misma filosofía: <code>valor_absoluto</code> le quita el signo a un número con un if, y <code>minimo</code> y <code>maximo</code> recorren una lista recordando el menor o el mayor que han visto.</p>`,
+  ejemplos: [{ archivo: "formulas.py", codigo: String.raw`def minimo(valores):
+    """M7: el menor valor de la lista, comparando uno por uno."""
+    menor = valores[0]
+    for v in valores:
+        if v < menor:
+            menor = v
+    return menor`,
+    nota: "La función más sencilla de formulas.py: empieza suponiendo que el menor es el primero y lo cambia cada vez que encuentra uno más pequeño. Reemplaza a la función min de Python, que la regla del curso no permite." }],
+  demo: "newton",
+  preguntas: [
+    { enunciado: "¿Por qué el proyecto necesita escribir a mano el logaritmo, el coseno y la raíz?", opciones: [
+      ["Porque Box-Muller y la exponencial los usan para simular los datos, y la regla prohíbe la librería math", true, "Correcto: F12 usa raíz, logaritmo, coseno y π, y F14 usa logaritmo."],
+      ["Porque el perceptrón los usa en la suma ponderada", false, "La suma ponderada solo multiplica y suma."],
+      ["Porque matplotlib los necesita", false, "matplotlib solo dibuja valores ya calculados."],
+      ["Por gusto, no se usan", false, "Se usan en cada número normal o exponencial que se simula."] ] },
+    { enunciado: "¿Cuándo deja de sumar términos la serie del coseno?", opciones: [
+      ["Cuando el término es menor que 10⁻¹⁸ en valor absoluto", true, "Correcto: a partir de ahí los términos ya no cambian el resultado de forma apreciable."],
+      ["Después de exactamente 10 términos", false, "No hay un número fijo; depende del ángulo."],
+      ["Cuando la suma llega a 1", false, "La suma puede valer cualquier número entre −1 y 1."],
+      ["Nunca, suma infinitos términos", false, "Una computadora no puede sumar infinitos términos; por eso hay un criterio de parada."] ] }
+  ]
+},
+{
+  id: "python1",
+  titulo: "Python I: datos, decisiones y ciclos",
+  html: `
+<p>Python es el lenguaje en que está escrito el proyecto, y un programa en Python es una lista de instrucciones que la computadora ejecuta de arriba hacia abajo. Esta lección y la siguiente explican todo lo que necesitas para leer tu código, con ejemplos sacados de él.</p>
+<h3>Variables y tipos</h3>
+<p>Una <b>variable</b> es un nombre que guarda un valor. La línea <code>S = 0.0</code> crea la variable S y le guarda el número cero; el signo <code>=</code> en Python significa «guardar», no «es igual», y para comparar se usa <code>==</code> (igual) o <code>!=</code> (distinto). Los valores tienen <b>tipos</b>: <code>int</code> para enteros como 100, <code>float</code> para números con decimales como 0.1 (Python usa punto decimal), <code>str</code> para textos entre comillas como "normal", <code>bool</code> para <code>True</code> o <code>False</code>, y <code>None</code>, que significa «nada», como la semilla cuando el campo queda vacío.</p>
+<p>Los operadores son los esperados, <code>+ − * /</code>, más tres que conviene conocer: <code>**</code> es la potencia (<code>2 ** 32</code> es 2³²), <code>%</code> es el residuo, es decir, el mod de F11, y <code>+=</code> es una abreviatura: <code>k += 1</code> significa <code>k = k + 1</code>.</p>
+<h3>Listas, tuplas y diccionarios</h3>
+<p>Una <b>lista</b> guarda varios valores en orden, entre corchetes: <code>[2.0, 2.0, 2.0]</code>. A cada elemento se accede por su posición, su <b>índice</b>, y aquí hay una trampa: <span class="resaltado">los índices empiezan en 0</span>. Por eso en el código <code>w[0]</code> es w1, <code>w[1]</code> es w2 y <code>w[2]</code> es w3, y las clases 1, 2 y 3 son internamente 0, 1 y 2. Los índices negativos cuentan desde el final: <code>fila[-1]</code> es el último elemento. Una <b>rebanada</b> toma un trozo: <code>historial_error[-20:]</code> son los últimos 20, <code>historial_error[:-20]</code> son todos menos los últimos 20, y <code>self.w[:]</code> es una copia completa. Las listas crecen con <code>append</code> (agrega un elemento) y <code>extend</code> (agrega varios), y <code>len(lista)</code> dice cuántos elementos tienen.</p>
+<p>Una <b>tupla</b> es como una lista pero entre paréntesis y sin cambios. Su uso más común es devolver o recibir varios valores a la vez: <code>S, y, e = self.ajustar(X[i], d[i])</code> guarda en tres variables los tres valores que devuelve ajustar, y <code>lista[i], lista[j] = lista[j], lista[i]</code> intercambia dos elementos en una sola línea. Un <b>diccionario</b> guarda pares clave-valor entre llaves y se consulta por nombre en lugar de por posición: <code>config["tasa"]</code> da la tasa de la configuración.</p>
+<h3>Decisiones y bloques</h3>
+<p><code>if</code> ejecuta un bloque solo si se cumple una condición; <code>elif</code> («si no, si») prueba otra condición, y <code>else</code> cubre el resto. Las condiciones se combinan con <code>and</code>, <code>or</code> y <code>not</code>. En Python <b>la sangría define los bloques</b>: las líneas que están corridas hacia la derecha debajo de un if, un for o un def pertenecen a él. Por eso la sangría no es decoración, y un espacio de más o de menos cambia el programa.</p>
+<h3>Ciclos</h3>
+<p><code>for</code> repite un bloque para cada elemento de algo. <code>range</code> produce enteros: <code>range(3)</code> da 0, 1 y 2 (sin incluir el 3); <code>range(1, max_epocas + 1)</code> da 1, 2, …, max_epocas, que es como se cuentan las épocas; y <code>range(len(lista) - 1, 0, -1)</code> cuenta hacia atrás, como en Fisher-Yates. Cuando el contador no se necesita se usa el nombre <code>_</code>, como en <code>for _ in range(n)</code>. <code>while</code> repite mientras una condición sea verdadera; <code>while True</code> repite «para siempre» hasta que un <code>return</code> o un <code>break</code> lo corte, que es como terminan las series. <code>break</code> sale del ciclo en el acto, y así se detiene el entrenamiento al converger.</p>
+<p>Dos ayudantes aparecen en todo el proyecto. <code>zip(X, etiquetas)</code> recorre dos listas en paralelo, de a pares, y <code>enumerate(lista)</code> entrega cada elemento junto con su posición. Por último, una <b>comprensión de lista</b> construye una lista en una línea: <code>[x for x, c in zip(X, etiquetas) if c != 0]</code> se lee «la lista de cada x cuya etiqueta c no sea 0», y así arma la cascada los datos de P2.</p>`,
+  ejemplos: [{ archivo: "formulas.py", codigo: String.raw`def exactitud(predicciones, reales):
+    """F9:  exactitud (%) = 100 * (número de aciertos) / N"""
+    aciertos = 0
+    for p, r in zip(predicciones, reales):
+        if p == r:
+            aciertos += 1
+    return 100.0 * aciertos / len(reales)`,
+    nota: "Casi todo lo de esta lección en siete líneas: una variable que cuenta, un for con zip que recorre dos listas en pareja, un if con ==, el atajo += y len para dividir entre N." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "Si w = [0.5, -1.2, 3.0], ¿qué es w[0]?", opciones: [
+      ["0.5, que en la notación matemática es w1", true, "Correcto: los índices de Python empiezan en 0, así que w[0] es el primer peso."],
+      ["-1.2", false, "Ese es w[1], el segundo elemento."],
+      ["Un error, porque no existe la posición 0", false, "La posición 0 existe y es la primera."],
+      ["3.0", false, "Ese es w[2], o también w[-1], el último."] ] },
+    { enunciado: "¿Qué valores recorre range(1, 4)?", opciones: [
+      ["1, 2 y 3", true, "Correcto: range incluye el inicio y excluye el final."],
+      ["1, 2, 3 y 4", false, "El final no se incluye."],
+      ["0, 1, 2 y 3", false, "Con dos argumentos empieza en el primero, 1."],
+      ["Solo 1 y 4", false, "range produce todos los enteros intermedios."] ] },
+    { enunciado: "¿Qué hace S, y, e = self.ajustar(X[i], d[i])?", opciones: [
+      ["Guarda en S, y y e los tres valores que devuelve ajustar", true, "Correcto: ajustar termina con return S, y, e, y la tupla se reparte en tres variables."],
+      ["Compara S, y y e con ajustar", false, "Comparar sería con ==; el = guarda."],
+      ["Suma S, y y e", false, "Las comas separan valores, no los suman."],
+      ["Crea una lista llamada S", false, "Se crean tres variables separadas."] ] }
+  ]
+},
+{
+  id: "python2",
+  titulo: "Python II: funciones, clases y archivos",
+  html: `
+<h3>Funciones</h3>
+<p>Una <b>función</b> es un bloque de código con nombre que recibe datos, hace algo y devuelve un resultado. Se define con <code>def</code>, los datos que recibe se llaman <b>parámetros</b> y el resultado se entrega con <code>return</code>. Por ejemplo, <code>def error_instancia(d, y): return d - y</code> recibe d e y y devuelve su diferencia. Un parámetro puede tener un <b>valor por defecto</b>, como <code>max_epocas=100</code> en entrenar, que se usa si quien llama no da otro. Al llamar una función se pueden pasar los datos por nombre, <code>max_epocas=config["max_epocas"]</code>, y el atajo <code>**parametros</code> reparte un diccionario completo como argumentos con nombre; así la cascada le pasa la misma configuración a P1 y a P2.</p>
+<p>El texto entre triples comillas que sigue a un def es el <b>docstring</b>, la documentación de la función, donde tú escribiste cada fórmula con su código. Lo que va después de <code>#</code> es un <b>comentario</b>, que Python ignora. Una <code>lambda</code> es una función pequeña sin nombre, escrita en una línea; la interfaz las usa para decirle a un botón qué hacer, como <code>lambda: self._mover_medias(0.75)</code>.</p>
+<h3>Clases y objetos</h3>
+<p>Una <b>clase</b> es un molde, y un <b>objeto</b> es una cosa fabricada con ese molde. La clase <code>Perceptron</code> describe qué tiene toda neurona (pesos, θ, tasa, historiales) y qué sabe hacer (sumar, predecir, ajustar, entrenar); cada vez que el código escribe <code>Perceptron(...)</code> fabrica una neurona nueva con sus propios pesos. Por eso en uno contra el resto hay tres objetos y sus pesos no se mezclan: cada uno guarda los suyos. Ojo con una palabra: en programación a un objeto también se le llama «instancia de la clase», que no tiene nada que ver con las instancias de datos; en la sustentación conviene decir «objeto» para no confundir.</p>
+<p>Dentro de una clase, <code>__init__</code> es el <b>constructor</b>, la función que se ejecuta al fabricar el objeto y le da sus valores iniciales. <code>self</code> es la forma en que el objeto se refiere a sí mismo: <code>self.w</code> son «mis pesos». Las variables guardadas en self se llaman <b>atributos</b> (como <code>self.gamma</code> o <code>self.convergio</code>) y las funciones de la clase se llaman <b>métodos</b> (como <code>self.suma(x)</code>). Un método especial, <code>__call__</code>, permite usar un objeto como si fuera una función: como Escalon lo tiene, el perceptrón puede escribir <code>self.activacion(S)</code> sin saber si su activación es un escalón o una lineal. Ese es el truco que permite que la misma clase Perceptron sirva para clasificar y para hacer regresión.</p>
+<h3>Archivos, import y errores</h3>
+<p>Cada archivo .py es un <b>módulo</b>, y <code>from formulas import suma_ponderada</code> trae una función de otro archivo para poder usarla. Leyendo los import se ve quién depende de quién, y por eso tu proyecto se puede demostrar «sin librerías» solo mirando las primeras líneas de cada archivo.</p>
+<p>Cuando algo sale mal, el código puede <b>lanzar una excepción</b> con <code>raise ValueError("mensaje")</code>, que interrumpe lo que se estaba haciendo. Quien llamó puede <b>atraparla</b> con <code>try: … except ValueError as error: …</code> y reaccionar, en lugar de que el programa se caiga. Así funciona la validación: <code>leer_tasa</code> lanza el error si γ ≤ 0, y <code>_ejecutar</code> lo atrapa y muestra el mensaje en una ventana. El bloque <code>finally</code> se ejecuta pase lo que pase, y ahí se devuelve el cursor del mouse a la normalidad.</p>
+<p>Por último, dos detalles que verás al final de main.py y en los textos. Una cadena como <code>"convergió en %d épocas" % self.epocas</code> reemplaza el <code>%d</code> por el número; <code>%.5f</code> lo escribe con cinco decimales. Y <code>if __name__ == "__main__": main()</code> significa «ejecuta main solo si este archivo se abrió directamente», lo que permite importar main.py sin abrir la ventana.</p>`,
+  ejemplos: [{ archivo: "perceptron.py", codigo: String.raw`class Escalon:
+    """Función de activación escalón (F2) con umbral y salidas configurables."""
+
+    def __init__(self, umbral=0.0, salida_alta=1, salida_baja=-1):
+        self.umbral = umbral
+        self.salida_alta = salida_alta
+        self.salida_baja = salida_baja
+        self.nombre = "escalón"
+
+    def __call__(self, S):
+        return funcion_escalon(S, self.umbral, self.salida_alta, self.salida_baja)`,
+    nota: "Una clase completa y corta: el constructor guarda el umbral y las salidas en self con valores por defecto 0, 1 y −1, y __call__ permite escribir escalon(S) para obtener la salida. Toda la matemática la sigue haciendo funcion_escalon de formulas.py." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "Dentro de la clase Perceptron, ¿qué es self?", opciones: [
+      ["El propio objeto: self.w son los pesos de esa neurona en particular", true, "Correcto: cada objeto tiene su propio self, por eso los perceptrones no comparten pesos."],
+      ["Una librería de Python", false, "self no se importa; es el nombre del objeto dentro de sus métodos."],
+      ["La clase Escalon", false, "Escalon es otra clase; el perceptrón la guarda en self.activacion."],
+      ["Una variable global para todo el programa", false, "Es lo contrario: pertenece a un solo objeto."] ] },
+    { enunciado: "¿Qué pasa cuando leer_tasa encuentra γ = −0,1?", opciones: [
+      ["Lanza un ValueError con un mensaje, y _ejecutar lo atrapa y lo muestra en una ventana", true, "Correcto: raise interrumpe y except reacciona; el entrenamiento no ocurre."],
+      ["Cierra el programa", false, "La excepción se atrapa, así que el programa sigue abierto."],
+      ["Cambia la tasa por 0,1", false, "El programa no corrige el dato por su cuenta."],
+      ["Entrena igual", false, "La excepción interrumpe antes de entrenar."] ] },
+    { enunciado: "¿Por qué la misma clase Perceptron sirve para clasificar y para hacer regresión?", opciones: [
+      ["Porque recibe su activación como un objeto (Escalon o Lineal) y la usa con self.activacion(S)", true, "Correcto: gracias a __call__, el perceptrón no necesita saber cuál de las dos le pasaron."],
+      ["Porque tiene dos copias del código", false, "Hay una sola clase y un solo método ajustar."],
+      ["Porque la regresión no usa la clase Perceptron", false, "ejecutar_regresion crea un Perceptron con Lineal()."],
+      ["Porque Python adivina la tarea", false, "Lo decide quien crea el objeto, al elegir la activación."] ] }
+  ]
+},
+{
+  id: "visual",
+  titulo: "La parte visual: tkinter y matplotlib",
+  html: `
+<p>Las dos únicas librerías externas del proyecto se encargan de lo que se ve. <b>tkinter</b> construye la ventana, y viene incluida con Python; <b>matplotlib</b> dibuja las gráficas, y es la única que se instala aparte (por eso es la única línea de requirements.txt). Ninguna calcula nada del perceptrón: reciben números ya calculados por tus funciones y los muestran.</p>
+<h3>Cómo funciona una interfaz</h3>
+<p>Una interfaz gráfica está hecha de piezas llamadas <b>widgets</b>. En main.py, <code>tk.Tk()</code> crea la ventana principal, a la que el código llama <code>raiz</code>, y dentro van las piezas: <code>Label</code> (un texto), <code>Entry</code> (una caja para escribir), <code>Button</code> (un botón), <code>Combobox</code> (una lista desplegable, como la de distribuciones), <code>Radiobutton</code> (elegir una opción, como 2 o 3 clases), <code>Checkbutton</code> (una casilla, como Barajar), <code>Notebook</code> (pestañas), <code>Frame</code> y <code>LabelFrame</code> (recuadros para agrupar) y <code>Scale</code> (la barra deslizante de Época mostrada). Las piezas se acomodan con <code>pack</code>, que las apila, o con <code>grid</code>, que las pone en filas y columnas. Cada caja de texto está unida a una variable especial, <code>StringVar</code>, de la que se lee con <code>.get()</code> y en la que se escribe con <code>.set()</code>.</p>
+<p>La idea más importante es la <b>programación por eventos</b>. El programa no corre de arriba abajo y termina: después de armar la ventana, <code>raiz.mainloop()</code> se queda esperando a que pase algo, como un clic. Cada botón tiene un <code>command</code>, la función que se ejecuta al pulsarlo; por ejemplo, el botón ENTRENAR CLASIFICACIÓN tiene <code>command=self.entrenar_clasificacion</code>. Para la animación se usa <code>raiz.after(espera, función)</code>, que programa una función para dentro de unos milisegundos sin congelar la ventana. Los mensajes de error salen con <code>messagebox.showerror</code>.</p>
+<h3>Cómo se dibuja una gráfica</h3>
+<p>En matplotlib una <code>Figure</code> es la hoja en blanco y <code>add_subplot</code> crea dentro unos <b>ejes</b>, el área con su escala; con <code>projection="3d"</code> los ejes son tridimensionales. Sobre los ejes se dibuja: <code>scatter</code> pone puntos (las nubes, la X del centroide y la estrella del punto nuevo), <code>plot</code> traza líneas (el error por época y los pesos), y <code>Poly3DCollection</code> pinta un polígono en 3D, que es como se dibuja el plano después de que tus funciones calcularon sus esquinas. <code>legend</code>, <code>set_xlabel</code> y <code>set_title</code> ponen la leyenda, los nombres de los ejes y el título.</p>
+<p>Para que las gráficas aparezcan dentro de la ventana, <code>FigureCanvasTkAgg</code> convierte la figura de matplotlib en un widget de tkinter, y <code>NavigationToolbar2Tk</code> agrega la barra de zoom, mover y guardar imagen. Cada vez que algo cambia, el código borra la figura con <code>fig.clear()</code>, vuelve a dibujar y pide actualizarla con <code>canvas.draw_idle()</code>. Un detalle de eficiencia: <code>_redibujar_visible</code> solo redibuja la pestaña que estás mirando, y las demás quedan anotadas en <code>self.pendientes</code> hasta que las abras.</p>`,
+  ejemplos: [{ archivo: "main.py", codigo: String.raw`class PestanaGrafica:
+    """Pestaña con una figura de matplotlib y su barra de herramientas
+    (zoom, mover, guardar imagen). En 3D se puede rotar con el mouse."""
+
+    def __init__(self, cuaderno, titulo):
+        self.marco = ttk.Frame(cuaderno)
+        cuaderno.add(self.marco, text=titulo)
+        self.fig = Figure(figsize=(9, 6), dpi=100)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.marco)
+        self.barra = NavigationToolbar2Tk(self.canvas, self.marco, pack_toolbar=False)
+        self.barra.update()
+        self.barra.pack(side="bottom", fill="x")
+        self.canvas.get_tk_widget().pack(side="top", fill="both", expand=True)`,
+    nota: "El puente entre las dos librerías: crea una pestaña (Frame dentro del Notebook), una figura de matplotlib, el widget que la muestra en tkinter y la barra de herramientas. Las tres pestañas Espacio 3D, Épocas y Pesos son tres objetos de esta clase." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "¿Qué hace raiz.mainloop() al final de main()?", opciones: [
+      ["Deja la ventana abierta esperando eventos, como clics, y ejecuta la función de cada botón cuando se pulsa", true, "Correcto: es el ciclo de eventos de tkinter; sin él la ventana se cerraría de inmediato."],
+      ["Entrena el perceptrón en un ciclo", false, "El entrenamiento ocurre solo cuando se pulsa un botón."],
+      ["Dibuja las gráficas", false, "Las dibuja graficas.py cuando hay resultados."],
+      ["Cierra la ventana", false, "Al contrario: la mantiene viva."] ] },
+    { enunciado: "¿Quién calcula las esquinas del plano que se ve en el espacio 3D?", opciones: [
+      ["poligono_plano de graficas.py, con coordenada_del_plano (F10) de formulas.py", true, "Correcto: matplotlib solo recibe el polígono ya calculado y lo pinta con Poly3DCollection."],
+      ["matplotlib, con sus funciones de geometría", false, "matplotlib no calcula el plano; solo lo pinta."],
+      ["tkinter", false, "tkinter solo arma la ventana."],
+      ["El perceptrón, en entrenar", false, "entrenar produce los pesos; el polígono se calcula al dibujar."] ] }
+  ]
+},
+{
+  id: "recorrido",
+  titulo: "Qué pasa cuando presionas ENTRENAR",
+  html: `
+<p>Ya tienes todas las piezas. Esta lección las une siguiendo un solo clic en el botón ENTRENAR CLASIFICACIÓN, archivo por archivo, que es probablemente la mejor forma de explicar el proyecto completo en la sustentación.</p>
+<ol class="pasos">
+<li><b>El clic.</b> mainloop detecta el clic y llama a <code>entrenar_clasificacion</code> de main.py, que le pide a <code>_ejecutar</code> que corra el experimento.</li>
+<li><b>Leer y validar.</b> <code>_config_clasificacion</code> parte de una copia de la configuración por defecto (<code>ex.config_clasificacion()</code>, que usa <code>copy.deepcopy</code>) y la llena con lo que escribiste, usando <code>leer_int</code>, <code>leer_float</code>, <code>leer_no_negativo</code>, <code>leer_tasa</code> y <code>leer_salida</code>. Si algo no es válido, lanza un ValueError y el proceso termina con un mensaje.</li>
+<li><b>Preparar el azar.</b> En experimentos.py, <code>ejecutar_clasificacion</code> crea un <code>GeneradorAleatorio</code> con la semilla. Ese único generador se usará para los datos, los pesos iniciales y el barajado.</li>
+<li><b>Simular los datos.</b> <code>generar_datos_clasificacion</code> de aleatorio.py llama a <code>generar_clase</code> por cada clase y devuelve dos listas: <code>X</code>, con todos los puntos, y <code>etiquetas</code>, con la clase de cada uno (0, 1 o 2).</li>
+<li><b>Crear la neurona.</b> Se crea un <code>Escalon</code> con el umbral y las salidas, y la función <code>crear</code> fabrica un <code>Perceptron</code> de 3 entradas, cuyo constructor sortea los pesos y θ entre −1 y 1. Con dos clases, la salida deseada es la alta para la clase 1 y la baja para la clase 2; con tres, <code>entrenar_tres_clases</code> crea dos o tres perceptrones según la estrategia.</li>
+<li><b>Entrenar.</b> <code>entrenar</code> de perceptron.py mide el error inicial (época 0) y repite épocas: baraja el orden, llama a <code>ajustar</code> con cada instancia (F1 a F6), guarda los pesos después de cada una y al final de la época calcula F7 con <code>error_conjunto</code>. Se detiene si convergió, divergió, se estabilizó o se acabaron las épocas.</li>
+<li><b>Evaluar.</b> De vuelta en experimentos.py se predice la clase de cada punto, se calcula la exactitud global (F9) y por clase (F18), y la media (F16) y la desviación (F17) que realmente salieron en cada nube.</li>
+<li><b>Entregar.</b> Todo se guarda en un diccionario, <code>res</code>, con los puntos, las etiquetas, los perceptrones entrenados y las medidas, y se devuelve a main.py.</li>
+<li><b>Mostrar.</b> <code>_ejecutar</code> ajusta la barra de épocas, escribe el resumen con <code>ex.resumen</code>, el proceso paso a paso si lo activaste, y la barra de estado. <code>_redibujar_visible</code> llama a <code>dibujar_clasificacion</code>, <code>dibujar_epocas</code> o <code>dibujar_pesos</code> de graficas.py según la pestaña abierta, y matplotlib pinta.</li>
+</ol>
+<p>Fíjate en la dirección del viaje: la petición baja desde la interfaz hasta las fórmulas y los resultados suben de vuelta, y ningún archivo de abajo conoce a los de arriba. formulas.py no sabe que existe una ventana, y perceptron.py no sabe de dónde salen los datos. Esa separación en capas es lo que permite probar la lógica sin abrir la ventana, como hace el comando de la lección siguiente.</p>
+<p>La regresión sigue el mismo camino con <code>entrenar_regresion</code>, <code>_config_regresion</code>, <code>ejecutar_regresion</code> y <code>generar_datos_regresion</code>, con una activación <code>Lineal</code> y midiendo al final el ECM (F8) y el R² (F19) en lugar de la exactitud. El ejemplo de clase usa <code>ejecutar_ejemplo_clase</code>, que carga los pesos de las diapositivas y entrena sin barajar.</p>`,
+  ejemplos: [{ archivo: "main.py", codigo: String.raw`    def entrenar_clasificacion(self):
+        self._ejecutar(lambda: ex.ejecutar_clasificacion(self._config_clasificacion()))`,
+    nota: "Una sola línea resume los pasos 1 a 8: la lambda primero lee y valida la configuración y luego ejecuta el experimento. _ejecutar la llama dentro de un try para atrapar cualquier dato inválido." }],
+  demo: null,
+  preguntas: [
+    { enunciado: "¿Qué archivo genera los puntos de las nubes?", opciones: [
+      ["aleatorio.py, con generar_datos_clasificacion y generar_clase", true, "Correcto: usa el generador propio y las distribuciones de formulas.py."],
+      ["main.py", false, "main.py solo lee lo que escribiste y muestra los resultados."],
+      ["graficas.py", false, "graficas.py dibuja los puntos, pero no los genera."],
+      ["perceptron.py", false, "El perceptrón recibe los puntos ya generados."] ] },
+    { enunciado: "¿Qué devuelve ejecutar_clasificacion a la interfaz?", opciones: [
+      ["Un diccionario res con los datos, los perceptrones entrenados y las medidas de exactitud", true, "Correcto: main.py y graficas.py leen de ese diccionario todo lo que muestran."],
+      ["Una imagen de la gráfica", false, "experimentos.py no dibuja nada."],
+      ["Solo el número de épocas", false, "Devuelve mucho más: datos, perceptrones, exactitudes y estadísticas."],
+      ["Nada, imprime en la consola", false, "Devuelve res con return."] ] }
+  ]
+},
+{
+  id: "ejecutar",
+  titulo: "Ejecutar el proyecto y prepararte",
+  html: `
+<p>Para que un archivo .py haga algo hace falta el <b>intérprete</b> de Python, el programa que lee el código y lo ejecuta. Además, tu proyecto necesita matplotlib, que no viene con Python, y para no instalarla en todo el computador se usa un <b>entorno virtual</b>, la carpeta <code>.venv</code>: una copia aislada de Python con sus propias librerías. El archivo <code>requirements.txt</code> dice qué instalar en ese entorno, y solo contiene matplotlib. Por eso, si abres el programa con el Python del sistema en lugar del de .venv, falla diciendo que no encuentra matplotlib.</p>
+<p>En VS Code el camino es: abrir la carpeta del proyecto; si no existe .venv, ejecutar la tarea «Preparar entorno» (Terminal, Ejecutar tarea), que lo crea e instala matplotlib; elegir el intérprete de .venv con Ctrl+Shift+P y «Python: Select Interpreter»; abrir main.py y pulsar F5. También puedes usar Ctrl+Shift+B, que ejecuta la tarea «Abrir el simulador», o escribir en la terminal <code>.venv\\Scripts\\python main.py</code>.</p>
+<p>Gracias a la separación en capas, la lógica se puede probar sin abrir la ventana, lo que es una buena demostración de que la matemática no depende de la interfaz:</p>
+<div class="formula">.venv\\Scripts\\python -c "import experimentos as ex; c = ex.config_clasificacion(); c['semilla'] = 7; r = ex.ejecutar_clasificacion(c); print(ex.resumen(r))"</div>
+<p>Para la sustentación, un orden que funciona bien es: escribir la semilla 7, entrenar con los valores por defecto (converge en 6 épocas con 100 %) y mostrar las tres gráficas; pulsar Solapadas y entrenar para mostrar que no converge; usar Desbalanceadas para explicar por qué la exactitud por clase importa; pasar a la regresión y comparar los pesos aprendidos con los reales; y terminar con el Ejemplo de clase, que reproduce la cuenta de las diapositivas. Con eso cubres las tres salidas que pidió el profesor y las formas de reventar el perceptrón. Después de esta ruta, sigue con el Modo de estudio, que profundiza cada tema y une la teoría con tu código.</p>`,
+  ejemplos: [],
+  demo: null,
+  preguntas: [
+    { enunciado: "Abres main.py con el Python del sistema y sale un error de que falta matplotlib. ¿Por qué?", opciones: [
+      ["Porque matplotlib solo está instalada en el entorno virtual .venv", true, "Correcto: hay que elegir el intérprete de .venv en VS Code o usar .venv\\Scripts\\python."],
+      ["Porque el código tiene un error", false, "El código está bien; falta la librería en ese Python."],
+      ["Porque tkinter no está instalado", false, "tkinter viene con Python; la que falta es matplotlib."],
+      ["Porque hay que borrar la carpeta .venv", false, "Al contrario: .venv es donde está matplotlib."] ] }
+  ]
+}
+];
+
+/* Glosario para la sección Desde cero: [término, definición] */
+const GLOSARIO = [
+  ["Activación (función de)", "Función que convierte la suma S en la salida y. En clasificación es el escalón (F2) y en regresión la lineal (F3)."],
+  ["Algoritmo", "Receta paso a paso para resolver un problema, como Fisher-Yates para barajar o Newton-Raphson para la raíz."],
+  ["Aprendizaje supervisado", "Aprender a partir de ejemplos cuya respuesta correcta se conoce."],
+  ["Atributo", "Variable guardada dentro de un objeto, como self.w o self.convergio."],
+  ["Barajar", "Desordenar las instancias antes de cada época, con Fisher-Yates, para que el orden de los datos no sesgue el aprendizaje."],
+  ["Box-Muller", "Fórmula (F12) que convierte dos números uniformes en uno con distribución normal."],
+  ["Cascada", "Estrategia de tres clases con dos perceptrones: P1 separa la clase 1 del resto y P2 separa la 2 de la 3."],
+  ["Centroide", "Punto medio de una nube: la media de cada coordenada. Se marca con una X."],
+  ["Clase (de datos)", "Categoría a la que pertenece una instancia. En el código se numeran 0, 1 y 2."],
+  ["Clase (de Python)", "Molde para fabricar objetos, como Perceptron o GeneradorAleatorio."],
+  ["Clasificación", "Tarea en la que la respuesta es una categoría."],
+  ["Congruencial lineal", "Generador de números pseudoaleatorios X ← (aX + c) mod m (F11)."],
+  ["Constructor", "Método __init__ de una clase, que da los valores iniciales al objeto."],
+  ["Convergencia", "Que el entrenamiento llegue al error mínimo: en clasificación, que el plano separe todas las instancias."],
+  ["Desbalance", "Que una clase tenga muchas más instancias que otra, como 100 contra 10."],
+  ["Desviación estándar (σ)", "Medida de qué tan dispersos están los datos respecto a la media (F17)."],
+  ["Diccionario", "Estructura de Python con pares clave-valor, como config[\"tasa\"]."],
+  ["Distribución de probabilidad", "Descripción de qué valores puede tomar algo al azar y con qué frecuencia."],
+  ["Divergencia", "Que el error crezca sin control hasta volverse enorme, infinito o NaN; pasa con una tasa demasiado grande en regresión."],
+  ["Docstring", "Texto entre triples comillas que documenta una función o clase."],
+  ["ECM", "Error cuadrático medio, el promedio de los errores al cuadrado (F8)."],
+  ["Entorno virtual", "Copia aislada de Python con sus propias librerías; en el proyecto, la carpeta .venv."],
+  ["Entrada", "Cada uno de los números que describen una instancia: x1, x2 y x3."],
+  ["Época", "Una pasada completa por todas las instancias del conjunto de entrenamiento."],
+  ["Error de la época", "err = ½·Σe² (F7), calculado después de cada época con los pesos ya ajustados."],
+  ["Escalón", "Función de activación que responde la salida alta si S ≥ umbral y la baja si no (F2)."],
+  ["Estancamiento", "Criterio de parada de la regresión: el error no mejoró al menos 0,01 % en 20 épocas. El programa dice «se estabilizó»."],
+  ["Exactitud", "Porcentaje de instancias bien clasificadas (F9); por clase, F18."],
+  ["Excepción", "Señal de error que interrumpe el programa (raise) y que se puede atrapar (try/except)."],
+  ["Fisher-Yates", "Algoritmo para barajar una lista de forma justa, recorriéndola de atrás hacia adelante."],
+  ["Frontera de decisión", "Recta o plano donde S = umbral; separa los puntos que reciben la salida alta de los que reciben la baja."],
+  ["Función (de Python)", "Bloque de código con nombre que recibe parámetros y devuelve un resultado con return."],
+  ["Hiperplano", "Generalización del plano a más de tres dimensiones."],
+  ["Histograma", "Gráfico de barras que cuenta cuántos valores caen en cada tramo."],
+  ["Índice", "Posición de un elemento en una lista; en Python empieza en 0."],
+  ["Instancia", "Un ejemplo del conjunto de datos: un punto con sus entradas y su salida deseada."],
+  ["Iteración", "Cada repetición de un proceso; también, el ajuste de una sola instancia."],
+  ["Linealmente separable", "Conjunto en el que existe una recta o un plano que deja cada clase de un lado."],
+  ["Lista", "Secuencia ordenada de valores entre corchetes, como [2.0, 2.0, 2.0]."],
+  ["LMS", "Regla delta de Widrow y Hoff: la regla del perceptrón con activación lineal, usada en regresión."],
+  ["mainloop", "Ciclo de tkinter que mantiene la ventana abierta esperando eventos."],
+  ["Media (μ)", "Promedio de los valores (F16); en las clases, el centro de la nube."],
+  ["Método", "Función que pertenece a una clase, como ajustar o entrenar."],
+  ["mod", "Residuo de una división; en Python se escribe %."],
+  ["Módulo (de Python)", "Un archivo .py que otros archivos pueden importar."],
+  ["NaN", "«No es un número»: valor especial que resulta de cuentas imposibles; es el único valor distinto de sí mismo."],
+  ["Newton-Raphson", "Método iterativo que el proyecto usa para la raíz cuadrada (M2)."],
+  ["Objeto", "Algo fabricado con una clase, como cada perceptrón; tiene sus propios atributos."],
+  ["Peso", "Número que mide cuánto influye una entrada en la suma; se aprende."],
+  ["Plano", "Superficie plana en 3D; es la frontera de decisión del perceptrón con tres entradas (F10)."],
+  ["Pseudoaleatorio", "Número calculado con una regla fija que parece al azar; con la misma semilla se repite."],
+  ["R²", "Coeficiente de determinación (F19): qué fracción de la variación de y explica el plano."],
+  ["Regresión", "Tarea en la que la respuesta es un número real."],
+  ["Reproducible", "Que se puede repetir con exactamente el mismo resultado; se logra fijando la semilla."],
+  ["Ruido", "Valor al azar que se suma a los datos de regresión para imitar errores de medición."],
+  ["Semilla", "Primer valor del generador; con la misma semilla se obtienen los mismos datos y resultados."],
+  ["Serie", "Suma de infinitos términos cada vez más pequeños que se corta cuando ya no cambian el resultado."],
+  ["Sesgo (θ)", "Parámetro que desplaza la frontera; con x0 = −1 se resta de la suma."],
+  ["Suma ponderada", "S = w1·x1 + w2·x2 + w3·x3 + θ·x0 (F1)."],
+  ["Tasa de aprendizaje (γ)", "Tamaño de cada corrección de los pesos."],
+  ["Umbral", "Valor fijo con el que el escalón compara S; por defecto 0. No se aprende, a diferencia de θ."],
+  ["Uno contra el resto", "Estrategia de tres clases con tres perceptrones, uno por clase; decide la neurona con mayor S − umbral."],
+  ["Varianza", "El cuadrado de la desviación estándar, σ²."],
+  ["Vector", "Lista ordenada de números, como un punto (x1, x2, x3) o los pesos (w1, w2, w3)."],
+  ["Widget", "Cada pieza de la interfaz: botón, caja de texto, lista desplegable, pestaña…"]
+];
+
+/* Catálogo de TODAS las funciones del proyecto, archivo por archivo:
+   [nombre, qué hace en palabras sencillas] */
+const FUNCIONES = {
+  "formulas.py": [
+    ["valor_absoluto(v)", "M1. Devuelve v sin signo: si es negativo le cambia el signo. La usan la raíz, las series, las gráficas y num."],
+    ["raiz_cuadrada(a)", "M2. Newton-Raphson: repite r ← ½(r + a/r) hasta que r deja de cambiar, con un máximo de 1100 pasos. Rechaza los negativos con un ValueError."],
+    ["arcotangente(z)", "M3. Suma la serie z − z³/3 + z⁵/5 − … hasta que el término es menor que 10⁻¹⁸. Solo se usa para calcular PI."],
+    ["PI", "M4. Constante calculada una sola vez al importar el archivo con la fórmula de Machin."],
+    ["_serie_ln(m)", "Auxiliar del logaritmo (el guion bajo inicial indica que es de uso interno): serie de la arcotangente hiperbólica, rápida si m está cerca de 1. Con ella se calcula también la constante LN2."],
+    ["logaritmo_natural(a)", "M5. Lleva a a la forma m·2^k con m entre 1 y 2 y devuelve k·ln 2 + ln m. Rechaza a ≤ 0."],
+    ["coseno(angulo)", "M6. Lleva el ángulo al intervalo [−π, π] y suma la serie de Taylor."],
+    ["minimo(valores) y maximo(valores)", "M7. Recorren la lista recordando el menor o el mayor; reemplazan a min y max de Python."],
+    ["INFINITO y es_finito(v)", "M8. INFINITO = float(\"inf\"). es_finito devuelve False si v es NaN (v != v) o infinito."],
+    ["suma_ponderada(w, x, theta, x0)", "F1. Multiplica cada peso por su entrada, suma todo y agrega θ·x0."],
+    ["funcion_escalon(S, umbral, alta, baja)", "F2. Devuelve la salida alta si S ≥ umbral y la baja si no."],
+    ["funcion_lineal(S)", "F3. Devuelve S tal cual; es la activación de la regresión."],
+    ["error_instancia(d, y)", "F4. Devuelve d − y."],
+    ["ajuste_peso(wi, gamma, e, xi)", "F5. Devuelve wi + γ·e·xi."],
+    ["ajuste_sesgo(theta, gamma, e, x0)", "F6. Devuelve θ + γ·e·x0: la misma regla que los pesos, con x0 como entrada."],
+    ["error_epoca(errores)", "F7. Suma los cuadrados de los errores y multiplica por ½."],
+    ["error_cuadratico_medio(errores)", "F8. Suma los cuadrados de los errores y divide entre N."],
+    ["exactitud(predicciones, reales)", "F9. Cuenta los aciertos y devuelve el porcentaje."],
+    ["coordenada_del_plano(w, theta, x0, umbral, k, otros)", "F10. Despeja la coordenada k del plano conociendo las otras dos."],
+    ["media(valores)", "F16. Suma los valores y divide entre N."],
+    ["desviacion_estandar(valores)", "F17. Raíz del promedio de los cuadrados de las distancias a la media."],
+    ["exactitud_por_clase(predicciones, reales, clase)", "F18. Porcentaje de aciertos contando solo las instancias de una clase."],
+    ["coeficiente_determinacion(reales, predichos)", "F19. R² = 1 − Σ(y − ŷ)²/Σ(y − media)²; devuelve 0 si todos los y son iguales."],
+    ["congruencial_lineal(X, a, c, m) y uniforme_01(X, m)", "F11. El siguiente X del generador y su conversión a U = (X + 0,5)/m."],
+    ["normal_box_muller(U1, U2, mu, sigma)", "F12. Convierte dos uniformes en un valor normal con media μ y desviación σ."],
+    ["uniforme_media_desviacion(U, mu, sigma)", "F13. Valor uniforme en [μ − σ√3, μ + σ√3]."],
+    ["exponencial_inversa(U, mu, sigma)", "F14. (μ − σ) − σ·ln U: exponencial con media μ y desviación σ."],
+    ["binomial_estandarizada(exitos, ensayos, p, mu, sigma)", "F15. Convierte un conteo de éxitos en un valor con media μ y desviación σ."]
+  ],
+  "aleatorio.py": [
+    ["DISTRIBUCIONES", "Tupla con los nombres de las cuatro distribuciones; la interfaz la usa para llenar las listas desplegables."],
+    ["GeneradorAleatorio(semilla)", "Constructor: guarda la semilla como estado X (o toma la hora con time.time_ns() si es None). A, C y M son las constantes de Numerical Recipes."],
+    ["uniforme01()", "Avanza el generador con F11 y devuelve U en (0, 1)."],
+    ["uniforme(a, b)", "Número al azar entre a y b: a + (b − a)·U. Así se sortean los pesos iniciales entre −1 y 1."],
+    ["entero(n)", "Entero al azar entre 0 y n − 1: int(U·n)."],
+    ["barajar(lista)", "Fisher-Yates: desordena la lista en el mismo sitio."],
+    ["normal, uniforme_mu_sigma, exponencial, binomial", "Una muestra de cada distribución con media μ y desviación σ, usando F12 a F15. La binomial lanza 20 «monedas» con p = 0,5."],
+    ["muestra(distribucion, mu, sigma)", "Recibe el nombre de la distribución y llama al método correspondiente; si el nombre no existe lanza un ValueError."],
+    ["generar_clase(generador, n, centro, desviacion, distribucion)", "Genera n puntos 3D sorteando cada coordenada alrededor de su media."],
+    ["generar_datos_clasificacion(generador, clases)", "Genera todas las clases y devuelve X (los puntos) y etiquetas (0, 1, 2)."],
+    ["generar_datos_regresion(generador, config)", "Sortea las entradas, calcula y con el modelo lineal o cuadrático más el sesgo b y el ruido, y devuelve X e y."]
+  ],
+  "perceptron.py": [
+    ["MAX_LINEAS_REGISTRO", "Límite de 4000 líneas para el proceso paso a paso, para no llenar la memoria."],
+    ["Escalon(umbral, salida_alta, salida_baja)", "Clase de la activación escalón; al llamarla con S usa funcion_escalon (F2)."],
+    ["Lineal()", "Clase de la activación lineal; al llamarla con S devuelve S (F3). Su umbral es 0."],
+    ["Perceptron(n_entradas, tasa, activacion, generador, nombre, x0)", "Constructor: guarda la configuración, sortea pesos y θ en (−1, 1) y deja vacíos los historiales y en False los indicadores convergio, estancado y divergio."],
+    ["suma(x)", "F1 con los pesos actuales del perceptrón."],
+    ["predecir(x)", "Aplica la activación a la suma: la respuesta de la neurona para el punto x."],
+    ["pesos_actuales()", "Lista [w1, …, wn, θ]; se guarda en el historial después de cada ajuste."],
+    ["pesos_en_epoca(k)", "Devuelve los pesos y θ al final de la época k, tomando la fila k·n_instancias del historial. Lo usan la barra de épocas y la animación."],
+    ["error_conjunto(X, d)", "La «repasadita»: F4 para cada instancia y F7 sobre todo el conjunto."],
+    ["ajustar(x, d)", "Una iteración: F1, activación, F4 y, si hay error, F5 y F6. Devuelve S, y y e."],
+    ["entrenar(X, d, …)", "El ciclo por épocas con barajado, registro y los cuatro criterios de parada. Devuelve el historial de errores."],
+    ["estado()", "Texto con el motivo de parada: DIVERGIÓ, se estabilizó, convergió o NO convergió."],
+    ["ecuacion_plano()", "Texto de F10 con los pesos aprendidos, para el resumen."],
+    ["num(v)", "Escribe un número con 5 decimales, o en notación científica si es enorme."],
+    ["_anotar, _anotar_paso y _f", "Auxiliares que agregan líneas al proceso paso a paso respetando el límite de líneas."],
+    ["entrenar_tres_clases(X, etiquetas, estrategia, crear_perceptron, parametros, alta, baja)", "Crea y entrena dos perceptrones (cascada) o tres (uno contra el resto), cada uno con sus propias salidas deseadas."],
+    ["predecir_tres_clases(perceptrones, x, estrategia, alta)", "Decide la clase: en cascada pregunta en orden; en uno contra el resto gana la mayor S − umbral."]
+  ],
+  "experimentos.py": [
+    ["CONFIG_CLASIFICACION y CONFIG_REGRESION", "Diccionarios con todos los valores por defecto de cada modo."],
+    ["EJEMPLO_X, EJEMPLO_D, EJEMPLO_W, EJEMPLO_THETA, EJEMPLO_GAMMA", "Los datos, pesos y tasa del ejercicio de las diapositivas."],
+    ["config_clasificacion() y config_regresion()", "Devuelven una copia profunda (deepcopy) de la configuración, para que los cambios no alteren los valores originales."],
+    ["ejecutar_clasificacion(config)", "Genera los datos, crea y entrena los perceptrones, predice, mide exactitud global y por clase, media y desviación de cada nube, y devuelve el diccionario res."],
+    ["ejecutar_regresion(config)", "Genera los datos de regresión, entrena un perceptrón lineal y calcula el ECM y el R²."],
+    ["ejecutar_ejemplo_clase()", "Reproduce el ejemplo de las diapositivas sin barajar y con registro paso a paso."],
+    ["resumen(res)", "Arma el texto de la pestaña Resumen y fórmulas."],
+    ["clasificar_punto(res, x)", "Clasifica un punto nuevo con los perceptrones ya entrenados."]
+  ],
+  "graficas.py": [
+    ["COLORES_CLASE, COLORES_PLANO, COLORES_PESO", "Los colores de las clases, los planos y las curvas de pesos."],
+    ["_rango(valores, margen)", "Mínimo y máximo de una lista con un margen del 10 %, para los límites de los ejes."],
+    ["_todos_finitos(valores)", "True si ningún valor es NaN ni infinito (M8)."],
+    ["_recortar(poligono, eje, limite, mayor_igual)", "Un paso de Sutherland-Hodgman: recorta el polígono por un límite e interpola los cruces."],
+    ["poligono_plano(w, theta, x0, umbral, limites)", "Calcula las esquinas del plano F10 dentro de la caja de los datos."],
+    ["_preparar_3d(fig, vista)", "Limpia la figura, crea ejes 3D y conserva el ángulo de vista."],
+    ["dibujar_clasificacion(fig, res, epoca, vista)", "Nubes, centroides, planos y punto nuevo en el espacio 3D."],
+    ["dibujar_regresion(fig, res, epoca, vista)", "Plano de regresión (o corte con x3 en su media) y gráfica de real contra predicho; si hay pesos infinitos dibuja solo los datos."],
+    ["dibujar_ejemplo(fig, res, epoca, vista)", "Los seis puntos del ejemplo de clase y la recta de separación."],
+    ["dibujar_epocas(fig, res, epoca)", "El error F7 por época de cada perceptrón; usa escala logarítmica si alguno divergió."],
+    ["dibujar_pesos(fig, res, epoca)", "Todos los pesos y θ de cada perceptrón en una gráfica, con el eje en épocas."],
+    ["_titulo_epoca(titulo, perceptrones, epoca)", "Título de la gráfica con el estado o la época mostrada."]
+  ],
+  "main.py": [
+    ["ESCENARIOS", "Diccionario con los centros, desviaciones, distribuciones e instancias de Separadas, Cercanas, Solapadas y Desbalanceadas."],
+    ["leer_float(var, nombre)", "Lee un número aceptando coma o punto y rechaza textos, nan e inf."],
+    ["leer_no_negativo(var, nombre)", "Como leer_float, pero rechaza negativos (para σ)."],
+    ["leer_tasa(var)", "Lee γ y exige que sea mayor que cero."],
+    ["leer_int(var, nombre, minimo)", "Lee un entero (si tiene decimales se los quita) y exige un mínimo."],
+    ["leer_salida(var, nombre)", "Lee una salida del escalón y la guarda como entero si no tiene decimales."],
+    ["leer_semilla(var)", "Devuelve None si el campo está vacío, o el entero escrito."],
+    ["fmt(v)", "Escribe un número con coma decimal para mostrarlo en la interfaz."],
+    ["MarcoDesplazable", "Recuadro con barra de desplazamiento y rueda del mouse para el panel de parámetros."],
+    ["PestanaGrafica y vista_3d()", "Pestaña con una figura de matplotlib y su barra de herramientas; vista_3d recuerda el ángulo de la cámara al redibujar."],
+    ["PestanaTexto y mostrar()", "Pestaña de texto de solo lectura para el proceso paso a paso y el resumen."],
+    ["Aplicacion.__init__", "Arma la ventana: encabezado con Reiniciar todo, panel de parámetros a la izquierda, pestañas de resultados a la derecha y barra de épocas."],
+    ["_estilos, _campo, _lista", "Estilos visuales y fábricas de filas con etiqueta más caja de texto o lista desplegable."],
+    ["_pestana_clasificacion", "Construye la pestaña Clasificación: tabla de clases, escenarios, fila Reventar, parámetros, botón ENTRENAR y Clasificar un punto nuevo."],
+    ["_activar_clase3", "Habilita o deshabilita la fila de la clase 3 según se elijan 2 o 3 clases."],
+    ["_escenario(nombre)", "Carga en los campos los valores de un escenario (no entrena)."],
+    ["_mover_medias(factor)", "Acerca (0,75) o aleja (1,33) los centros respecto al centro común y entrena."],
+    ["_escalar_sigma(factor)", "Multiplica la σ de cada clase por 1,3 o la divide y entrena."],
+    ["clasificar_punto()", "Lee x1, x2 y x3, los clasifica con ex.clasificar_punto y dibuja la estrella."],
+    ["_config_clasificacion()", "Lee y valida todos los campos de clasificación, incluidas las salidas distintas y en orden."],
+    ["_pestana_regresion, _activar_x3, _config_regresion", "Lo mismo para la regresión: construir la pestaña, habilitar x3 y mostrar el modelo real, y leer los campos."],
+    ["_pestana_ejemplo", "Pestaña con la tabla del ejemplo de clase y el botón REPRODUCIR EJEMPLO."],
+    ["_barra_epocas", "Crea la barra Época mostrada, los botones de animación y la barra de estado."],
+    ["_max_epocas, _mover_epoca", "La mayor cantidad de épocas entre los perceptrones, y el redibujo al mover la barra."],
+    ["animar, _paso_animacion, detener, mostrar_final", "Recorren las épocas con after (unos 6 segundos en total), detienen la animación o vuelven al resultado final."],
+    ["reiniciar(preguntar)", "Pide confirmación y devuelve todos los campos a sus valores por defecto, borrando los resultados. Atajo: Ctrl+R."],
+    ["_ejecutar(funcion)", "Corre un experimento dentro de try/except, actualiza la barra de épocas, el proceso, el resumen y la barra de estado."],
+    ["entrenar_clasificacion, entrenar_regresion, reproducir_ejemplo", "Lo que hacen los tres botones principales."],
+    ["_redibujar_visible", "Redibuja solo la pestaña de gráfica visible si tiene cambios pendientes."],
+    ["main()", "Activa la nitidez en Windows con ctypes, crea la ventana, la Aplicacion y arranca mainloop."]
+  ]
+};
 /* =====================================================================
    ESTADO Y PERSISTENCIA
    El avance se guarda en localStorage del navegador. Toda lectura y
@@ -1013,7 +1780,7 @@ const FRASES_CLAVE = [
    disponible; en ese caso la app funciona igual, solo que sin recordar.
    ===================================================================== */
 const CLAVE = "estudio-perceptron-v1";
-const estadoInicial = () => ({ modulos: {}, niveles: [0, 0, 0], repasadas: {} });
+const estadoInicial = () => ({ fundamentos: {}, modulos: {}, niveles: [0, 0, 0], repasadas: {} });
 let estado = estadoInicial();
 try {
   const guardado = localStorage.getItem(CLAVE);
@@ -1025,12 +1792,14 @@ function guardar() {
   actualizarProgreso();
 }
 
-/* Avance general: 40 % módulos, 40 % niveles aprobados, 20 % preguntas repasadas */
+/* Avance general: 25 % lecciones desde cero, 25 % módulos, 35 % niveles aprobados,
+   15 % preguntas repasadas */
 function actualizarProgreso() {
+  const f = FUNDAMENTOS.filter(l => estado.fundamentos[l.id]).length / FUNDAMENTOS.length;
   const m = Object.keys(estado.modulos).length / MODULOS.length;
   const n = estado.niveles.filter(p => p >= 70).length / NIVELES.length;
   const s = Math.min(1, Object.keys(estado.repasadas).length / SUSTENTACION.length);
-  const pct = Math.round((m * 0.4 + n * 0.4 + s * 0.2) * 100);
+  const pct = Math.round((f * 0.25 + m * 0.25 + n * 0.35 + s * 0.15) * 100);
   document.getElementById("pctGeneral").textContent = pct + " %";
   document.getElementById("barraGeneral").style.width = pct + "%";
 }
@@ -1076,6 +1845,7 @@ function resaltarPython(codigo) {
    ===================================================================== */
 const SECCIONES = [
   ["inicio", "Inicio", vistaInicio],
+  ["cero", "Desde cero", vistaFundamentos],
   ["estudio", "Modo de estudio", vistaEstudio],
   ["evaluacion", "Evaluación", vistaEvaluacion],
   ["sustentacion", "Sustentación", vistaSustentacion],
@@ -1357,10 +2127,287 @@ function vistaInicio(v) {
   v.append(mapa, detalle);
 
   v.appendChild(el("h2", {}, "Cómo usar esta aplicación"));
-  v.appendChild(el("p", {}, "Empieza por el <b>modo de estudio</b>, que recorre siete módulos en el orden en que se construyó el sistema, y marca cada uno cuando lo domines. Después pasa a la <b>evaluación</b>, cuyos tres niveles se desbloquean con 70 % de aciertos. Cuando te sientas seguro, usa la sección de <b>sustentación</b> para practicar las preguntas del profesor con el simulacro cronometrado, y deja el <b>análisis de código</b> y el <b>repaso final</b> para el día anterior."));
+  v.appendChild(el("p", {}, "Si sientes que no sabes nada, empieza por <b>Desde cero</b>: catorce lecciones cortas que explican, sin dar nada por sabido, el problema, la matemática y la notación, la estadística, el azar, Python, tkinter y matplotlib, y el recorrido completo de un entrenamiento, con preguntas para comprobar cada una y un glosario. Después sigue con el <b>modo de estudio</b>, que recorre siete módulos en el orden en que se construyó el sistema y une cada tema con tu código. Luego pasa a la <b>evaluación</b>, cuyos tres niveles se desbloquean con 70 % de aciertos. Cuando te sientas seguro, usa la sección de <b>sustentación</b> para practicar las preguntas del profesor con el simulacro cronometrado, y deja el <b>análisis de código</b>, que ahora incluye todas las funciones de cada archivo, y el <b>repaso final</b> para el día anterior."));
   v.appendChild(el("div", { class: "fila-botones" })).append(
-    el("button", { class: "boton", onclick: () => ir("estudio") }, "Empezar a estudiar"),
+    el("button", { class: "boton", onclick: () => ir("cero") }, "Empezar desde cero"),
+    el("button", { class: "boton secundario", onclick: () => ir("estudio") }, "Ir al modo de estudio"),
     el("button", { class: "boton secundario", onclick: () => ir("sustentacion") }, "Ir al simulacro"));
+}
+
+/* =====================================================================
+   DEMOS DE LA SECCIÓN DESDE CERO
+   ===================================================================== */
+const colorVar = nombre => getComputedStyle(document.documentElement).getPropertyValue(nombre).trim();
+
+/* Preguntas rápidas al final de cada lección: no cuentan para los niveles,
+   solo dan retroalimentación inmediata. */
+function crearMiniQuiz(contenedor, preguntas) {
+  preguntas.forEach((p, n) => {
+    const caja = el("div", { class: "hoja" });
+    caja.append(el("div", { class: "pregunta-num" }, `Pregunta ${n + 1} de ${preguntas.length}`),
+      el("div", { class: "enunciado" }, escapar(p.enunciado)));
+    const retro = el("div", { "aria-live": "polite" });
+    const botones = p.opciones.map(([texto]) => el("button", { class: "opcion" }, escapar(texto)));
+    botones.forEach((b, k) => b.addEventListener("click", () => {
+      const [, correcta, porque] = p.opciones[k];
+      botones.forEach((x, j) => { x.disabled = true; if (p.opciones[j][1]) x.classList.add("correcta"); });
+      if (!correcta) b.classList.add("incorrecta");
+      const buena = p.opciones.find(o => o[1]);
+      retro.className = "retro " + (correcta ? "bien" : "mal");
+      retro.innerHTML = `<span class="veredicto">${correcta ? "Correcto." : "No es esa."}</span>${escapar(porque)}` +
+        (correcta ? "" : `<br><br><b>La correcta:</b> ${escapar(buena[2])}`);
+    }));
+    caja.append(...botones, retro);
+    contenedor.appendChild(caja);
+  });
+}
+
+/* Recta de decisión en 2D: S = w1·x1 + w2·x2 + θ·x0 con x0 = −1 */
+function crearRecta(contenedor) {
+  const caja = el("div", { class: "lienzo-vivo" });
+  caja.appendChild(el("p", {}, "<b>La frontera en vivo.</b> Mueve los controles y toca el lienzo para poner el punto. La zona sombreada es donde S ≥ 0, es decir, donde la neurona responde 1."));
+  const canvas = el("canvas", { width: 960, height: 540, "aria-label": "Recta de decisión con un punto" });
+  const controles = el("div", { class: "rejilla-campos" });
+  const valores = { w1: 1, w2: 1, theta: 3 };
+  let P = [3, 2];
+  const rangos = { w1: [-3, 3, 0.1, "w1"], w2: [-3, 3, 0.1, "w2"], theta: [-8, 8, 0.5, "θ"] };
+  for (const k in rangos) {
+    const [mn, mx, paso, nombre] = rangos[k];
+    const c = el("div", { class: "campo" });
+    const etiqueta = el("label", { for: "recta-" + k }, `${nombre} = ${fmt(valores[k], 1)}`);
+    const control = el("input", { id: "recta-" + k, type: "range", min: mn, max: mx, step: paso, value: valores[k] });
+    control.addEventListener("input", () => { valores[k] = parseFloat(control.value); etiqueta.textContent = `${nombre} = ${fmt(valores[k], 1)}`; dibujar(); });
+    c.append(etiqueta, control);
+    controles.appendChild(c);
+  }
+  const lectura = el("div", { class: "traza", "aria-live": "polite" });
+  caja.append(controles, canvas, lectura);
+  contenedor.appendChild(caja);
+
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height, ESC = H / 11;
+  const aPx = (a, b) => [W / 2 + a * ESC, H / 2 - b * ESC];
+  const dePx = (px, py) => [(px - W / 2) / ESC, (H / 2 - py) / ESC];
+  const S = x => valores.w1 * x[0] + valores.w2 * x[1] + valores.theta * -1;
+
+  function dibujar() {
+    const tinta = colorVar("--tinta"), roja = colorVar("--correccion");
+    ctx.fillStyle = colorVar("--hoja"); ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.globalAlpha = 0.1; ctx.fillStyle = tinta;
+    for (let px = 0; px < W; px += 10) for (let py = 0; py < H; py += 10)
+      if (S(dePx(px + 5, py + 5)) >= 0) ctx.fillRect(px, py, 10, 10);
+    ctx.restore();
+    ctx.strokeStyle = colorVar("--linea"); ctx.lineWidth = 1;
+    for (let g = -9; g <= 9; g++) {
+      const [px] = aPx(g, 0), [, py] = aPx(0, g);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(W, py); ctx.stroke();
+    }
+    ctx.strokeStyle = colorVar("--lapiz"); ctx.lineWidth = 2;
+    const [ox, oy] = aPx(0, 0);
+    ctx.beginPath(); ctx.moveTo(0, oy); ctx.lineTo(W, oy); ctx.moveTo(ox, 0); ctx.lineTo(ox, H); ctx.stroke();
+    ctx.fillStyle = colorVar("--lapiz"); ctx.font = "22px sans-serif";
+    ctx.fillText("x1", W - 34, oy - 8); ctx.fillText("x2", ox + 8, 24);
+    // recta: w1·x1 + w2·x2 − θ = 0
+    ctx.strokeStyle = colorVar("--grafito"); ctx.lineWidth = 3; ctx.beginPath();
+    if (Math.abs(valores.w2) > 1e-9) {
+      const [ax, ay] = aPx(-10, (valores.theta - valores.w1 * -10) / valores.w2);
+      const [bx, by] = aPx(10, (valores.theta - valores.w1 * 10) / valores.w2);
+      ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+    } else if (Math.abs(valores.w1) > 1e-9) {
+      const [px] = aPx(valores.theta / valores.w1, 0); ctx.moveTo(px, 0); ctx.lineTo(px, H);
+    }
+    ctx.stroke();
+    const s = S(P), arriba = s >= 0;
+    const [px, py] = aPx(P[0], P[1]);
+    ctx.fillStyle = arriba ? tinta : roja; ctx.beginPath(); ctx.arc(px, py, 9, 0, 7); ctx.fill();
+    lectura.innerHTML = `Punto x = (${fmt(P[0], 2)}; ${fmt(P[1], 2)})\n` +
+      `F1  S = (${fmt(valores.w1, 1)})(${fmt(P[0], 2)}) + (${fmt(valores.w2, 1)})(${fmt(P[1], 2)}) + (${fmt(valores.theta, 1)})(−1) = ${fmt(s, 2)}\n` +
+      `F2  S ${arriba ? "≥" : "<"} 0  →  y = ${arriba ? 1 : -1}  ` +
+      `<span class="${arriba ? "ok" : "mal"}">(${arriba ? "lado sombreado" : "lado sin sombra"})</span>` +
+      (Math.abs(valores.w1) < 1e-9 && Math.abs(valores.w2) < 1e-9 ? "\nCon los dos pesos en cero no hay recta: todos los puntos dan la misma S." : "");
+  }
+  canvas.addEventListener("pointerdown", ev => {
+    const r = canvas.getBoundingClientRect();
+    P = dePx((ev.clientX - r.left) * (W / r.width), (ev.clientY - r.top) * (H / r.height));
+    dibujar();
+  });
+  dibujar();
+}
+
+/* Generador congruencial igual al de aleatorio.py (F11). Los productos caben
+   exactos en un número de JavaScript porque a·X < 2^53. */
+function crearCongruencial(semilla) {
+  const A = 1664525, C = 1013904223, M = 4294967296;
+  let X = ((Math.trunc(semilla) % M) + M) % M;
+  return {
+    get X() { return X; },
+    siguiente() { const anterior = X; X = (A * X + C) % M; return { anterior, X, U: (X + 0.5) / M }; },
+    U() { X = (A * X + C) % M; return (X + 0.5) / M; }
+  };
+}
+
+/* Histograma de las cuatro distribuciones con las fórmulas F12 a F15.
+   Solo en esta demostración se usan Math.log, Math.cos y Math.sqrt del
+   navegador; en el proyecto son las funciones de formulas.py. */
+function crearHistograma(contenedor) {
+  const caja = el("div", { class: "lienzo-vivo" });
+  caja.appendChild(el("p", {}, "<b>Ver una distribución.</b> Elige la distribución, la media μ y la desviación σ, y genera 5000 valores con el mismo generador y las mismas fórmulas F12 a F15 de tu proyecto. La línea punteada marca μ."));
+  const controles = el("div", { class: "rejilla-campos" });
+  const campo = (id, texto, nodo) => { const c = el("div", { class: "campo" }); c.append(el("label", { for: id }, texto), nodo); controles.appendChild(c); return nodo; };
+  const dist = campo("hist-dist", "Distribución", el("select", { id: "hist-dist" }, ["normal", "uniforme", "exponencial", "binomial"].map(d => `<option>${d}</option>`).join("")));
+  const mu = campo("hist-mu", "Media μ", el("input", { id: "hist-mu", value: "5", inputmode: "decimal" }));
+  const sigma = campo("hist-sigma", "Desviación σ", el("input", { id: "hist-sigma", value: "1", inputmode: "decimal" }));
+  const semilla = campo("hist-semilla", "Semilla", el("input", { id: "hist-semilla", value: "7", inputmode: "numeric" }));
+  const canvas = el("canvas", { width: 960, height: 400, "aria-label": "Histograma de la distribución" });
+  const lectura = el("div", { class: "traza", "aria-live": "polite" });
+  const fila = el("div", { class: "fila-botones" });
+  fila.appendChild(el("button", { class: "boton", onclick: generar }, "Generar 5000 valores"));
+  caja.append(controles, fila, canvas, lectura);
+  contenedor.appendChild(caja);
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width, H = canvas.height;
+
+  function muestra(g, d, m, s) {
+    if (d === "normal") { const U1 = g.U(), U2 = g.U(); return m + s * Math.sqrt(-2 * Math.log(U1)) * Math.cos(2 * Math.PI * U2); }   // F12
+    if (d === "uniforme") { const a = s * Math.sqrt(3); return (m - a) + 2 * a * g.U(); }                                          // F13
+    if (d === "exponencial") return (m - s) - s * Math.log(g.U());                                                               // F14
+    let exitos = 0; for (let k = 0; k < 20; k++) if (g.U() < 0.5) exitos++;                                                       // F15
+    return m + s * (exitos - 10) / Math.sqrt(5);
+  }
+  function generar() {
+    const m = leerNumero(mu.value), s = leerNumero(sigma.value), sem = parseInt(semilla.value, 10);
+    if (![m, s, sem].every(Number.isFinite) || s < 0) { lectura.innerHTML = '<span class="mal">Escribe números válidos: σ no puede ser negativa y la semilla debe ser un entero.</span>'; return; }
+    const g = crearCongruencial(sem), N = 5000, valores = [];
+    for (let i = 0; i < N; i++) valores.push(muestra(g, dist.value, m, s));
+    let lo = valores[0], hi = valores[0], suma = 0;
+    for (const v of valores) { if (v < lo) lo = v; if (v > hi) hi = v; suma += v; }
+    const media = suma / N;
+    let cuad = 0; for (const v of valores) cuad += (v - media) * (v - media);
+    const desv = Math.sqrt(cuad / N);
+    const B = 50, ancho = (hi - lo) || 1, cuentas = new Array(B).fill(0);
+    for (const v of valores) cuentas[Math.min(B - 1, Math.floor((v - lo) / ancho * B))]++;
+    let mayor = 1; for (const c of cuentas) if (c > mayor) mayor = c;
+    ctx.fillStyle = colorVar("--hoja"); ctx.fillRect(0, 0, W, H);
+    const base = H - 40, alto = H - 70, izq = 30, der = W - 30, bw = (der - izq) / B;
+    ctx.fillStyle = colorVar("--tinta");
+    cuentas.forEach((c, i) => { const h = c / mayor * alto; ctx.fillRect(izq + i * bw + 1, base - h, bw - 2, h); });
+    ctx.strokeStyle = colorVar("--lapiz"); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(izq, base); ctx.lineTo(der, base); ctx.stroke();
+    const xMu = izq + (m - lo) / ancho * (der - izq);
+    ctx.strokeStyle = colorVar("--correccion"); ctx.setLineDash([8, 6]); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.moveTo(xMu, base); ctx.lineTo(xMu, 18); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = colorVar("--lapiz"); ctx.font = "20px sans-serif";
+    ctx.fillText(fmt(lo, 2), izq, base + 28); ctx.fillText(fmt(hi, 2), der - 60, base + 28);
+    lectura.innerHTML = `Distribución ${dist.value}, ${N} valores\n` +
+      `Media pedida  ${fmt(m, 3)}   →  obtenida ${fmt(media, 3)}   (F16)\n` +
+      `σ pedida      ${fmt(s, 3)}   →  obtenida ${fmt(desv, 3)}   (F17)\n` +
+      `Valor mínimo ${fmt(lo, 3)}   ·   valor máximo ${fmt(hi, 3)}`;
+  }
+  generar();
+}
+
+/* El congruencial paso a paso y Fisher-Yates con el mismo generador */
+function crearGenerador(contenedor) {
+  const caja = el("div", { class: "hoja" });
+  caja.appendChild(el("p", {}, "<b>El generador a mano.</b> Escribe una semilla y pide números: cada uno sale de F11 aplicada al anterior. Prueba la semilla 7 y compara con los valores de la lección. Luego baraja la lista [0, 1, 2, 3, 4] con Fisher-Yates."));
+  const c = el("div", { class: "campo" });
+  const entrada = el("input", { id: "gen-semilla", value: "7", inputmode: "numeric" });
+  c.append(el("label", { for: "gen-semilla" }, "Semilla"), entrada);
+  const salida = el("div", { class: "traza", "aria-live": "polite" });
+  let g = null, k = 0, texto = "";
+  const leerSemilla = () => { const s = parseInt(entrada.value, 10); if (!Number.isFinite(s)) { salida.innerHTML = '<span class="mal">La semilla debe ser un número entero.</span>'; return null; } return s; };
+  const reiniciar = () => { const s = leerSemilla(); if (s === null) return false; g = crearCongruencial(s); k = 0; texto = `X0 = semilla mod 2³² = ${g.X}\n`; salida.textContent = texto; return true; };
+  const siguiente = () => {
+    if (!g && !reiniciar()) return;
+    const { anterior, X, U } = g.siguiente(); k++;
+    texto += `X${k} = (1664525 · ${anterior} + 1013904223) mod 4294967296 = ${X}   →   U${k} = (${X} + 0,5) / 2³² = ${fmt(U, 6)}\n`;
+    salida.textContent = texto;
+  };
+  const barajar = () => {
+    const s = leerSemilla(); if (s === null) return;
+    const gb = crearCongruencial(s), lista = [0, 1, 2, 3, 4];
+    let t = `Fisher-Yates con un generador nuevo (semilla ${s}) sobre [${lista.join(", ")}]\n`;
+    for (let i = lista.length - 1; i > 0; i--) {
+      const U = gb.U(), j = Math.floor(U * (i + 1));
+      [lista[i], lista[j]] = [lista[j], lista[i]];
+      t += `i = ${i}: U = ${fmt(U, 4)}, j = int(U · ${i + 1}) = ${j}   →   intercambio posiciones ${i} y ${j}: [${lista.join(", ")}]\n`;
+    }
+    salida.textContent = t + `Resultado: [${lista.join(", ")}]`;
+    g = null;
+  };
+  const fila = el("div", { class: "fila-botones" });
+  fila.append(el("button", { class: "boton", onclick: siguiente }, "Siguiente número"),
+    el("button", { class: "boton secundario", onclick: reiniciar }, "Volver a la semilla"),
+    el("button", { class: "boton secundario", onclick: barajar }, "Barajar [0, 1, 2, 3, 4]"));
+  caja.append(c, fila, salida);
+  contenedor.appendChild(caja);
+  reiniciar(); siguiente(); siguiente();
+}
+
+/* =====================================================================
+   VISTA: DESDE CERO
+   ===================================================================== */
+let leccionActual = 0;
+function vistaFundamentos(v, opciones) {
+  if (opciones && typeof opciones.leccion === "number") leccionActual = opciones.leccion;
+  const glosario = FUNDAMENTOS.length;   // la última pestaña es el glosario
+  v.appendChild(el("h1", {}, "Desde cero"));
+  v.appendChild(el("p", { class: "entrada" }, "Una ruta que no da nada por sabido. Explica qué problema resuelve el proyecto, la matemática, la notación, la estadística, Python, tkinter y matplotlib, y termina siguiendo un clic en Entrenar por todos los archivos. Hazla en orden antes del modo de estudio; cada lección cierra con unas preguntas para comprobar que quedó clara."));
+  const pestanas = el("div", { class: "pestanas", role: "tablist" });
+  FUNDAMENTOS.forEach((l, i) => {
+    const hecho = estado.fundamentos[l.id] ? ' <span class="hecho" aria-label="estudiada">✓</span>' : "";
+    pestanas.appendChild(el("button", { class: "pestana", role: "tab", "aria-selected": String(i === leccionActual), onclick: () => ir("cero", { leccion: i }) }, `${i + 1}. ${l.titulo}${hecho}`));
+  });
+  pestanas.appendChild(el("button", { class: "pestana", role: "tab", "aria-selected": String(leccionActual === glosario), onclick: () => ir("cero", { leccion: glosario }) }, "Glosario"));
+  v.appendChild(pestanas);
+  if (leccionActual === glosario) return vistaGlosario(v);
+
+  const l = FUNDAMENTOS[leccionActual];
+  v.appendChild(el("h2", {}, `${leccionActual + 1}. ${l.titulo}`));
+  v.appendChild(el("div", {}, l.html));
+  (l.ejemplos || []).forEach(e => {
+    v.appendChild(el("div", { class: "parte-titulo" }, "En tu código"));
+    v.appendChild(el("div", { class: "archivo" }, e.archivo));
+    v.appendChild(el("pre", { class: "codigo" }, resaltarPython(e.codigo)));
+    if (e.nota) v.appendChild(el("div", { class: "nota-margen" }, `<strong>Cómo leerlo</strong>${escapar(e.nota)}`));
+  });
+  if (l.demo) v.appendChild(el("div", { class: "parte-titulo" }, "Pruébalo"));
+  if (l.demo === "recta") crearRecta(v);
+  if (l.demo === "histograma") crearHistograma(v);
+  if (l.demo === "generador") crearGenerador(v);
+  if (l.demo === "newton") crearNewton(v);
+  if (l.preguntas && l.preguntas.length) {
+    v.appendChild(el("div", { class: "parte-titulo" }, "Compruébalo"));
+    crearMiniQuiz(v, l.preguntas);
+  }
+
+  const fila = el("div", { class: "fila-botones" });
+  const ultima = leccionActual === FUNDAMENTOS.length - 1;
+  fila.appendChild(el("button", { class: "boton", onclick: () => {
+    estado.fundamentos[l.id] = true; guardar();
+    if (ultima) ir("estudio", { modulo: 0 }); else ir("cero", { leccion: leccionActual + 1 });
+  } }, ultima ? "Marcar como estudiada e ir al modo de estudio" : (estado.fundamentos[l.id] ? "Estudiada · ir a la siguiente" : "Marcar como estudiada y seguir")));
+  if (leccionActual > 0) fila.appendChild(el("button", { class: "boton secundario", onclick: () => ir("cero", { leccion: leccionActual - 1 }) }, "Lección anterior"));
+  v.appendChild(fila);
+}
+
+function vistaGlosario(v) {
+  v.appendChild(el("h2", {}, "Glosario"));
+  v.appendChild(el("p", {}, "Todas las palabras técnicas del proyecto en una frase. Escribe para filtrar."));
+  const buscador = el("input", { class: "buscador", type: "search", placeholder: "Buscar un término…", "aria-label": "Buscar en el glosario" });
+  const lista = el("dl", { class: "glosario" });
+  const ordenado = GLOSARIO.slice().sort((a, b) => a[0].localeCompare(b[0], "es"));
+  const pintar = () => {
+    const q = buscador.value.trim().toLowerCase();
+    lista.innerHTML = "";
+    const visibles = ordenado.filter(([t, d]) => !q || t.toLowerCase().includes(q) || d.toLowerCase().includes(q));
+    visibles.forEach(([t, d]) => lista.append(el("dt", {}, escapar(t)), el("dd", {}, escapar(d))));
+    if (!visibles.length) lista.appendChild(el("dd", {}, "Ningún término coincide."));
+  };
+  buscador.addEventListener("input", pintar);
+  v.append(buscador, lista);
+  pintar();
 }
 
 /* =====================================================================
@@ -1549,10 +2596,33 @@ function vistaCodigo(v, opciones) {
   v.appendChild(el("h1", {}, "Análisis de código"));
   v.appendChild(el("p", { class: "entrada" }, "Las secciones más importantes de tu proyecto, explicadas línea por línea, con la razón de cada decisión de diseño. Filtra por archivo para ir directo al que te pregunten."));
   const filtro = (opciones && opciones.archivo) || "todos";
-  const archivos = ["todos", ...new Set(ANALISIS.map(a => a.archivo))];
+  const archivos = ["todos", ...Object.keys(FUNCIONES)];
   const pestanas = el("div", { class: "pestanas", role: "tablist" });
   archivos.forEach(a => pestanas.appendChild(el("button", { class: "pestana", role: "tab", "aria-selected": String(a === filtro), onclick: () => ir("codigo", { archivo: a }) }, a === "todos" ? "Todos" : a)));
   v.appendChild(pestanas);
+
+  // Catálogo de todas las funciones: al elegir un archivo aparece primero;
+  // en «Todos» queda plegado para no tapar el análisis línea por línea.
+  const catalogo = (archivo, destino) => {
+    const envoltura = el("div", { class: "tabla-wrap" });
+    const tabla = el("table", { class: "catalogo" });
+    tabla.innerHTML = "<thead><tr><th>Nombre</th><th>Qué hace</th></tr></thead>";
+    const cuerpo = el("tbody");
+    FUNCIONES[archivo].forEach(([n, d]) => cuerpo.appendChild(el("tr", {}, `<td class="mono">${escapar(n)}</td><td>${escapar(d)}</td>`)));
+    tabla.appendChild(cuerpo); envoltura.appendChild(tabla); destino.appendChild(envoltura);
+  };
+  if (filtro === "todos") {
+    const d = el("details", { class: "acordeon" });
+    d.appendChild(el("summary", {}, "Catálogo de todas las funciones del proyecto, archivo por archivo"));
+    const cuerpo = el("div", { class: "cuerpo" });
+    Object.keys(FUNCIONES).forEach(a => { cuerpo.appendChild(el("h3", {}, a)); catalogo(a, cuerpo); });
+    d.appendChild(cuerpo);
+    v.appendChild(d);
+  } else {
+    v.appendChild(el("h2", {}, `Todo lo que hay en ${filtro}`));
+    v.appendChild(el("p", {}, `Cada función, clase y constante de ${filtro}, explicada en una frase. Debajo vienen los fragmentos más importantes línea por línea.`));
+    catalogo(filtro, v);
+  }
 
   ANALISIS.filter(b => filtro === "todos" || b.archivo === filtro).forEach(b => {
     v.appendChild(el("h3", {}, escapar(b.titulo)));

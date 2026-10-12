@@ -204,12 +204,18 @@ El JavaScript empieza con los datos y luego trae la lógica. Para reflejar cambi
 | `ANALISIS` y sus `ANALISIS.push(...)` | Análisis línea por línea | `{ archivo, titulo, lineas: [[String.raw\`línea\`, "explicación"], ...], decision }` |
 | `MEJORAS`, `BUENAS_PRACTICAS` | Cierre del análisis de código | Listas de textos |
 | `REPASO`, `FRASES_CLAVE` | Tabla de fórmulas y frases clave | `[código, fórmula, para qué]` y textos |
+| `FUNDAMENTOS` | 14 lecciones de la sección «Desde cero», para quien no sabe nada: problema, coordenadas, suma ponderada, rectas y planos, símbolos, estadística, azar, aprendizaje, series, Python I y II, tkinter y matplotlib, recorrido de un clic y ejecución | `{ id, titulo, html, ejemplos: [{ archivo, codigo, nota }], demo, preguntas }`; `demo` es `null`, `"recta"`, `"histograma"`, `"generador"` o `"newton"`; `preguntas` son de opción como en `NIVELES`, pero no cuentan para los niveles |
+| `GLOSARIO` | Términos de la pestaña Glosario de «Desde cero» | `[término, definición]` |
+| `FUNCIONES` | Catálogo de todas las funciones, clases y constantes de cada .py, que aparece en el análisis de código | `{ "archivo.py": [[nombre, qué hace], ...] }` |
 
 El párrafo de resultados del repaso está escrito dentro de la función `vistaRepaso`. La lógica son las funciones:
 - `crearLienzo`: el perceptrón 2D animado.
 - `crearCalculadora`: F1 a F6 con la instancia 4 del ejemplo de clase.
 - `crearNewton`: la raíz cuadrada paso a paso.
-- `vistaInicio`, `vistaEstudio`, `vistaEvaluacion`, `vistaSustentacion`, `vistaCodigo` y `vistaRepaso`: dibujan cada sección.
+- `crearRecta`, `crearHistograma` y `crearGenerador` (con `crearCongruencial`): las demostraciones de «Desde cero»; `crearMiniQuiz`: las preguntas al final de cada lección.
+- `vistaInicio`, `vistaFundamentos` (con `vistaGlosario`), `vistaEstudio`, `vistaEvaluacion`, `vistaSustentacion`, `vistaCodigo` y `vistaRepaso`: dibujan cada sección.
+
+El avance de «Desde cero» se guarda en `estado.fundamentos`, dentro de la misma clave de localStorage.
 
 Solo se tocan si hace falta un tipo de contenido nuevo.
 
@@ -243,7 +249,7 @@ Solo se tocan si hace falta un tipo de contenido nuevo.
 node -e "const fs=require('fs');const h=fs.readFileSync('Estudio del perceptrón · Sustentación.html','utf8');new Function(h.split('<script>')[1].split('</script>')[0]);console.log('sintaxis ok')"
 ```
 
-Luego se abre en el navegador con la consola (F12) abierta y se recorren las seis secciones: el perceptrón 2D entrena, los 7 módulos con la calculadora y el Newton, una pregunta de cada tipo, el simulacro y el acordeón, el filtro por archivo del análisis y la tabla del repaso. También se prueban el cambio de tema y una ventana angosta. No debe haber errores en la consola, salvo un posible aviso de fuentes sin internet.
+Luego se abre en el navegador con la consola (F12) abierta y se recorren las siete secciones: el perceptrón 2D entrena, las 14 lecciones de «Desde cero» con sus demostraciones y el glosario, los 7 módulos con la calculadora y el Newton, una pregunta de cada tipo, el simulacro y el acordeón, el filtro por archivo del análisis y la tabla del repaso. También se prueban el cambio de tema y una ventana angosta. No debe haber errores en la consola, salvo un posible aviso de fuentes sin internet.
 
 ## Qué se envía al profesor
 
