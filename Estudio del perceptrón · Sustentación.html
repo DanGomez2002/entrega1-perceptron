@@ -345,7 +345,7 @@ F7  err = ½ · Σ e²         (error de la época)</div>
                 self.w[i] = ajuste_peso(self.w[i], self.gamma, e, x[i])      # F5
             self.theta = ajuste_sesgo(self.theta, self.gamma, e, self.x0)    # F6
         return S, y, e`,
-  idea: `En la calculadora de abajo puedes reproducir el ajuste de la instancia 4 del ejemplo de clase. Con los pesos iniciales la suma da 17,31522, la neurona responde 1 cuando debía responder −1, el error vale −2 y los pesos pasan a (−3,65137; −0,73040) con θ = 0,69145. Saber hacer esta cuenta a mano es lo que más tranquilidad da en la sustentación. Ojo con un detalle que verás en el programa: el texto de la pestaña «Ejemplo de clase» dice 17,31523 y −23,91494 porque copia el redondeo de las diapositivas, mientras que el proceso paso a paso imprime 17,31522 y −23,91495. El cálculo exacto da 17,315225, así que la diferencia está solo en el último decimal y es de redondeo.`,
+  idea: `En la calculadora de abajo puedes reproducir el ajuste de la instancia 4 del ejemplo de clase. Con los pesos iniciales la suma da 17,31522, la neurona responde 1 cuando debía responder −1, el error vale −2 y los pesos pasan a (−3,65137; −0,73040) con θ = 0,69145. Saber hacer esta cuenta a mano es lo que más tranquilidad da en la sustentación. Ojo con un detalle: las diapositivas muestran 17,31523 y −23,91494, mientras que el programa imprime 17,31522 y −23,91495, y la pestaña «Ejemplo de clase» muestra los dos para que no haya sorpresas. El cálculo exacto da 17,315225, así que la diferencia está solo en el último decimal y es de redondeo.`,
   demo: "calculadora"
 },
 {
@@ -998,7 +998,7 @@ ANALISIS.push({
     [String.raw`        if cfg["salida_alta"] == cfg["salida_baja"]:`, "En _config_clasificacion: dos salidas iguales no permiten corregir ningún error."],
     [String.raw`        if cfg["salida_alta"] < cfg["salida_baja"]:`, "Las salidas invertidas tampoco: la regla supone que la alta es la mayor."]
   ],
-  decision: "Cada validación lanza un ValueError con un mensaje claro, y _ejecutar lo atrapa y lo muestra en un cuadro de diálogo. Así un dato inválido nunca llega al perceptrón. Un detalle que conviene conocer: después del mensaje, la barra de estado se queda diciendo «Entrenando...», porque _ejecutar sale con return sin restablecerla; basta entrenar de nuevo con datos válidos."
+  decision: "Cada validación lanza un ValueError con un mensaje claro, y _ejecutar lo atrapa y lo muestra en un cuadro de diálogo. Así un dato inválido nunca llega al perceptrón, y la barra de estado dice «Dato no válido: corrija el campo y vuelva a entrenar.» en lugar de quedarse en «Entrenando...»."
 });
 ANALISIS.push({
   archivo: "main.py", titulo: "_mover_medias: el botón para acercar o alejar las clases",

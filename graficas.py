@@ -1,8 +1,9 @@
 """
 graficas.py
 ===========
-ÚNICO módulo que usa una librería externa: matplotlib, y SOLO para dibujar.
-Los valores que se dibujan (planos, predicciones, medias) se calculan con las
+Módulo que DIBUJA con matplotlib, la única librería externa, que se usa SOLO
+para dibujar (main.py la importa además para mostrar estas figuras dentro de
+la ventana). Los valores que se dibujan (planos, predicciones, medias) se calculan con las
 fórmulas de formulas.py.
 
 Gráficas que pidió el profesor:

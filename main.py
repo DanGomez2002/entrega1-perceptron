@@ -555,9 +555,10 @@ class Aplicacion:
             "S = w1·x1 + w2·x2 − θ\n"
             "wi = wi + γ (d − y) xi\n"
             "θ  = θ + γ (d − y) x0\n\n"
-            "Resultado esperado (diapositivas):\n"
-            "   S4 = 17,31523  → error (y = 1, d = −1)\n"
-            "   S5 = −23,91494 (con los pesos ya ajustados)")).pack(anchor="w")
+            "Resultado esperado:\n"
+            "   S4 = 17,31522  → error (y = 1, d = −1)\n"
+            "   S5 = −23,91495 (con los pesos ya ajustados)\n"
+            "   (las diapositivas redondean a 17,31523 y −23,91494)")).pack(anchor="w")
         ttk.Button(f, text="▶  REPRODUCIR EJEMPLO", style="Accion.TButton",
                    command=self.reproducir_ejemplo).pack(fill="x", pady=12)
 
@@ -708,6 +709,7 @@ class Aplicacion:
             self.res = funcion()
         except ValueError as error:
             messagebox.showerror("Dato no válido", str(error))
+            self.estado.configure(text="Dato no válido: corrija el campo y vuelva a entrenar.")
             return
         finally:
             self.raiz.configure(cursor="")

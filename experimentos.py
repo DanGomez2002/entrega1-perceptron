@@ -145,8 +145,9 @@ def ejecutar_regresion(config):
 
 
 def ejecutar_ejemplo_clase():
-    """Reproduce el ejemplo de las diapositivas: S4 = 17,31523 (error) y,
-    después del ajuste, S5 = -23,91494."""
+    """Reproduce el ejemplo de las diapositivas: S4 = 17,31522 (error) y,
+    después del ajuste, S5 = -23,91495 (las diapositivas redondean a
+    17,31523 y -23,91494; el valor exacto de S4 es 17,315225)."""
     gen = GeneradorAleatorio(1)
     p = Perceptron(2, EJEMPLO_GAMMA, Escalon(0.0, 1, -1), gen, "Ejemplo de clase", x0=-1)
     p.w = EJEMPLO_W[:]
