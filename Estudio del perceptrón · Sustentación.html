@@ -264,7 +264,7 @@ table.catalogo td.mono { white-space: normal; min-width: 11em; overflow-wrap: an
 </head>
 <body>
 <div class="encabezado-movil">
-  <button class="boton-chico" id="abrirMenu" aria-label="Abrir menú">Menú</button>
+  <button class="boton-chico" id="abrirMenu" aria-label="Abrir menú" aria-controls="lateral" aria-expanded="false">Menú</button>
   <strong>Estudio del perceptrón</strong>
 </div>
 <div class="marco">
@@ -333,7 +333,7 @@ F7  err = ½ · Σ e²         (error de la época)</div>
 <p>La intuición es sencilla. Si la neurona respondió −1 cuando debía responder 1, el error es positivo y los pesos se acercan al punto mal clasificado, lo que aumenta la suma la próxima vez. Si respondió 1 cuando debía responder −1, ocurre lo contrario. El sesgo se ajusta con exactamente la misma regla, porque desde el punto de vista matemático es un peso más cuya entrada siempre vale <code>x0</code>.</p>
 <p>Esa intuición depende de que la <span class="resaltado">salida alta sea mayor que la baja</span>. Si se escribieran al revés, por ejemplo alta 0 y baja 1, el signo del error se invertiría y cada corrección alejaría el plano de la solución en lugar de acercarlo. Con la semilla 7 y las clases separadas, un perceptrón con las salidas invertidas se queda en 50 % de exactitud y nunca converge, aunque el problema sea separable. Por eso <code>_config_clasificacion</code> de <code>main.py</code> rechaza ese caso con un mensaje, igual que rechaza dos salidas iguales; y por la misma razón <code>leer_tasa</code> exige que γ sea mayor que cero, porque una tasa negativa también invierte el sentido de cada corrección.</p>
 <p>Una <b>época</b> es una pasada completa por todas las instancias. Al terminar cada época el programa hace lo que en clase se llamó "la repasadita": recorre de nuevo todo el conjunto con los pesos ya ajustados y calcula el error F7. Ese valor es el que se dibuja en la gráfica de épocas. El entrenamiento se detiene cuando el error llega al mínimo permitido (convergió), cuando el error explota (divergió) o cuando se agotan las épocas (no convergió). En regresión hay un cuarto motivo, que el error deje de bajar (se estabilizó), y se explica en el módulo 5.</p>
-<p>Antes de cada época las instancias se <b>barajan</b> con el algoritmo de Fisher-Yates usando el generador propio. Esto evita que el orden fijo de los datos, que vienen agrupados por clase, sesgue el recorrido del plano, y puede desactivarse desde la interfaz para reproducir exactamente el ejemplo de las diapositivas.</p>`,
+<p>Antes de cada época las instancias se <b>barajan</b> con el algoritmo de Fisher-Yates usando el generador propio. Esto evita que el orden fijo de los datos, que vienen agrupados por clase, sesgue el recorrido del plano. En Clasificación y Regresión puede desactivarse con la casilla «Barajar instancias en cada época», y el ejemplo de clase entrena siempre sin barajar, porque <code>ejecutar_ejemplo_clase</code> llama a <code>entrenar</code> con <code>barajar=False</code> para respetar el orden de las diapositivas.</p>`,
   archivo: "perceptron.py",
   codigo: String.raw`    def ajustar(self, x, d):
         """Una iteración: multiplicar, sumar, comparar y ajustar."""
@@ -345,7 +345,7 @@ F7  err = ½ · Σ e²         (error de la época)</div>
                 self.w[i] = ajuste_peso(self.w[i], self.gamma, e, x[i])      # F5
             self.theta = ajuste_sesgo(self.theta, self.gamma, e, self.x0)    # F6
         return S, y, e`,
-  idea: `En la calculadora de abajo puedes reproducir el ajuste de la instancia 4 del ejemplo de clase. Con los pesos iniciales la suma da 17,31522, la neurona responde 1 cuando debía responder −1, el error vale −2 y los pesos pasan a (−3,65137; −0,73040) con θ = 0,69145. Saber hacer esta cuenta a mano es lo que más tranquilidad da en la sustentación.`,
+  idea: `En la calculadora de abajo puedes reproducir el ajuste de la instancia 4 del ejemplo de clase. Con los pesos iniciales la suma da 17,31522, la neurona responde 1 cuando debía responder −1, el error vale −2 y los pesos pasan a (−3,65137; −0,73040) con θ = 0,69145. Saber hacer esta cuenta a mano es lo que más tranquilidad da en la sustentación. Ojo con un detalle que verás en el programa: el texto de la pestaña «Ejemplo de clase» dice 17,31523 y −23,91494 porque copia el redondeo de las diapositivas, mientras que el proceso paso a paso imprime 17,31522 y −23,91495. El cálculo exacto da 17,315225, así que la diferencia está solo en el último decimal y es de redondeo.`,
   demo: "calculadora"
 },
 {
@@ -355,12 +355,13 @@ F7  err = ½ · Σ e²         (error de la época)</div>
 <p>El perceptrón solo puede trazar un plano, así que solo puede resolver problemas <b>linealmente separables</b>, en los que existe al menos un plano que deja todas las instancias de una clase de un lado y todas las de la otra del lado contrario. El teorema de convergencia del perceptrón (Novikoff, 1962) garantiza que, si el conjunto es separable, la regla de ajuste encuentra un plano separador en un número finito de pasos.</p>
 <p>Lo interesante para la sustentación es la otra cara del teorema. Si las clases se solapan, no existe tal plano y el algoritmo <span class="resaltado">nunca se estabiliza</span>: cada corrección que arregla un punto mal clasificado desarregla otro, el plano sigue moviéndose y el error por época oscila sin llegar a cero. Minsky y Papert (1969) mostraron con el problema XOR que esta limitación es estructural y no se arregla con más épocas, lo que más tarde motivó las redes de varias capas.</p>
 <p>El simulador tiene los botones <b>Separadas</b>, <b>Cercanas</b> y <b>Solapadas</b> precisamente para "reventar" el perceptrón en vivo. Con las clases separadas y la semilla 7, el caso de dos clases convergió en 6 épocas con 100 % de exactitud. Con las clases solapadas, el mismo perceptrón llegó a las 100 épocas sin converger y se quedó en 61,5 % de exactitud, con una gráfica de error que sube y baja entre aproximadamente 130 y 200 sin ninguna tendencia.</p>
-<p>Hay una tercera forma de reventarlo, que el profesor mencionó en clase: el <b>desbalance</b>. Con el escenario <b>Desbalanceadas</b>, 100 instancias contra 10 en posiciones cercanas, la exactitud global sube a 95,5 %, pero la de la clase pequeña cae a 50 %, porque la clase grande genera casi todas las correcciones y arrastra el plano. Por eso el simulador reporta también la <span class="resaltado">exactitud de cada clase</span> (F18): la global, sola, haría creer que el modelo mejoró.</p>
-<p>La tasa de aprendizaje no cambia si el problema es separable o no, pero sí cambia cómo se comporta el plano. Una tasa grande produce saltos bruscos, y una pequeña produce movimientos suaves que tardan más épocas. En clasificación con escalón la tasa solo escala los pesos, así que su efecto es menor de lo que se suele pensar, mientras que en regresión, como se verá en el módulo 5, una tasa demasiado grande hace que el error explote.</p>`,
+<p>Hay una tercera forma de reventarlo, que el profesor mencionó en clase: el <b>desbalance</b>. Con el escenario <b>Desbalanceadas</b>, 100 instancias contra 10 en posiciones cercanas, la exactitud global sube a 95,5 % (así la redondea la barra de estado; la pestaña Resumen muestra 95,45 %, que son 105 aciertos de 110), pero la de la clase pequeña cae a 50 %, porque la clase grande genera casi todas las correcciones y arrastra el plano. Por eso el simulador reporta también la <span class="resaltado">exactitud de cada clase</span> (F18): la global, sola, haría creer que el modelo mejoró.</p>
+<p>La tasa de aprendizaje no cambia si el problema es separable o no, pero sí cambia cómo se comporta el plano. Una tasa grande produce saltos bruscos, y una pequeña produce movimientos suaves que tardan más épocas. En clasificación con escalón, si los pesos empezaran en cero la tasa solo cambiaría su escala y no las decisiones; pero en tu código empiezan al azar entre −1 y 1, así que la tasa decide cuánto pesan las correcciones frente a esos pesos iniciales. Con la semilla 7 y las clases separadas, γ = 0,001 necesita 32 épocas, γ = 0,1 necesita 6 y γ = 10 necesita 4; con las clases solapadas, γ = 0,01 deja la exactitud en 53 % (97 % y 9 % por clase) frente a 61,5 % con γ = 0,1. En regresión, como se verá en el módulo 5, una tasa demasiado grande hace que el error explote.</p>`,
   archivo: "perceptron.py",
   codigo: String.raw`            err = self.error_conjunto(X, d)
             self.historial_error.append(err)
             self.epocas = epoca
+            _anotar(registro, "  -> err de la época %d = %.6f" % (epoca, err))
 
             if err != err or err > 1e100:                 # NaN o infinito
                 self.divergio = True
@@ -397,12 +398,12 @@ F7  err = ½ · Σ e²         (error de la época)</div>
   titulo: "Regresión con el perceptrón",
   teoria: `
 <p>En regresión la salida deseada ya no es una etiqueta sino un número real, así que la función escalón se reemplaza por una <b>activación lineal</b>, <code>y = S</code>. Con ese cambio, la misma regla de ajuste <code>wi ← wi + γ·(d − y)·xi</code> se convierte en la regla delta o LMS de Widrow y Hoff (1960), que va reduciendo el error cuadrático instancia por instancia, como un descenso por gradiente estocástico. El perceptrón aprende entonces el plano (o hiperplano) que mejor sigue a la nube de puntos.</p>
-<p>Los datos se simulan con un modelo conocido, <code>y = 2·x1 − 1,5·x2 + 0,5·x3 + 3 + ruido</code>, y eso permite comprobar el aprendizaje: con la semilla 7 el perceptrón terminó con w1 = 2,002, w2 = −1,495, w3 = 0,454 y un sesgo efectivo θ·x0 = 3,169, muy cerca de los valores reales. Su error cuadrático medio fue 1,076, prácticamente igual a la varianza del ruido (1,0), que es el mínimo que cualquier modelo lineal puede alcanzar, y su <b>coeficiente de determinación</b> R² fue 0,964, es decir, el plano explica el 96,4 % de la variación de y. El R² (F19) se calcula en <code>coeficiente_determinacion</code> de <code>formulas.py</code>: vale 1 en un ajuste perfecto y 0 cuando el plano no mejora a predecir siempre la media, y puede ser negativo si lo hace peor que esa media.</p>
+<p>Los datos se simulan con un modelo conocido, <code>y = 2·x1 − 1,5·x2 + 0,5·x3 + 3 + ruido</code>, y eso permite comprobar el aprendizaje: con la semilla 7 el perceptrón terminó con w1 = 2,002, w2 = −1,495, w3 = 0,454 y un sesgo efectivo θ·x0 = 3,169, muy cerca de los valores reales. Ese sesgo efectivo es θ·x0: en el resumen verás <code>theta = -3.16870</code>, negativo, porque se multiplica por x0 = −1. Su error cuadrático medio fue 1,076, muy cerca del ruido que se agregó a propósito (varianza 1,0) y del mejor plano posible para estos mismos datos, el de mínimos cuadrados, que da 1,063: el perceptrón quedó a menos de un 2 % del óptimo. Y su <b>coeficiente de determinación</b> R² fue 0,964, es decir, el plano explica el 96,4 % de la variación de y. El R² (F19) se calcula en <code>coeficiente_determinacion</code> de <code>formulas.py</code>: vale 1 en un ajuste perfecto y 0 cuando el plano no mejora a predecir siempre la media, y puede ser negativo si lo hace peor que esa media.</p>
 <div class="formula">F3  y = S
 F8  ECM = (1/N) · Σ e²
 F19 R² = 1 − Σ(y − ŷ)² / Σ(y − media)²</div>
 <p>Como el ruido impide que el error llegue a cero, el criterio de parada es distinto: si en las últimas 20 épocas (la "paciencia") el mejor error no mejoró al menos un 0,01 % respecto al mejor anterior, el entrenamiento se detiene, el atributo <code>estancado</code> queda en <code>True</code> y la interfaz dice <span class="resaltado">«se estabilizó en N épocas (el error dejó de bajar)»</span>. No dice «convergió» a propósito: que el error deje de bajar no garantiza que el ajuste sea bueno, y eso solo lo dicen el ECM y el R², que aparecen en el resumen y en la barra de estado.</p>
-<p>La tasa por defecto es pequeña, 0,001, porque las entradas están alrededor de 5 y una tasa grande hace que cada corrección se pase del objetivo. Con la semilla 7, γ = 0,005 se estabiliza en 100 épocas con un ECM de 1,29 y γ = 0,01 en 63 épocas con un ECM de 2,43. El caso de γ = 0,02 es el que mejor muestra la diferencia entre estabilizarse y ajustar bien: se estabiliza en solo 24 épocas, pero con un ECM de 71,2 y un R² de −1,39, peor que predecir siempre la media, porque los pesos rebotan cerca del límite de estabilidad y el error deja de bajar sin haber encontrado el plano. Con γ = 0,05 el error explotó y el programa reportó divergencia en la primera época; si la tasa es tan grande que los pesos se vuelven infinitos o NaN, <code>graficas.py</code> lo detecta con <code>es_finito</code> (M8) y dibuja solo los datos, con un aviso de que no hay plano.</p>
+<p>La tasa por defecto es pequeña, 0,001, porque las entradas están alrededor de 5 y una tasa grande hace que cada corrección se pase del objetivo. Con la semilla 7, γ = 0,005 se estabiliza en 100 épocas con un ECM de 1,29 y γ = 0,01 en 63 épocas con un ECM de 2,43. El caso de γ = 0,02 es el que mejor muestra la diferencia entre estabilizarse y ajustar bien: se estabiliza en solo 24 épocas, pero con un ECM de 71,2 y un R² de −1,39, peor que predecir siempre la media, porque los pesos rebotan cerca del límite de estabilidad y el error deja de bajar sin haber encontrado el plano. Ese límite se puede estimar: la regla LMS es estable, aproximadamente, si γ·‖x‖² &lt; 2, donde ‖x‖² es la suma de los cuadrados de las entradas, incluida la del sesgo. En estos datos ‖x‖² vale 86,5 en promedio, así que el límite ronda 2/86,5 ≈ 0,023, y 0,02 queda justo por debajo. Con γ = 0,05 el error explotó y el programa reportó divergencia en la primera época; los pesos quedan enormes, del orden de 10⁷³, pero todavía finitos, así que el plano se dibuja con ejes gigantescos. Solo con tasas mucho mayores, como γ = 1, los pesos llegan a NaN o infinito; entonces <code>graficas.py</code> lo detecta con <code>es_finito</code> (M8) y dibuja solo los datos, con un aviso de que no hay plano.</p>
 <p>Para "reventar" la regresión existe el modelo <b>cuadrático</b>, <code>y = a1·x1² + a2·x2² + a3·x3² + b</code>. Un plano no puede seguir una superficie curva: con la tasa por defecto el entrenamiento se estabiliza a las 181 épocas, igual que el lineal, pero con un ECM de 81,5, unas ochenta veces la varianza del ruido. Lo interesante es que el R² sigue siendo alto, 0,97, porque en el rango de los datos la parábola se parece bastante a una recta; el plano captura la tendencia general, pero deja un error sistemático que ninguna época adicional puede eliminar. Finalmente, con tres entradas el problema tiene cuatro dimensiones, así que la gráfica muestra un corte del hiperplano fijando x3 en su media y corrigiendo cada punto por el efecto de x3.</p>`,
   archivo: "perceptron.py",
   codigo: String.raw`            if tolerancia_cambio is not None and len(self.historial_error) > paciencia:
@@ -453,7 +454,7 @@ F15 Binomial estandarizada X = μ + σ (B − np) / √(np(1 − p))</div>
   id: "interfaz",
   titulo: "Gráficas, interfaz y organización",
   teoria: `
-<p>El proyecto está organizado en capas para que la regla de "sin librerías" se vea con solo leer los <code>import</code>. En la base está <code>formulas.py</code>, que no depende de nada. Encima, <code>aleatorio.py</code> y <code>perceptron.py</code> usan únicamente esas fórmulas. <code>experimentos.py</code> une la simulación de datos con el entrenamiento y devuelve los resultados sin dibujar nada. Solo en la capa visual aparecen las librerías: <code>graficas.py</code> usa matplotlib y <code>main.py</code> usa tkinter.</p>
+<p>El proyecto está organizado en capas para que la regla de "sin librerías" se vea con solo leer los <code>import</code>. En la base está <code>formulas.py</code>, que no depende de nada. Encima, <code>perceptron.py</code> usa únicamente esas fórmulas, y <code>aleatorio.py</code> también, más <code>time</code>, que solo toma una semilla automática. <code>experimentos.py</code> une la simulación de datos con el entrenamiento y devuelve los resultados sin dibujar nada; aparte de los módulos propios solo importa <code>copy</code>. Solo en la capa visual aparecen las librerías: <code>graficas.py</code> dibuja con matplotlib, y <code>main.py</code> usa tkinter para la ventana y el puente de matplotlib (<code>Figure</code> y <code>FigureCanvasTkAgg</code>) para mostrar las figuras dentro de ella.</p>
 <p>Las tres salidas que pidió el profesor están en <code>graficas.py</code>. El <b>espacio 3D</b> dibuja los puntos de cada clase y los planos de separación; para trazar un plano se despeja la coordenada con el peso de mayor valor absoluto, lo que evita dividir entre un número cercano a cero, se evalúa en las cuatro esquinas de la caja y el polígono resultante se recorta con el algoritmo de Sutherland-Hodgman, escrito a mano. La <b>gráfica de épocas</b> muestra el error F7 por época y la <b>gráfica de pesos</b> reúne w1, w2, w3 y θ en una sola figura para ver cómo cada uno se va quedando quieto.</p>
 <p>La interfaz de <code>main.py</code> tiene a la izquierda las pestañas Clasificación, Regresión y Ejemplo de clase, donde se cambian en vivo las instancias, la media en x1, x2 y x3, la desviación y la distribución de cada clase, la tasa, las épocas, el error mínimo, el umbral, las salidas, el valor de x0, la estrategia de tres clases y la semilla. Los botones <b>Separadas</b>, <b>Cercanas</b>, <b>Solapadas</b> y <b>Desbalanceadas</b> cargan escenarios listos, y la fila <b>Reventar</b> tiene Acercar clases, Alejar clases, Aumentar σ y Reducir σ, que modifican los datos actuales y entrenan de inmediato. Las salidas del escalón aceptan cualquier par de números, como pidió el profesor, siempre que la salida alta sea mayor que la baja. Antes de entrenar, la interfaz valida cada dato: <code>leer_float</code> rechaza textos como nan o inf con <code>es_finito</code> (M8), <code>leer_int</code> tampoco deja escribir épocas infinitas, <code>leer_no_negativo</code> exige que las desviaciones σ no sean negativas y <code>leer_tasa</code> exige que γ sea mayor que cero; en cada caso aparece un mensaje que explica el motivo, en lugar de un error en la consola. Después de entrenar, el recuadro <b>Clasificar un punto nuevo</b> dice a qué clase pertenece cualquier punto y lo marca con una estrella. A la derecha están las pestañas de resultados, incluida la de "Proceso paso a paso", que imprime cada suma, salida, error y ajuste. Abajo, una barra permite ver el plano en cualquier época y un botón anima el entrenamiento.</p>
 <p>En el espacio 3D una X marca el centroide de cada nube, y el resumen muestra para cada clase la media y la desviación pedidas frente a las obtenidas, junto con su exactitud. La barra de estado repite la exactitud global y la de cada clase, y en regresión muestra el ECM y el R². La semilla merece una mención: si se fija, por ejemplo en 7, todo el experimento es reproducible, porque el generador produce siempre la misma secuencia. Eso permite mostrar en la sustentación exactamente los mismos resultados del informe.</p>`,
@@ -473,10 +474,10 @@ F15 Binomial estandarizada X = μ + σ (B − np) / √(np(1 − p))</div>
 /* Mapa de archivos para la sección de inicio */
 const ARCHIVOS = {
   "formulas.py": { capa: "Matemática", texto: "Contiene las fórmulas F1 a F19 y las funciones básicas M1 a M8: valor absoluto, raíz cuadrada por Newton-Raphson, arcotangente, π por Machin, logaritmo natural, coseno por series, mínimo y máximo, y es_finito, que reconoce los valores NaN e infinitos. También la desviación estándar, la exactitud por clase y el coeficiente de determinación R² de la regresión. No importa ninguna librería, ni siquiera math.", usa: "nada" },
-  "aleatorio.py": { capa: "Simulación de datos", texto: "Generador congruencial lineal con constantes de Numerical Recipes, barajado de Fisher-Yates y las distribuciones normal, uniforme, exponencial y binomial. También genera los conjuntos de clasificación y de regresión. Solo importa time para la semilla automática.", usa: "formulas.py" },
+  "aleatorio.py": { capa: "Simulación de datos", texto: "Generador congruencial lineal con constantes de Numerical Recipes, barajado de Fisher-Yates y las distribuciones normal, uniforme, exponencial y binomial. También genera los conjuntos de clasificación y de regresión. Aparte de formulas.py, solo importa time, para la semilla automática.", usa: "formulas.py y time" },
   "perceptron.py": { capa: "Modelo", texto: "Clases Escalon, Lineal y Perceptron, con la suma ponderada, el ajuste por instancia, el entrenamiento por épocas y los criterios de parada: convergió, se estabilizó (en regresión), divergió o no convergió. Incluye las dos estrategias de tres clases y la regla para predecir con ellas.", usa: "formulas.py" },
-  "experimentos.py": { capa: "Coordinación", texto: "Guarda la configuración por defecto, ejecuta los experimentos de clasificación, regresión y el ejemplo de las diapositivas, calcula la media, la desviación y la exactitud de cada clase, el ECM y el R² de la regresión, clasifica puntos nuevos y arma el resumen. Las cuentas las hace con formulas.py.", usa: "aleatorio.py, perceptron.py, formulas.py" },
-  "graficas.py": { capa: "Visual", texto: "Único archivo con matplotlib. Dibuja el espacio 3D con los planos, la gráfica de épocas y la de pesos. Marca con una X el centroide de cada nube y con una estrella el punto nuevo. Los valores que se dibujan se calculan con formulas.py, y el recorte de los planos usa Sutherland-Hodgman escrito a mano. Si una regresión diverge hasta pesos infinitos, lo detecta con es_finito y dibuja solo los datos.", usa: "formulas.py + matplotlib" },
+  "experimentos.py": { capa: "Coordinación", texto: "Guarda la configuración por defecto, ejecuta los experimentos de clasificación, regresión y el ejemplo de las diapositivas, calcula la media, la desviación y la exactitud de cada clase, el ECM y el R² de la regresión, clasifica puntos nuevos y arma el resumen. Las cuentas las hace con formulas.py, y copy solo duplica la configuración.", usa: "aleatorio.py, perceptron.py, formulas.py y copy" },
+  "graficas.py": { capa: "Visual", texto: "Es el archivo que dibuja con matplotlib (main.py solo usa matplotlib para incrustar las figuras en la ventana). Dibuja el espacio 3D con los planos, la gráfica de épocas y la de pesos. Marca con una X el centroide de cada nube y con una estrella el punto nuevo. Los valores que se dibujan se calculan con formulas.py, y el recorte de los planos usa Sutherland-Hodgman escrito a mano. Si una regresión diverge hasta pesos infinitos, lo detecta con es_finito y dibuja solo los datos.", usa: "formulas.py + matplotlib" },
   "main.py": { capa: "Visual", texto: "Interfaz en tkinter con las pestañas de configuración y de resultados, cuatro escenarios, los botones para acercar, alejar y cambiar σ, salidas configurables con la alta mayor que la baja, clasificación de un punto nuevo, la barra de épocas, la animación y el botón para reiniciar todo. Valida cada dato antes de entrenar: rechaza nan e inf, desviaciones negativas y tasas que no sean positivas. Es el archivo que se ejecuta.", usa: "experimentos.py, graficas.py, aleatorio.py, formulas.py, tkinter, matplotlib" }
 };
 /* =====================================================================
@@ -517,7 +518,7 @@ const NIVELES = [
         ["Un número que hace más aleatorios los datos", false, "La semilla no cambia qué tan aleatorios son, sino cuál secuencia se produce."] ] },
     { tipo: "opcion", enunciado: "¿Para qué sirve la distribución exponencial en el escenario Solapadas?",
       opciones: [
-        ["Su cola larga hacia valores grandes lanza puntos de la clase 2 que invaden a la otra clase", true, "Correcto: aunque tenga la misma media y σ que la normal, es asimétrica y produce puntos alejados en una dirección."],
+        ["Es asimétrica: amontona la mayoría de sus puntos cerca de su mínimo, μ − σ, que queda del lado de la clase 1, y así el grueso de la clase 2 se corre hacia la otra clase", true, "Correcto: tiene la misma media y σ que la normal, pero más de la mitad de sus valores quedan por debajo de la media. Con la semilla 7, el 45 % de los puntos de la clase 2 cae en la mitad del lado de la clase 1, frente al 35,9 % con la normal. La cola larga apunta hacia afuera y no es la que invade."],
         ["Hace que los puntos queden en una rejilla", false, "Eso pasa con la binomial, cuyos valores son discretos."],
         ["Reduce la desviación de la clase", false, "La desviación sigue siendo la σ pedida."],
         ["Es necesaria para que el perceptrón converja", false, "Al contrario: ayuda a que no converja."] ] },
@@ -550,7 +551,7 @@ const NIVELES = [
         ["Que si las clases son linealmente separables, el entrenamiento encuentra un plano separador en un número finito de pasos", true, "Correcto: es el resultado de Novikoff (1962). Fíjate en la condición: solo vale si el problema es separable."],
         ["Que el perceptrón siempre llega a error cero", false, "Solo si las clases son separables. Con clases solapadas el error oscila para siempre."],
         ["Que encuentra el plano con mayor margen", false, "Eso lo buscan las máquinas de vectores de soporte; el perceptrón se detiene en cualquier plano que separe."],
-        ["Que converge en menos de 100 épocas", false, "El teorema no da un número fijo; depende del margen y del tamaño de los datos."] ] },
+        ["Que converge en menos de 100 épocas", false, "El teorema no da un número fijo de épocas: acota el número de correcciones por (R/ρ)², que depende del margen ρ y de qué tan lejos del origen están los puntos (R), no de cuántos datos hay."] ] },
     { tipo: "opcion", enunciado: "¿Por qué en el problema de tres clases no se forma una red neuronal?",
       opciones: [
         ["Porque cada perceptrón se entrena por separado y ninguno recibe la salida de otro", true, "Correcto: son clasificadores binarios independientes combinados al final por una regla de decisión."],
@@ -748,8 +749,8 @@ const NIVELES = [
    PREPARACIÓN PARA LA SUSTENTACIÓN
    ===================================================================== */
 const SUSTENTACION = [
-  { tema: "General", p: "Explíqueme en dos minutos qué hace su proyecto.", r: "Es un simulador del perceptrón escrito en Python que genera nubes de puntos en tres dimensiones con distribuciones de probabilidad propias y entrena una sola neurona para tres tareas: clasificar dos clases, clasificar tres clases con neuronas independientes y ajustar un plano en regresión. Toda la matemática, desde la raíz cuadrada hasta el generador aleatorio, está escrita a mano en formulas.py, y las librerías solo aparecen para dibujar. La interfaz permite cambiar en vivo los parámetros de los datos y del entrenamiento, y muestra las tres gráficas que usted pidió: el espacio 3D con los planos, el error por época y la evolución de los pesos." },
-  { tema: "General", p: "¿Cómo demuestra que no usó librerías para la matemática?", r: "Basta revisar los import. formulas.py no importa nada; aleatorio.py y perceptron.py solo importan formulas.py; experimentos.py importa los módulos propios y copy, que duplica la configuración. Matplotlib y tkinter solo están en graficas.py y main.py, y reciben valores ya calculados. Los otros dos import, time y ctypes, tienen funciones ajenas a la matemática: tomar una semilla automática y mejorar la nitidez de la ventana en Windows." },
+  { tema: "General", p: "Explíqueme en dos minutos qué hace su proyecto.", r: "Es un simulador del perceptrón escrito en Python que genera nubes de puntos en tres dimensiones con distribuciones de probabilidad propias y entrena perceptrones de una sola neurona para tres tareas: clasificar dos clases, clasificar tres clases con neuronas independientes y ajustar un plano en regresión. Toda la matemática, desde la raíz cuadrada hasta el generador aleatorio, está escrita a mano en formulas.py, y las librerías solo aparecen para dibujar. La interfaz permite cambiar en vivo los parámetros de los datos y del entrenamiento, y muestra las tres gráficas que usted pidió: el espacio 3D con los planos, el error por época y la evolución de los pesos." },
+  { tema: "General", p: "¿Cómo demuestra que no usó librerías para la matemática?", r: "Basta revisar los import. formulas.py no importa nada; perceptron.py solo importa formulas.py; aleatorio.py importa formulas.py y time, que solo toma una semilla automática cuando la dejo vacía; experimentos.py importa los módulos propios y copy, que duplica la configuración. Matplotlib y tkinter solo están en graficas.py y main.py, y reciben valores ya calculados: graficas.py dibuja, y main.py usa matplotlib solo para mostrar las figuras dentro de la ventana. El último import, ctypes, en main.py, solo mejora la nitidez de la ventana en Windows." },
   { tema: "General", p: "Cuénteme qué pasa desde que presiono Entrenar hasta que aparece la gráfica.", r: "El botón llama a entrenar_clasificacion de main.py, que lee y valida los campos en _config_clasificacion. Con esa configuración, ejecutar_clasificacion de experimentos.py crea un generador con la semilla, simula los puntos con generar_datos_clasificacion de aleatorio.py y crea el perceptrón con un escalón, con los pesos sorteados entre −1 y 1. Luego entrenar de perceptron.py recorre las épocas: baraja, ajusta cada instancia con F1 a F6 y al final de cada época calcula F7, hasta que converge o se agotan las épocas. Con los pesos finales se calculan la exactitud global y por clase y la media y desviación de cada nube, y todo vuelve a main.py en un diccionario. Por último, graficas.py dibuja el espacio 3D, las épocas y los pesos, y matplotlib solo pinta lo que ya se calculó." },
   { tema: "Teoría", p: "¿Qué es el aprendizaje supervisado y por qué su proyecto lo es?", r: "Es aprender a partir de ejemplos de los que se conoce la respuesta correcta. En mi proyecto cada instancia trae su salida deseada d, que depende de la clase a la que pertenece, o del valor de y en la regresión, y el perceptrón corrige sus pesos según la diferencia entre lo que respondió y esa respuesta, e = d − y. Sin la salida deseada no habría error y la regla no podría aprender." },
   { tema: "Implementación", p: "¿Qué es una distribución de probabilidad y cuáles usó?", r: "Es la descripción de qué valores puede tomar algo al azar y con qué frecuencia. Usé cuatro, todas controladas con la media μ y la desviación σ: la normal, con forma de campana, por Box-Muller; la uniforme, en la que todos los valores de un intervalo son igual de probables, con semiancho σ√3; la exponencial, asimétrica, por transformada inversa; y la binomial, que cuenta éxitos en 20 ensayos y luego se estandariza. Todas parten del número uniforme U que da mi generador congruencial." },
@@ -775,7 +776,7 @@ const SUSTENTACION = [
   { tema: "Regresión", p: "¿Por qué en regresión dice «se estabilizó» y no «convergió»?", r: "Porque el ruido impide que el error llegue a cero, así que la regresión se detiene cuando en 20 épocas el error no mejora al menos un 0,01 %. Eso solo dice que el error dejó de bajar, no que el plano sea bueno. Por eso el atributo se llama estancado y el estado dice «se estabilizó». Para juzgar el ajuste miro el ECM y el R²: con γ = 0,001 se estabiliza en 265 épocas con un R² de 0,964, pero con γ = 0,02 también se estabiliza, en 24 épocas, con un R² de −1,39." },
   { tema: "Regresión", p: "¿Qué es el R² y por qué lo calcula además del ECM?", r: "Es el coeficiente de determinación, F19: R² = 1 − Σ(y − ŷ)² / Σ(y − media)². Dice qué fracción de la variación de y explica el plano: 1 es un ajuste perfecto, 0 equivale a predecir siempre la media y un valor negativo es peor que eso. Lo calculo en coeficiente_determinacion de formulas.py porque el ECM depende de la escala de y y el R² no. Los dos juntos cuentan la historia completa: en el modelo cuadrático el R² es 0,972, alto porque el plano sigue la tendencia, pero el ECM de 81,5 delata el error sistemático por la curvatura." },
   { tema: "Regresión", p: "¿Cómo dibuja un problema de cuatro dimensiones?", r: "Con tres entradas hay x1, x2, x3 e y. La gráfica fija x3 en su media y a cada punto le resta el efecto de x3, y_corregido = y − w3·(x3 − media_x3); así se ve un corte del hiperplano sobre x1, x2 e y. Al lado se muestra la gráfica de real contra predicho, donde un buen ajuste queda sobre la diagonal." },
-  { tema: "Gráficas", p: "¿Qué muestra la gráfica de pesos y qué debo ver en ella?", r: "Muestra w1, w2, w3 y θ en una sola figura, uno por cada ajuste, con el eje en épocas. Cuando el perceptrón converge, las curvas dejan de moverse y se vuelven horizontales; en clases solapadas siguen saltando hasta el final. Es la forma de ver cuál peso se estabiliza primero." },
+  { tema: "Gráficas", p: "¿Qué muestra la gráfica de pesos y qué debo ver en ella?", r: "Muestra w1, w2, w3 y θ en una sola figura, con un punto por cada instancia procesada, haya o no ajuste, y el eje en épocas. Cuando el perceptrón converge, las curvas dejan de moverse y se vuelven horizontales; en clases solapadas siguen saltando hasta el final. Es la forma de ver cuál peso se estabiliza primero." },
   { tema: "Gráficas", p: "¿Cómo dibuja el plano de separación?", r: "Despeja de F10 la coordenada cuyo peso tiene mayor valor absoluto, para no dividir entre un número cercano a cero, la evalúa en las cuatro esquinas de la caja de los datos y recorta el polígono resultante a esa caja con el algoritmo de Sutherland-Hodgman, escrito a mano. Matplotlib solo pinta el polígono." },
   { tema: "En vivo", p: "Reviéntelo: acerque las clases.", r: "Pulso Cercanas o Solapadas, o reduzco la distancia entre las medias y aumento la desviación, y entreno. Lo que debe verse es que el error por época deja de llegar a cero y oscila, que los pesos no se estabilizan y que la exactitud baja. Lo explico como la consecuencia directa de que ya no existe un plano separador." },
   { tema: "En vivo", p: "Ponga una clase con muchas más instancias que la otra.", r: "Uso el escenario Desbalanceadas, que deja 100 instancias contra 10. Si las clases fueran separables el perceptrón seguiría convergiendo, porque el teorema no depende del tamaño de cada clase. Pero como están cercanas, el plano favorece a la clase mayoritaria, que recibe casi todas las correcciones: la exactitud global sube a 95,5 %, más que el 89 % del caso balanceado, mientras la clase pequeña cae a 50 %. Por eso el simulador muestra la exactitud de cada clase; la global sola es engañosa." },
@@ -783,7 +784,7 @@ const SUSTENTACION = [
   { tema: "En vivo", p: "Use como salidas 5 y 2,5.", r: "Las salidas del escalón aceptan cualquier par de números, como dijo usted en clase, con la condición de que la salida alta sea mayor que la baja, y 5 es mayor que 2,5. Con 5 y 2,5 el error de una instancia mal clasificada vale ±2,5 en lugar de ±2, así que cada corrección cambia de tamaño, pero el plano y la lógica son los mismos; con la semilla 7 y las clases separadas converge en 5 épocas, frente a 6 con 1 y −1." },
   { tema: "Implementación", p: "¿Cómo sabe que los datos simulados quedaron como los pidió?", r: "Después de generarlos calculo para cada nube la media de cada coordenada (F16) y la desviación estándar (F17), y el resumen las compara con las pedidas. Por ejemplo, la clase 1 se pidió en (2, 2, 2) con σ = 1 y se obtuvo (1,99; 2,09; 2,07) con σ = 1,03. El centroide se marca con una X en el espacio 3D." },
   { tema: "Implementación", p: "¿Usó funciones de Python como min, max o sum?", r: "No en los cálculos. formulas.py define minimo y maximo, que recorren la lista comparando valor por valor, y la media y la desviación se calculan con ciclos. Se usan en el criterio de parada de la regresión, en los límites de las gráficas y en la interfaz." },
-  { tema: "En vivo", p: "Cambie la distribución a exponencial. ¿Qué pasa?", r: "La exponencial es asimétrica, con una cola larga hacia valores grandes. Aunque tiene la misma media y desviación que la normal, produce puntos alejados en una dirección que pueden invadir la otra clase. Por eso el escenario Solapadas usa una exponencial en la clase 2." },
+  { tema: "En vivo", p: "Cambie la distribución a exponencial. ¿Qué pasa?", r: "La exponencial es asimétrica: nunca baja de μ − σ, amontona la mayoría de sus puntos cerca de ese mínimo y tiene una cola larga hacia valores grandes. Tiene la misma media y desviación que la normal, pero en el escenario Solapadas la clase 2 está por encima de la clase 1, así que ese montón cercano al mínimo se corre hacia la clase 1 y la invade, mientras la cola se aleja hacia afuera. Lo medí con la semilla 7: con la exponencial, el 45 % de los puntos de la clase 2 cae en la mitad del lado de la clase 1, frente al 35,9 % con la normal. Por eso el escenario usa una exponencial en la clase 2." },
   { tema: "En vivo", p: "¿Qué pasa si las dos salidas del escalón son iguales?", r: "El programa no lo permite y muestra un mensaje, porque la neurona respondería lo mismo para cualquier punto y el error nunca podría corregirse. Tampoco permite que la salida alta sea menor que la baja, porque entonces la regla de ajuste empujaría los pesos en la dirección contraria. Las dos validaciones están en _config_clasificacion de main.py." },
   { tema: "En vivo", p: "Usted dijo que las salidas podían ser las que quisiéramos. ¿Por qué no deja poner la alta menor que la baja?", r: "Porque la regla wi ← wi + γ·(d − y)·xi supone que la salida alta es la mayor. Si respondió la baja cuando debía responder la alta, el error es positivo y los pesos se acercan al punto, lo que sube su suma. Con las salidas al revés el signo del error se invierte y cada corrección aleja el plano de la solución. Lo comprobé: con la semilla 7 y las clases separadas, con las salidas invertidas el perceptrón se queda en 50 % y nunca converge. Por eso acepto cualquier par, como 1 y −1, 1 y 0 o 5 y 2,5, siempre que la alta sea mayor." },
   { tema: "En vivo", p: "¿Qué pasa si escribo una tasa negativa, o nan en un campo?", r: "El programa no entrena y muestra un mensaje. leer_tasa exige que γ sea mayor que cero, porque con γ = 0 los pesos nunca cambian y con γ negativa cada ajuste va en la dirección contraria: con la semilla 7 se quedaría en 50 %. leer_float rechaza nan e inf usando es_finito, la función M8 de formulas.py, que reconoce un NaN porque es el único valor distinto de sí mismo. También se rechazan las desviaciones negativas, con leer_no_negativo." },
@@ -875,7 +876,7 @@ const ANALISIS = [
   lineas: [
     [String.raw`A = 1664525`, "Multiplicador del generador congruencial (constantes de Numerical Recipes)."],
     [String.raw`C = 1013904223`, "Incremento."],
-    [String.raw`M = 2 ** 32`, "Módulo; el periodo máximo es 2³² valores."],
+    [String.raw`M = 2 ** 32`, "Módulo. Con estas constantes se alcanza el periodo máximo, 2³² valores antes de repetirse, porque c es impar y a − 1 es múltiplo de 4 (teorema de Hull-Dobell)."],
     [String.raw`if semilla is None:`, "Si el usuario deja la semilla vacía…"],
     [String.raw`    semilla = time.time_ns()`, "…se toma la hora en nanosegundos. Es el único uso de time y no es un cálculo matemático."],
     [String.raw`self.X = int(semilla) % self.M`, "Estado inicial del generador."],
@@ -885,7 +886,7 @@ const ANALISIS = [
     [String.raw`    j = self.entero(i + 1)`, "Elige una posición al azar entre 0 e i."],
     [String.raw`    lista[i], lista[j] = lista[j], lista[i]`, "Intercambia; cada permutación queda con la misma probabilidad."]
   ],
-  decision: "Envolver el estado en una clase permite pasar el mismo generador a la simulación de datos, a la inicialización de pesos y al barajado, de modo que una sola semilla reproduce todo el experimento."
+  decision: "Envolver el estado en una clase permite pasar el mismo generador a la simulación de datos, a la inicialización de pesos y al barajado, de modo que una sola semilla reproduce todo el experimento. (Las líneas de este bloque vienen de varios métodos de la clase y se muestran sin su sangría original.)"
 },
 {
   archivo: "formulas.py", titulo: "logaritmo_natural: reducción de rango y serie",
@@ -910,7 +911,7 @@ const ANALISIS = [
     [String.raw`    Z = raiz_cuadrada(-2.0 * logaritmo_natural(U1)) * coseno(2.0 * PI * U2)`, "F12: transformación de Box-Muller. Usa la raíz, el logaritmo, el coseno y π propios."],
     [String.raw`    return mu + sigma * Z`, "Z es normal estándar; se escala con σ y se desplaza a μ."]
   ],
-  decision: "Box-Muller es exacta, a diferencia de aproximar la normal sumando uniformes, y solo necesita funciones que el proyecto ya tenía escritas a mano."
+  decision: "Box-Muller en realidad produce dos normales independientes a partir de U1 y U2: la del coseno y otra con el seno, √(−2 ln U1)·sen(2πU2). El código usa solo la del coseno y descarta la otra, así que gasta dos uniformes por cada valor, y a cambio formulas.py no necesita una función seno. Box-Muller es exacta, a diferencia de aproximar la normal sumando uniformes, y solo necesita funciones que el proyecto ya tenía escritas a mano."
 },
 {
   archivo: "experimentos.py", titulo: "ejecutar_clasificacion: une datos y modelo",
@@ -924,7 +925,7 @@ const ANALISIS = [
     [String.raw`d = [alta if c == 0 else baja for c in etiquetas]`, "Dos clases: la clase 1 recibe la salida alta y la clase 2 la baja."],
     [String.raw`"exactitud": exactitud(predicciones, etiquetas),                       # F9`, "Porcentaje de aciertos sobre los mismos datos."]
   ],
-  decision: "La función crear se pasa a entrenar_tres_clases para que perceptron.py no tenga que conocer la configuración de la interfaz. Así cada módulo tiene una sola responsabilidad."
+  decision: "La función crear se pasa a entrenar_tres_clases para que perceptron.py no tenga que conocer la configuración de la interfaz. Así cada módulo tiene una sola responsabilidad. (Este bloque reúne líneas sueltas de la función, sin su sangría original y omitiendo las intermedias.)"
 },
 {
   archivo: "graficas.py", titulo: "poligono_plano: el plano que se dibuja",
@@ -938,6 +939,7 @@ const ANALISIS = [
     [String.raw`a, b = [j for j in range(3) if j != k]`, "Las otras dos coordenadas definen el rectángulo base."],
     [String.raw`punto[k] = coordenada_del_plano(w, theta, x0, umbral, k, {a: va, b: vb})   # F10`, "Despeje de F10 en cada esquina."],
     [String.raw`poligono = _recortar(poligono, k, limites[k][0], True)`, "Sutherland-Hodgman: recorta por debajo…"],
+    [String.raw`if poligono:`, "Si después del primer recorte quedó algo del polígono…"],
     [String.raw`    poligono = _recortar(poligono, k, limites[k][1], False)`, "…y por encima, para que el plano no se salga de la caja de los datos."]
   ],
   decision: "Recortar el polígono hace que el plano se vea dentro de la nube y no como una lámina gigante que aplasta la escala de los ejes."
@@ -996,14 +998,18 @@ ANALISIS.push({
     [String.raw`        if cfg["salida_alta"] == cfg["salida_baja"]:`, "En _config_clasificacion: dos salidas iguales no permiten corregir ningún error."],
     [String.raw`        if cfg["salida_alta"] < cfg["salida_baja"]:`, "Las salidas invertidas tampoco: la regla supone que la alta es la mayor."]
   ],
-  decision: "Cada validación lanza un ValueError con un mensaje claro, y _ejecutar lo atrapa y lo muestra en un cuadro de diálogo. Así un dato inválido nunca llega al perceptrón ni deja la ventana en un estado roto."
+  decision: "Cada validación lanza un ValueError con un mensaje claro, y _ejecutar lo atrapa y lo muestra en un cuadro de diálogo. Así un dato inválido nunca llega al perceptrón. Un detalle que conviene conocer: después del mensaje, la barra de estado se queda diciendo «Entrenando...», porque _ejecutar sale con return sin restablecerla; basta entrenar de nuevo con datos válidos."
 });
 ANALISIS.push({
   archivo: "main.py", titulo: "_mover_medias: el botón para acercar o alejar las clases",
   lineas: [
-    [String.raw`filas = self.c_clases[:self.c_nclases.get()]`, "Solo las clases activas (2 o 3)."],
-    [String.raw`centros = [[leer_float(v, "Media") for v in fila["centro"]] for fila in filas]`, "Lee las medias que hay escritas en la interfaz."],
-    [String.raw`comun = [media([c[j] for c in centros]) for j in range(3)]           # F16`, "Centro común: la media de los centros en cada coordenada."],
+    [String.raw`try:`, "Lo que sigue lee datos de la interfaz, que pueden no ser números."],
+    [String.raw`    filas = self.c_clases[:self.c_nclases.get()]`, "Solo las clases activas (2 o 3)."],
+    [String.raw`    centros = [[leer_float(v, "Media") for v in fila["centro"]] for fila in filas]`, "Lee las medias que hay escritas en la interfaz."],
+    [String.raw`except ValueError as error:`, "Si una media no es un número, leer_float lanzó un ValueError…"],
+    [String.raw`    messagebox.showerror("Dato no válido", str(error))`, "…se muestra el mensaje…"],
+    [String.raw`    return`, "…y se sale sin mover nada ni entrenar."],
+    [String.raw`comun =[media([c[j] for c in centros]) for j in range(3)]           # F16`, "Centro común: la media de los centros en cada coordenada."],
     [String.raw`for fila, c in zip(filas, centros):`, ""],
     [String.raw`    for j, var in enumerate(fila["centro"]):`, ""],
     [String.raw`        var.set("%.3g" % (comun[j] + factor * (c[j] - comun[j])))`, "c_nuevo = común + f·(c − común): con f = 0,75 se acercan y con 1,33 se alejan."],
@@ -1022,7 +1028,7 @@ const MEJORAS = [
 const BUENAS_PRACTICAS = [
   "Arquitectura por capas con dependencias en un solo sentido: la matemática no conoce a la interfaz.",
   "Cada fórmula con su número (F1 a F19 y M1 a M8), lo que conecta el código con el informe.",
-  "Docstrings en todas las funciones, con la fórmula escrita.",
+  "Docstrings en todas las funciones de formulas.py, cada uno con su fórmula escrita y su código (F1 a F19, M1 a M8), y en las funciones principales de los demás archivos.",
   "Validación de entradas en la interfaz: salidas iguales o invertidas, nan e inf, desviaciones negativas, tasas no positivas y decimales con coma o punto.",
   "Configuración por defecto copiada con deepcopy para no alterar los valores originales al reiniciar.",
   "Semilla para hacer reproducible cualquier experimento.",
@@ -1262,7 +1268,7 @@ F17  σ = √[ ((x1 − media)² + … + (xN − media)²) / N ]</div>
 <ul class="lista-errores">
 <li><b>Normal</b> (F12): la famosa campana. La mayoría de valores cae cerca de la media y cada vez menos lejos de ella, igual a ambos lados; así se reparten, por ejemplo, las estaturas de las personas. Es la distribución por defecto de las clases y del ruido.</li>
 <li><b>Uniforme</b> (F13): todos los valores de un intervalo son igual de probables, como la ruleta. Con media μ y desviación σ, el intervalo va de μ − σ√3 a μ + σ√3, y nada cae fuera de él. Es la distribución por defecto de las entradas de la regresión.</li>
-<li><b>Exponencial</b> (F14): describe tiempos de espera, como cuánto tarda en llegar el próximo bus. Es asimétrica: nunca baja de μ − σ, se amontona cerca de ese mínimo y tiene una cola larga hacia valores grandes. Por eso el escenario Solapadas la usa en la clase 2, cuyos puntos lejanos invaden a la otra clase.</li>
+<li><b>Exponencial</b> (F14): describe tiempos de espera, como cuánto tarda en llegar el próximo bus. Es asimétrica: nunca baja de μ − σ, se amontona cerca de ese mínimo y tiene una cola larga hacia valores grandes. Por eso el escenario Solapadas la usa en la clase 2: esa clase está por encima de la clase 1, así que el montón cercano al mínimo se corre hacia la clase 1 y la invade, mientras la cola se aleja hacia afuera.</li>
 <li><b>Binomial</b> (F15): cuenta éxitos en ensayos repetidos, como cuántas caras salen al lanzar una moneda 20 veces. Tu código usa 20 ensayos con probabilidad 0,5 y luego la estandariza para que tenga media μ y desviación σ. Como el número de caras es un entero entre 0 y 20, cada coordenada solo puede tomar a lo sumo 21 valores distintos, así que la nube queda como una rejilla de puntos.</li>
 </ul>
 <p>El <b>ruido</b> de la regresión es un valor al azar, normal con media 0, que se suma a cada y para imitar los errores de medición del mundo real. Por culpa de ese ruido ningún plano puede pasar exactamente por todos los puntos, y por eso el error de la regresión nunca llega a cero. Usa la demostración de abajo para ver la forma de cada distribución y comprobar que la media y la desviación obtenidas quedan cerca de las pedidas, igual que lo comprueba el resumen de tu programa.</p>`,
@@ -1281,7 +1287,7 @@ F17  σ = √[ ((x1 − media)² + … + (xN − media)²) / N ]</div>
       ["15", false, "15 es la suma; falta dividir entre 3."],
       ["7", false, "Revisa la suma: 2 + 4 + 9 = 15."] ] },
     { enunciado: "¿Cuál de las cuatro distribuciones es asimétrica, con una cola larga hacia valores grandes?", opciones: [
-      ["La exponencial", true, "Correcto: nunca baja de μ − σ y se extiende hacia arriba. Por eso sirve para solapar clases."],
+      ["La exponencial", true, "Correcto: nunca baja de μ − σ, amontona la mayoría de sus valores cerca de ese mínimo y se extiende hacia arriba con una cola larga."],
       ["La normal", false, "La normal es simétrica, una campana igual a ambos lados."],
       ["La uniforme", false, "La uniforme es plana y simétrica, y no tiene colas."],
       ["La binomial", false, "Con p = 0,5 la binomial es simétrica."] ] },
@@ -1312,7 +1318,7 @@ F17  σ = √[ ((x1 − media)² + … + (xN − media)²) / N ]</div>
         for i in range(len(lista) - 1, 0, -1):
             j = self.entero(i + 1)
             lista[i], lista[j] = lista[j], lista[i]`,
-    nota: "uniforme01 avanza el estado X con F11 y lo convierte en U. barajar recorre la lista de atrás hacia adelante y en cada posición intercambia con otra elegida al azar. Fíjate en que self.X se guarda dentro del objeto: por eso cada llamada continúa la secuencia donde quedó la anterior." }],
+    nota: "Son dos métodos de la clase; en el archivo, entre ellos están uniforme y entero, que aquí se omitieron. uniforme01 avanza el estado X con F11 y lo convierte en U. barajar recorre la lista de atrás hacia adelante y en cada posición intercambia con otra elegida al azar. Fíjate en que self.X se guarda dentro del objeto: por eso cada llamada continúa la secuencia donde quedó la anterior." }],
   demo: "generador",
   preguntas: [
     { enunciado: "Entrenas dos veces seguidas con la semilla 7 y los mismos parámetros. ¿Qué pasa?", opciones: [
@@ -1372,7 +1378,7 @@ F6  θ  = 0 + 0,5·(−2)·(−1) = 1</div>
   titulo: "Calcular sin calculadora: iteraciones y series",
   html: `
 <p>Un procesador solo sabe sumar, restar, multiplicar, dividir y comparar. Funciones como la raíz cuadrada, el logaritmo o el coseno no vienen «de fábrica»: alguien tiene que escribir una receta que las calcule con esas operaciones básicas. Normalmente esas recetas vienen en la librería <code>math</code>, pero como la regla del curso la prohíbe, tu <code>formulas.py</code> trae las suyas. Las necesitas porque Box-Muller usa raíz, logaritmo, coseno y π, y la exponencial usa logaritmo.</p>
-<p>La primera técnica es la <b>iteración</b>: repetir una misma regla hasta que el resultado deja de cambiar. La raíz cuadrada (M2) usa el método de <b>Newton-Raphson</b>, que para √a repite r ← ½·(r + a/r). La idea se entiende sin cálculo: si r es demasiado grande, a/r queda demasiado pequeño, y el promedio de los dos cae en medio, más cerca de la raíz. Para √9 empezando en r = 9 los valores son 5; 3,4; 3,0235; 3,00009 y 3,0000000014, y el siguiente paso ya no cambia. Fíjate en que cerca de la respuesta los ceros después de la coma se duplican en cada paso; eso se llama convergencia cuadrática.</p>
+<p>La primera técnica es la <b>iteración</b>: repetir una misma regla hasta que el resultado deja de cambiar. La raíz cuadrada (M2) usa el método de <b>Newton-Raphson</b>, que para √a repite r ← ½·(r + a/r). La idea se entiende sin cálculo: si r es demasiado grande, a/r queda demasiado pequeño, y el promedio de los dos cae en medio, más cerca de la raíz. Para √9 empezando en r = 9 los valores son 5; 3,4; 3,0235; 3,00009; 3,0000000014 y 3, y en el paso siguiente, el séptimo, r ya no cambia y el ciclo se detiene. Fíjate en que cerca de la respuesta los ceros después de la coma se duplican en cada paso; eso se llama convergencia cuadrática.</p>
 <p>La segunda técnica son las <b>series</b>: escribir una función como una suma infinita de términos que se van haciendo cada vez más pequeños, y sumar hasta que el término siguiente sea despreciable. El coseno (M6) usa la serie de Taylor:</p>
 <div class="formula">cos t = 1 − t²/2! + t⁴/4! − t⁶/6! + …      (cos 1 ≈ 0,5403)</div>
 <p>Tu código deja de sumar cuando el término es menor que 10⁻¹⁸, mucho más pequeño que lo que se nota en un resultado. Con el mismo espíritu, la arcotangente (M3) es una serie, y π (M4) se obtiene con la fórmula de Machin, π = 16·atan(1/5) − 4·atan(1/239), que combina dos arcotangentes que convergen muy rápido. El logaritmo (M5) usa un truco previo, la <b>reducción de rango</b>: divide o multiplica el número por 2 hasta dejarlo entre 1 y 2, porque cerca de 1 la serie converge rápido, y después suma tantas veces ln 2 como divisiones hizo. Así, por ejemplo, ln 10 da 2,302585.</p>
@@ -1455,7 +1461,7 @@ F6  θ  = 0 + 0,5·(−2)·(−1) = 1</div>
 <h3>Archivos, import y errores</h3>
 <p>Cada archivo .py es un <b>módulo</b>, y <code>from formulas import suma_ponderada</code> trae una función de otro archivo para poder usarla. Leyendo los import se ve quién depende de quién, y por eso tu proyecto se puede demostrar «sin librerías» solo mirando las primeras líneas de cada archivo.</p>
 <p>Cuando algo sale mal, el código puede <b>lanzar una excepción</b> con <code>raise ValueError("mensaje")</code>, que interrumpe lo que se estaba haciendo. Quien llamó puede <b>atraparla</b> con <code>try: … except ValueError as error: …</code> y reaccionar, en lugar de que el programa se caiga. Así funciona la validación: <code>leer_tasa</code> lanza el error si γ ≤ 0, y <code>_ejecutar</code> lo atrapa y muestra el mensaje en una ventana. El bloque <code>finally</code> se ejecuta pase lo que pase, y ahí se devuelve el cursor del mouse a la normalidad.</p>
-<p>Por último, dos detalles que verás al final de main.py y en los textos. Una cadena como <code>"convergió en %d épocas" % self.epocas</code> reemplaza el <code>%d</code> por el número; <code>%.5f</code> lo escribe con cinco decimales. Y <code>if __name__ == "__main__": main()</code> significa «ejecuta main solo si este archivo se abrió directamente», lo que permite importar main.py sin abrir la ventana.</p>`,
+<p>Por último, dos detalles que verás al final de main.py y en los textos. Una cadena como <code>"DIVERGIÓ en la época %d" % self.epocas</code>, que está en el método <code>estado</code>, reemplaza el <code>%d</code> por el número; <code>%.5f</code> lo escribe con cinco decimales. Y <code>if __name__ == "__main__": main()</code> significa «ejecuta main solo si este archivo se abrió directamente», lo que permite importar main.py sin abrir la ventana.</p>`,
   ejemplos: [{ archivo: "perceptron.py", codigo: String.raw`class Escalon:
     """Función de activación escalón (F2) con umbral y salidas configurables."""
 
@@ -1665,7 +1671,7 @@ const FUNCIONES = {
     ["minimo(valores) y maximo(valores)", "M7. Recorren la lista recordando el menor o el mayor; reemplazan a min y max de Python."],
     ["INFINITO y es_finito(v)", "M8. INFINITO = float(\"inf\"). es_finito devuelve False si v es NaN (v != v) o infinito."],
     ["suma_ponderada(w, x, theta, x0)", "F1. Multiplica cada peso por su entrada, suma todo y agrega θ·x0."],
-    ["funcion_escalon(S, umbral, alta, baja)", "F2. Devuelve la salida alta si S ≥ umbral y la baja si no."],
+    ["funcion_escalon(S, umbral, salida_alta, salida_baja)", "F2. Devuelve la salida alta si S ≥ umbral y la baja si no."],
     ["funcion_lineal(S)", "F3. Devuelve S tal cual; es la activación de la regresión."],
     ["error_instancia(d, y)", "F4. Devuelve d − y."],
     ["ajuste_peso(wi, gamma, e, xi)", "F5. Devuelve wi + γ·e·xi."],
@@ -1673,7 +1679,7 @@ const FUNCIONES = {
     ["error_epoca(errores)", "F7. Suma los cuadrados de los errores y multiplica por ½."],
     ["error_cuadratico_medio(errores)", "F8. Suma los cuadrados de los errores y divide entre N."],
     ["exactitud(predicciones, reales)", "F9. Cuenta los aciertos y devuelve el porcentaje."],
-    ["coordenada_del_plano(w, theta, x0, umbral, k, otros)", "F10. Despeja la coordenada k del plano conociendo las otras dos."],
+    ["coordenada_del_plano(w, theta, x0, umbral, k, otros_valores)", "F10. Despeja la coordenada k del plano conociendo las otras dos."],
     ["media(valores)", "F16. Suma los valores y divide entre N."],
     ["desviacion_estandar(valores)", "F17. Raíz del promedio de los cuadrados de las distancias a la media."],
     ["exactitud_por_clase(predicciones, reales, clase)", "F18. Porcentaje de aciertos contando solo las instancias de una clase."],
@@ -1701,7 +1707,7 @@ const FUNCIONES = {
     ["MAX_LINEAS_REGISTRO", "Límite de 4000 líneas para el proceso paso a paso, para no llenar la memoria."],
     ["Escalon(umbral, salida_alta, salida_baja)", "Clase de la activación escalón; al llamarla con S usa funcion_escalon (F2)."],
     ["Lineal()", "Clase de la activación lineal; al llamarla con S devuelve S (F3). Su umbral es 0."],
-    ["Perceptron(n_entradas, tasa, activacion, generador, nombre, x0)", "Constructor: guarda la configuración, sortea pesos y θ en (−1, 1) y deja vacíos los historiales y en False los indicadores convergio, estancado y divergio."],
+    ["Perceptron(n_entradas, tasa_aprendizaje, activacion, generador, nombre, x0)", "Constructor: guarda la configuración, sortea pesos y θ en (−1, 1) y deja vacíos los historiales y en False los indicadores convergio, estancado y divergio."],
     ["suma(x)", "F1 con los pesos actuales del perceptrón."],
     ["predecir(x)", "Aplica la activación a la suma: la respuesta de la neurona para el punto x."],
     ["pesos_actuales()", "Lista [w1, …, wn, θ]; se guarda en el historial después de cada ajuste."],
@@ -1713,8 +1719,8 @@ const FUNCIONES = {
     ["ecuacion_plano()", "Texto de F10 con los pesos aprendidos, para el resumen."],
     ["num(v)", "Escribe un número con 5 decimales, o en notación científica si es enorme."],
     ["_anotar, _anotar_paso y _f", "Auxiliares que agregan líneas al proceso paso a paso respetando el límite de líneas."],
-    ["entrenar_tres_clases(X, etiquetas, estrategia, crear_perceptron, parametros, alta, baja)", "Crea y entrena dos perceptrones (cascada) o tres (uno contra el resto), cada uno con sus propias salidas deseadas."],
-    ["predecir_tres_clases(perceptrones, x, estrategia, alta)", "Decide la clase: en cascada pregunta en orden; en uno contra el resto gana la mayor S − umbral."]
+    ["entrenar_tres_clases(X, etiquetas, estrategia, crear_perceptron, parametros, salida_alta, salida_baja)", "Crea y entrena dos perceptrones (cascada) o tres (uno contra el resto), cada uno con sus propias salidas deseadas."],
+    ["predecir_tres_clases(perceptrones, x, estrategia, salida_alta)", "Decide la clase: en cascada pregunta en orden; en uno contra el resto gana la mayor S − umbral."]
   ],
   "experimentos.py": [
     ["CONFIG_CLASIFICACION y CONFIG_REGRESION", "Diccionarios con todos los valores por defecto de cada modo."],
@@ -1741,6 +1747,7 @@ const FUNCIONES = {
     ["_titulo_epoca(titulo, perceptrones, epoca)", "Título de la gráfica con el estado o la época mostrada."]
   ],
   "main.py": [
+    ["AZUL y FONDO", "Colores del encabezado y del fondo de la ventana."],
     ["ESCENARIOS", "Diccionario con los centros, desviaciones, distribuciones e instancias de Separadas, Cercanas, Solapadas y Desbalanceadas."],
     ["leer_float(var, nombre)", "Lee un número aceptando coma o punto y rechaza textos, nan e inf."],
     ["leer_no_negativo(var, nombre)", "Como leer_float, pero rechaza negativos (para σ)."],
@@ -1872,7 +1879,7 @@ function ir(id, opciones) {
   const vista = $("#vista");
   vista.innerHTML = "";
   SECCIONES.find(s => s[0] === id)[2](vista, opciones);
-  $("#lateral").classList.remove("abierta");
+  ponerMenu(false);
   window.scrollTo({ top: 0 });
   try { sessionStorage.setItem(CLAVE + "-seccion", id); } catch (e) {}
 }
@@ -2053,7 +2060,8 @@ function crearCalculadora(contenedor) {
   fila.append(
     el("button", { class: "boton", onclick: calcular }, "Calcular"),
     el("button", { class: "boton secundario", onclick: () => {
-      if (!ultimo) calcular();
+      // Se recalcula siempre con lo que hay escrito; si algún campo no es un número, se detiene
+      ultimo = null; calcular(); if (!ultimo) return;
       // 6 decimales para no perder el último dígito de θ (0,691448) y obtener el mismo S5 que el programa
       entradas.w1.value = fmt(ultimo.nw1, 6); entradas.w2.value = fmt(ultimo.nw2, 6); entradas["θ"].value = fmt(ultimo.nt, 6);
       entradas.x1.value = "5,1"; entradas.x2.value = "6,3"; entradas.d.value = "-1"; calcular();
@@ -2076,11 +2084,12 @@ function crearNewton(contenedor) {
   const correr = () => {
     const a = leerNumero(entrada.value);
     if (!(a > 0)) { salida.innerHTML = '<span class="mal">Escribe un número mayor que cero.</span>'; return; }
-    let r = a >= 1 ? a : 1, t = `r0 = ${r}\n`;
+    const coma = v => String(v).replace(".", ",");   // coma decimal, como en el resto de la app
+    let r = a >= 1 ? a : 1, t = `r0 = ${coma(r)}\n`;
     for (let k = 1; k <= 1100; k++) {
       const nuevo = 0.5 * (r + a / r);
-      t += `r${k} = ½(${r.toPrecision(12)} + ${a}/${r.toPrecision(12)}) = ${nuevo.toPrecision(16)}\n`;
-      if (Math.abs(nuevo - r) <= 1e-16 * nuevo) { t += `<span class="ok">Se detiene: r ya no cambia. Raíz de ${a} ≈ ${nuevo.toPrecision(16)}</span>`; break; }
+      t += `r${k} = ½(${coma(r.toPrecision(12))} + ${coma(a)}/${coma(r.toPrecision(12))}) = ${coma(nuevo.toPrecision(16))}\n`;
+      if (Math.abs(nuevo - r) <= 1e-16 * nuevo) { t += `<span class="ok">Se detiene: r ya no cambia. Raíz de ${coma(a)} ≈ ${coma(nuevo.toPrecision(16))}</span>`; break; }
       r = nuevo;
     }
     salida.innerHTML = t;
@@ -2260,6 +2269,7 @@ function crearHistograma(contenedor) {
   const sigma = campo("hist-sigma", "Desviación σ", el("input", { id: "hist-sigma", value: "1", inputmode: "decimal" }));
   const semilla = campo("hist-semilla", "Semilla", el("input", { id: "hist-semilla", value: "7", inputmode: "numeric" }));
   const canvas = el("canvas", { width: 960, height: 400, "aria-label": "Histograma de la distribución" });
+  canvas.style.aspectRatio = "960 / 400";   // la regla general de .lienzo-vivo es 16:9 y lo estiraría
   const lectura = el("div", { class: "traza", "aria-live": "polite" });
   const fila = el("div", { class: "fila-botones" });
   fila.appendChild(el("button", { class: "boton", onclick: generar }, "Generar 5000 valores"));
@@ -2674,7 +2684,19 @@ function vistaRepaso(v) {
    ===================================================================== */
 construirNavegacion();
 actualizarProgreso();
-$("#abrirMenu").addEventListener("click", () => $("#lateral").classList.toggle("abierta"));
+/* Menú lateral en pantallas angostas: cerrado queda fuera de la pantalla, así
+   que se marca inert para que Tab no entre en él; tocar el contenido lo cierra. */
+const pantallaAngosta = matchMedia("(max-width: 860px)");
+function ponerMenu(abierto) {
+  const lateral = $("#lateral");
+  lateral.classList.toggle("abierta", abierto);
+  lateral.inert = pantallaAngosta.matches && !abierto;
+  $("#abrirMenu").setAttribute("aria-expanded", String(abierto));
+}
+$("#abrirMenu").addEventListener("click", () => ponerMenu(!$("#lateral").classList.contains("abierta")));
+$(".contenido").addEventListener("click", () => { if ($("#lateral").classList.contains("abierta")) ponerMenu(false); });
+pantallaAngosta.addEventListener("change", () => ponerMenu(false));
+ponerMenu(false);
 $("#cambiarTema").addEventListener("click", () => {
   const raiz = document.documentElement;
   const oscuroAhora = raiz.dataset.theme ? raiz.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
