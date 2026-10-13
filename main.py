@@ -195,10 +195,11 @@ class Aplicacion:
                  font=("Segoe UI", 15, "bold"), fg="white", bg=AZUL).pack(side="left", padx=14, pady=8)
         tk.Label(encabezado, text="Carlos Daniel Gómez Murcia — Computacional I — Entrega 1",
                  font=("Segoe UI", 10), fg="#D6E0F0", bg=AZUL).pack(side="right", padx=14)
-        tk.Button(encabezado, text="⟲  Reiniciar todo", command=self.reiniciar,
-                  font=("Segoe UI", 10, "bold"), fg="white", bg="#C0392B",
-                  activebackground="#E74C3C", activeforeground="white", relief="flat",
-                  cursor="hand2", padx=12, pady=3).pack(side="right", padx=6)
+        self._ver_codigo(tk.Button(encabezado, text="⟲  Reiniciar todo", command=self.reiniciar,
+                                   font=("Segoe UI", 10, "bold"), fg="white", bg="#C0392B",
+                                   activebackground="#E74C3C", activeforeground="white", relief="flat",
+                                   cursor="hand2", padx=12, pady=3),
+                         self.reiniciar).pack(side="right", padx=6)
         raiz.bind("<Control-r>", lambda e: self.reiniciar())
 
         panel = ttk.PanedWindow(raiz, orient="horizontal")
@@ -223,6 +224,7 @@ class Aplicacion:
         self.t_proceso = PestanaTexto(self.nb_res, "  Proceso paso a paso  ")
         self.t_resumen = PestanaTexto(self.nb_res, "  Resumen y fórmulas  ")
         self.nb_res.bind("<<NotebookTabChanged>>", lambda e: self._redibujar_visible())
+        self.nb_res.bind("<Button-3>", self._codigo_pestana)
         self._barra_epocas(derecha)
         self.t_resumen.mostrar("Configure los datos a la izquierda y presione ENTRENAR.")
 
@@ -238,19 +240,66 @@ class Aplicacion:
         estilo.map("Accion.TButton", background=[("active", "#2E5A8C")])
         estilo.configure("Encabezado.TLabel", font=("Segoe UI", 9, "bold"))
 
-    def _campo(self, marco, fila, texto, valor, ancho=10, columna=0):
-        ttk.Label(marco, text=texto).grid(row=fila, column=columna, sticky="w", pady=2)
+    def _campo(self, marco, fila, texto, valor, ancho=10, columna=0, codigo=None):
+        etiqueta = ttk.Label(marco, text=texto)
+        etiqueta.grid(row=fila, column=columna, sticky="w", pady=2)
         var = tk.StringVar(value=valor)
-        ttk.Entry(marco, textvariable=var, width=ancho).grid(row=fila, column=columna + 1,
-                                                             sticky="w", padx=4, pady=2)
+        caja = ttk.Entry(marco, textvariable=var, width=ancho)
+        caja.grid(row=fila, column=columna + 1, sticky="w", padx=4, pady=2)
+        if codigo:
+            self._ver_codigo(etiqueta, codigo)
+            self._ver_codigo(caja, codigo)
         return var
 
-    def _lista(self, marco, fila, texto, opciones, valor, ancho=12, columna=0):
-        ttk.Label(marco, text=texto).grid(row=fila, column=columna, sticky="w", pady=2)
+    def _lista(self, marco, fila, texto, opciones, valor, ancho=12, columna=0, codigo=None):
+        etiqueta = ttk.Label(marco, text=texto)
+        etiqueta.grid(row=fila, column=columna, sticky="w", pady=2)
         var = tk.StringVar(value=valor)
-        ttk.Combobox(marco, textvariable=var, values=opciones, state="readonly",
-                     width=ancho).grid(row=fila, column=columna + 1, sticky="w", padx=4, pady=2)
+        lista = ttk.Combobox(marco, textvariable=var, values=opciones, state="readonly", width=ancho)
+        lista.grid(row=fila, column=columna + 1, sticky="w", padx=4, pady=2)
+        if codigo:
+            self._ver_codigo(etiqueta, codigo)
+            self._ver_codigo(lista, codigo)
         return var
+
+    # ------------------------------------------------------------------
+    # Clic derecho: ver en VS Code el código de cada control
+    # ------------------------------------------------------------------
+    def _ver_codigo(self, widget, funcion):
+        """Hace que un clic derecho sobre el control abra en VS Code la función
+        que hace su trabajo. Es solo una ayuda para leer el código: no interviene
+        en ningún cálculo. Devuelve el mismo control para poder encadenar .pack()."""
+        widget.bind("<Button-3>", lambda evento: self._abrir_codigo(funcion))
+        return widget
+
+    def _abrir_codigo(self, funcion):
+        """Abre el archivo de la función en la línea donde empieza su def.
+        Python guarda esos dos datos en funcion.__code__: co_filename (el archivo)
+        y co_firstlineno (la línea). 'file normalize' de Tcl deja la ruta completa."""
+        ruta = str(self.raiz.tk.call("file", "normalize", funcion.__code__.co_filename))
+        linea = funcion.__code__.co_firstlineno
+        self.estado.configure(text="Código de %s: %s, línea %d"
+                              % (funcion.__qualname__, ruta.split("/")[-1], linea))
+        if self.raiz.tk.call("tk", "windowingsystem") != "win32":
+            return
+        try:  # Windows abre la dirección vscode://file/ruta:línea con VS Code
+            self.raiz.tk.call("exec", "cmd", "/c", "start", "",
+                              "vscode://file/%s:%d" % (ruta, linea), "&")
+        except tk.TclError:
+            pass
+
+    def _codigo_pestana(self, evento):
+        """Clic derecho sobre una pestaña de resultados: abre la función que la
+        dibuja (o que escribe su texto)."""
+        try:
+            indice = self.nb_res.index("@%d,%d" % (evento.x, evento.y))
+        except tk.TclError:
+            return
+        tipo = self.res["tipo"] if self.res else "clasificacion"
+        espacio = {"clasificacion": gr.dibujar_clasificacion, "regresion": gr.dibujar_regresion,
+                   "ejemplo": gr.dibujar_ejemplo}[tipo]
+        funciones = [espacio, gr.dibujar_epocas, gr.dibujar_pesos, ex.Perceptron.entrenar, ex.resumen]
+        self._abrir_codigo(funciones[indice])
 
     # ------------------------------------------------------------------
     # Pestaña CLASIFICACIÓN
@@ -291,6 +340,8 @@ class Aplicacion:
                                         values=DISTRIBUCIONES, state="readonly", width=11))
             for col, wdg in enumerate(widgets):
                 wdg.grid(row=i + 2, column=col + 1, padx=2, pady=2)
+                self._ver_codigo(wdg, ex.GeneradorAleatorio.muestra if isinstance(wdg, ttk.Combobox)
+                                 else ex.generar_datos_clasificacion)
             self.c_clases.append(fila)
             if i == 2:
                 self.fila3 = widgets
@@ -299,40 +350,54 @@ class Aplicacion:
         esc.grid(row=6, column=0, columnspan=7, sticky="w", pady=(8, 0))
         ttk.Label(esc, text="Escenarios:").pack(side="left")
         for nombre in ESCENARIOS:
-            ttk.Button(esc, text=nombre,
-                       command=lambda n=nombre: self._escenario(n)).pack(side="left", padx=2)
+            self._ver_codigo(ttk.Button(esc, text=nombre, command=lambda n=nombre: self._escenario(n)),
+                             self._escenario).pack(side="left", padx=2)
         rev = ttk.Frame(datos)
         rev.grid(row=7, column=0, columnspan=7, sticky="w", pady=(6, 0))
         ttk.Label(rev, text="Reventar:").pack(side="left")
-        for texto, comando in (("Acercar clases", lambda: self._mover_medias(0.75)),
-                               ("Alejar clases", lambda: self._mover_medias(1.33)),
-                               ("Aumentar σ", lambda: self._escalar_sigma(1.3)),
-                               ("Reducir σ", lambda: self._escalar_sigma(1 / 1.3))):
-            ttk.Button(rev, text=texto, command=comando).pack(side="left", padx=2)
+        for texto, comando, codigo in (
+                ("Acercar clases", lambda: self._mover_medias(0.75), self._mover_medias),
+                ("Alejar clases", lambda: self._mover_medias(1.33), self._mover_medias),
+                ("Aumentar σ", lambda: self._escalar_sigma(1.3), self._escalar_sigma),
+                ("Reducir σ", lambda: self._escalar_sigma(1 / 1.3), self._escalar_sigma)):
+            self._ver_codigo(ttk.Button(rev, text=texto, command=comando),
+                             codigo).pack(side="left", padx=2)
 
         per = ttk.LabelFrame(f, text="Perceptrón", padding=8)
         per.pack(fill="x", pady=4)
-        self.c_tasa = self._campo(per, 0, "Tasa de aprendizaje γ", fmt(cfg["tasa"]))
-        self.c_epocas = self._campo(per, 1, "Número máximo de épocas", str(cfg["max_epocas"]))
-        self.c_eps = self._campo(per, 2, "Error mínimo ε", fmt(cfg["error_minimo"]))
-        self.c_umbral = self._campo(per, 3, "Umbral del escalón", fmt(cfg["umbral"]))
-        self.c_alta = self._campo(per, 4, "Salida si S ≥ umbral", str(cfg["salida_alta"]))
-        self.c_baja = self._campo(per, 5, "Salida si S < umbral", str(cfg["salida_baja"]))
-        self.c_x0 = self._lista(per, 6, "Entrada del sesgo x0", ("-1", "+1"), "-1", 6)
+        self.c_tasa = self._campo(per, 0, "Tasa de aprendizaje γ", fmt(cfg["tasa"]),
+                                  codigo=ex.Perceptron.ajustar)
+        self.c_epocas = self._campo(per, 1, "Número máximo de épocas", str(cfg["max_epocas"]),
+                                    codigo=ex.Perceptron.entrenar)
+        self.c_eps = self._campo(per, 2, "Error mínimo ε", fmt(cfg["error_minimo"]),
+                                 codigo=ex.Perceptron.entrenar)
+        self.c_umbral = self._campo(per, 3, "Umbral del escalón", fmt(cfg["umbral"]),
+                                    codigo=ex.Escalon.__call__)
+        self.c_alta = self._campo(per, 4, "Salida si S ≥ umbral", str(cfg["salida_alta"]),
+                                  codigo=self._config_clasificacion)
+        self.c_baja = self._campo(per, 5, "Salida si S < umbral", str(cfg["salida_baja"]),
+                                  codigo=self._config_clasificacion)
+        self.c_x0 = self._lista(per, 6, "Entrada del sesgo x0", ("-1", "+1"), "-1", 6,
+                                codigo=ex.Perceptron.suma)
         self.c_estrategia = self._lista(per, 7, "Estrategia (3 clases)",
-                                        ("cascada", "uno_vs_resto"), cfg["estrategia"])
-        self.c_semilla = self._campo(per, 8, "Semilla (vacía = aleatoria)", "")
+                                        ("cascada", "uno_vs_resto"), cfg["estrategia"],
+                                        codigo=ex.entrenar_tres_clases)
+        self.c_semilla = self._campo(per, 8, "Semilla (vacía = aleatoria)", "",
+                                     codigo=ex.GeneradorAleatorio.__init__)
         self.c_barajar = tk.BooleanVar(value=True)
         self.c_registrar = tk.BooleanVar(value=False)
-        ttk.Checkbutton(per, text="Barajar instancias en cada época",
-                        variable=self.c_barajar).grid(row=9, column=0, columnspan=2, sticky="w")
-        ttk.Checkbutton(per, text="Registrar proceso paso a paso",
-                        variable=self.c_registrar).grid(row=10, column=0, columnspan=2, sticky="w")
+        self._ver_codigo(ttk.Checkbutton(per, text="Barajar instancias en cada época",
+                                         variable=self.c_barajar),
+                         ex.GeneradorAleatorio.barajar).grid(row=9, column=0, columnspan=2, sticky="w")
+        self._ver_codigo(ttk.Checkbutton(per, text="Registrar proceso paso a paso",
+                                         variable=self.c_registrar),
+                         ex.Perceptron.entrenar).grid(row=10, column=0, columnspan=2, sticky="w")
         ttk.Label(per, text="S = w1·x1 + w2·x2 + w3·x3 + θ·x0   (x0 = −1  →  S = Σwx − θ)",
                   foreground="#555").grid(row=11, column=0, columnspan=2, sticky="w", pady=(6, 0))
 
-        ttk.Button(f, text="▶  ENTRENAR CLASIFICACIÓN", style="Accion.TButton",
-                   command=self.entrenar_clasificacion).pack(fill="x", pady=10)
+        self._ver_codigo(ttk.Button(f, text="▶  ENTRENAR CLASIFICACIÓN", style="Accion.TButton",
+                                    command=self.entrenar_clasificacion),
+                         ex.ejecutar_clasificacion).pack(fill="x", pady=10)
 
         prueba = ttk.LabelFrame(f, text="Clasificar un punto nuevo (después de entrenar)", padding=8)
         prueba.pack(fill="x", pady=4)
@@ -342,7 +407,8 @@ class Aplicacion:
             var = tk.StringVar(value="5")
             ttk.Entry(prueba, textvariable=var, width=7).grid(row=0, column=2 * j + 1, padx=(0, 8))
             self.c_punto.append(var)
-        ttk.Button(prueba, text="Clasificar", command=self.clasificar_punto).grid(row=0, column=6)
+        self._ver_codigo(ttk.Button(prueba, text="Clasificar", command=self.clasificar_punto),
+                         ex.clasificar_punto).grid(row=0, column=6)
         self._activar_clase3()
 
     def _activar_clase3(self):
@@ -455,7 +521,8 @@ class Aplicacion:
         for n in (2, 3):
             ttk.Radiobutton(fila_n, text=str(n), value=n, variable=self.r_nentradas,
                             command=self._activar_x3).pack(side="left", padx=6)
-        self.r_n = self._campo(datos, 1, "Instancias", str(cfg["n"]), 8)
+        self.r_n = self._campo(datos, 1, "Instancias", str(cfg["n"]), 8,
+                               codigo=ex.generar_datos_regresion)
 
         ttk.Label(datos, text="", style="Encabezado.TLabel").grid(row=2, column=0)
         for j, txt in enumerate(["x1", "x2", "x3"]):
@@ -470,35 +537,49 @@ class Aplicacion:
             e2 = ttk.Entry(datos, textvariable=self.r_coef[j], width=7)
             e1.grid(row=3, column=j + 1, padx=2, pady=2)
             e2.grid(row=4, column=j + 1, padx=2, pady=2)
+            self._ver_codigo(e1, ex.generar_datos_regresion)
+            self._ver_codigo(e2, ex.generar_datos_regresion)
             if j == 2:
                 self.col_x3 = [e1, e2]
-        self.r_desv = self._campo(datos, 5, "Desviación de las entradas", fmt(cfg["desviacion_x"]), 8)
+        self.r_desv = self._campo(datos, 5, "Desviación de las entradas", fmt(cfg["desviacion_x"]), 8,
+                                  codigo=ex.generar_datos_regresion)
         self.r_dist = self._lista(datos, 6, "Distribución de las entradas", DISTRIBUCIONES,
-                                  cfg["distribucion_x"])
-        self.r_b = self._campo(datos, 7, "Término independiente b", fmt(cfg["sesgo"]), 8)
-        self.r_modelo = self._lista(datos, 8, "Modelo real", ("lineal", "cuadratico"), cfg["modelo"])
-        self.r_ruido = self._campo(datos, 9, "Desviación del ruido", fmt(cfg["desviacion_ruido"]), 8)
+                                  cfg["distribucion_x"], codigo=ex.GeneradorAleatorio.muestra)
+        self.r_b = self._campo(datos, 7, "Término independiente b", fmt(cfg["sesgo"]), 8,
+                               codigo=ex.generar_datos_regresion)
+        self.r_modelo = self._lista(datos, 8, "Modelo real", ("lineal", "cuadratico"), cfg["modelo"],
+                                    codigo=ex.generar_datos_regresion)
+        self.r_ruido = self._campo(datos, 9, "Desviación del ruido", fmt(cfg["desviacion_ruido"]), 8,
+                                   codigo=ex.generar_datos_regresion)
         self.r_dist_ruido = self._lista(datos, 10, "Distribución del ruido", DISTRIBUCIONES,
-                                        cfg["distribucion_ruido"])
+                                        cfg["distribucion_ruido"], codigo=ex.GeneradorAleatorio.muestra)
         self.r_formula = ttk.Label(datos, foreground="#555")
         self.r_formula.grid(row=11, column=0, columnspan=4, sticky="w", pady=(6, 0))
 
         per = ttk.LabelFrame(f, text="Perceptrón (activación lineal)", padding=8)
         per.pack(fill="x", pady=4)
-        self.r_tasa = self._campo(per, 0, "Tasa de aprendizaje γ", fmt(cfg["tasa"]))
-        self.r_epocas = self._campo(per, 1, "Número máximo de épocas", str(cfg["max_epocas"]))
-        self.r_tol = self._campo(per, 2, "Mejora mínima en 20 épocas", fmt(cfg["tolerancia_cambio"]))
-        self.r_x0 = self._lista(per, 3, "Entrada del sesgo x0", ("-1", "+1"), "-1", 6)
-        self.r_semilla = self._campo(per, 4, "Semilla (vacía = aleatoria)", "")
+        self.r_tasa = self._campo(per, 0, "Tasa de aprendizaje γ", fmt(cfg["tasa"]),
+                                  codigo=ex.Perceptron.ajustar)
+        self.r_epocas = self._campo(per, 1, "Número máximo de épocas", str(cfg["max_epocas"]),
+                                    codigo=ex.Perceptron.entrenar)
+        self.r_tol = self._campo(per, 2, "Mejora mínima en 20 épocas", fmt(cfg["tolerancia_cambio"]),
+                                 codigo=ex.Perceptron.entrenar)
+        self.r_x0 = self._lista(per, 3, "Entrada del sesgo x0", ("-1", "+1"), "-1", 6,
+                                codigo=ex.Perceptron.suma)
+        self.r_semilla = self._campo(per, 4, "Semilla (vacía = aleatoria)", "",
+                                     codigo=ex.GeneradorAleatorio.__init__)
         self.r_barajar = tk.BooleanVar(value=True)
         self.r_registrar = tk.BooleanVar(value=False)
-        ttk.Checkbutton(per, text="Barajar instancias en cada época",
-                        variable=self.r_barajar).grid(row=5, column=0, columnspan=2, sticky="w")
-        ttk.Checkbutton(per, text="Registrar proceso paso a paso",
-                        variable=self.r_registrar).grid(row=6, column=0, columnspan=2, sticky="w")
+        self._ver_codigo(ttk.Checkbutton(per, text="Barajar instancias en cada época",
+                                         variable=self.r_barajar),
+                         ex.GeneradorAleatorio.barajar).grid(row=5, column=0, columnspan=2, sticky="w")
+        self._ver_codigo(ttk.Checkbutton(per, text="Registrar proceso paso a paso",
+                                         variable=self.r_registrar),
+                         ex.Perceptron.entrenar).grid(row=6, column=0, columnspan=2, sticky="w")
 
-        ttk.Button(f, text="▶  ENTRENAR REGRESIÓN", style="Accion.TButton",
-                   command=self.entrenar_regresion).pack(fill="x", pady=10)
+        self._ver_codigo(ttk.Button(f, text="▶  ENTRENAR REGRESIÓN", style="Accion.TButton",
+                                    command=self.entrenar_regresion),
+                         ex.ejecutar_regresion).pack(fill="x", pady=10)
         self.r_modelo.trace_add("write", lambda *a: self._activar_x3())
         self._activar_x3()
 
@@ -559,8 +640,9 @@ class Aplicacion:
             "   S4 = 17,31522  → error (y = 1, d = −1)\n"
             "   S5 = −23,91495 (con los pesos ya ajustados)\n"
             "   (las diapositivas redondean a 17,31523 y −23,91494)")).pack(anchor="w")
-        ttk.Button(f, text="▶  REPRODUCIR EJEMPLO", style="Accion.TButton",
-                   command=self.reproducir_ejemplo).pack(fill="x", pady=12)
+        self._ver_codigo(ttk.Button(f, text="▶  REPRODUCIR EJEMPLO", style="Accion.TButton",
+                                    command=self.reproducir_ejemplo),
+                         ex.ejecutar_ejemplo_clase).pack(fill="x", pady=12)
 
     # ------------------------------------------------------------------
     # Barra de épocas (animación)
@@ -576,9 +658,14 @@ class Aplicacion:
                                showvalue=True, length=320, background=FONDO,
                                highlightthickness=0, command=self._mover_epoca)
         self.escala.pack(side="left", padx=6)
-        ttk.Button(barra, text="▶ Animar entrenamiento", command=self.animar).pack(side="left", padx=3)
+        self._ver_codigo(self.escala, ex.Perceptron.pesos_en_epoca)
+        self._ver_codigo(ttk.Button(barra, text="▶ Animar entrenamiento", command=self.animar),
+                         self._paso_animacion).pack(side="left", padx=3)
         ttk.Button(barra, text="■ Detener", command=self.detener).pack(side="left", padx=3)
-        ttk.Button(barra, text="Resultado final", command=self.mostrar_final).pack(side="left", padx=3)
+        self._ver_codigo(ttk.Button(barra, text="Resultado final", command=self.mostrar_final),
+                         self.mostrar_final).pack(side="left", padx=3)
+        self.estado.configure(text="Consejo: clic derecho sobre un botón, un campo o una pestaña "
+                                   "de resultados abre su código en VS Code.")
 
     def _max_epocas(self):
         return maximo([p.epocas for p in self.res["perceptrones"]])

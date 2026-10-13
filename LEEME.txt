@@ -14,7 +14,8 @@ Archivos
                   exponencial, binomial) con las fórmulas de formulas.py.
   experimentos.py Configuración por defecto, ejecución de los experimentos,
                   estadísticas de cada clase y clasificación de puntos nuevos.
-  graficas.py     Único archivo que usa matplotlib (solo para dibujar).
+  graficas.py     Dibuja las gráficas con matplotlib (main.py solo usa matplotlib
+                  para mostrarlas dentro de la ventana).
   Informe_Perceptron_Carlos_Gomez_Murcia.docx   Informe de la entrega.
 
 Requisitos
@@ -58,6 +59,9 @@ Uso de la interfaz
   Barra de estado: estado de cada perceptrón y exactitud global y por clase.
   Abajo: barra "Época mostrada" y "Animar entrenamiento".
   Arriba a la derecha: "Reiniciar todo" (o Ctrl+R).
+  Clic derecho sobre un botón, un campo o una pestaña de resultados: abre en
+    VS Code la función que hace ese trabajo (la barra de estado indica el
+    archivo y la línea).
   Los números decimales se pueden escribir con coma o con punto.
   Validaciones: no se aceptan 'nan' ni 'inf', las desviaciones no pueden ser
   negativas, la tasa γ debe ser mayor que cero y la salida alta del escalón

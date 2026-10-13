@@ -51,7 +51,7 @@ Antes de dar por terminado cualquier cambio hay que revisar los import de todos 
 | graficas.py | Visual | Espacio 3D con planos, centroides (X) y punto nuevo (estrella); gráfica de épocas; gráfica de pesos; recorte de planos con Sutherland-Hodgman escrito a mano | formulas, matplotlib |
 | main.py | Visual | Interfaz tkinter. Es el archivo que se ejecuta | experimentos, graficas, aleatorio, formulas, tkinter, matplotlib |
 
-También están LEEME.txt, requirements.txt (solo matplotlib), la carpeta .vscode (launch, tasks, settings, extensions) y el informe Informe_Perceptron_Carlos_Gomez_Murcia.docx.
+También están LEEME.txt, requirements.txt (solo matplotlib), la carpeta .vscode (launch, tasks, settings, extensions), el informe Informe_Perceptron_Carlos_Gomez_Murcia.docx y la carpeta herramientas/, con enlaces_estudio.py, que solo sirve para la app de estudio (ver más abajo) y no se envía.
 
 ### Fórmulas de formulas.py (los códigos se repiten en el código, la interfaz y el informe)
 
@@ -147,6 +147,9 @@ Reproduce las cuentas de las diapositivas: S4 = 17,31522, ajuste a w = (−3,651
 - **Barra de estado:** estado de cada perceptrón y exactitud global y por clase; en regresión, ECM y R².
 - **Debajo de las pestañas:** la barra «Época mostrada», el botón «Animar entrenamiento» y «Reiniciar todo» (Ctrl+R).
 
+### Clic derecho: ver el código
+Un clic derecho sobre casi cualquier botón, campo o pestaña de resultados abre en VS Code la función que hace ese trabajo, y la barra de estado muestra el archivo y la línea. `_ver_codigo(widget, funcion)` asocia el clic derecho (y `_campo` y `_lista` lo hacen con su parámetro `codigo`); `_abrir_codigo` toma el archivo y la línea de `funcion.__code__` (co_filename, co_firstlineno), normaliza la ruta con `file normalize` de Tcl y, en Windows, abre `vscode://file/ruta:línea` con `exec cmd /c start` de Tcl; `_codigo_pestana` elige la función según la pestaña de resultados. No usa ningún import nuevo ni interviene en los cálculos. Si se agrega un control, conviene asociarle su función.
+
 ## Resultados de referencia (semilla 7, usados en el informe)
 
 Si un cambio altera estos números, el informe deja de coincidir y hay que avisarle a Daniel.
@@ -208,10 +211,13 @@ El JavaScript empieza con los datos y luego trae la lógica. Para reflejar cambi
 | `GLOSARIO` | Términos de la pestaña Glosario de «Desde cero» | `[término, definición]` |
 | `FUNCIONES` | Catálogo de todas las funciones, clases y constantes de cada .py, que aparece en el análisis de código | `{ "archivo.py": [[nombre, qué hace], ...] }` |
 
+Al principio del `<script>` está el bloque entre `/* ENLACES-INICIO` y `/* ENLACES-FIN */`, con `RAIZ_PROYECTO`, `ENLACES_DEF` (línea de cada def, clase, método y constante de cada .py) y `ENLACES_LINEAS` (archivo y línea de cada línea de código que muestran los fragmentos). Lo escribe `herramientas/enlaces_estudio.py` y no se edita a mano. Con esos datos, los nombres de funciones y archivos en `<code>`, las etiquetas «línea N ↗» de los fragmentos, los números del análisis de código y el catálogo abren VS Code en la línea exacta (`vscode://file/...`).
+
 El párrafo de resultados del repaso está escrito dentro de la función `vistaRepaso`. La lógica son las funciones:
 - `crearLienzo`: el perceptrón 2D animado.
 - `crearCalculadora`: F1 a F6 con la instancia 4 del ejemplo de clase.
 - `crearNewton`: la raíz cuadrada paso a paso.
+- `enlaceCodigo`, `buscarDefinicion`, `buscarLinea`, `etiquetaArchivo` y `enlazarCodigoSuelto` (llamada desde `ir`): los enlaces a VS Code.
 - `crearRecta`, `crearHistograma` y `crearGenerador` (con `crearCongruencial`): las demostraciones de «Desde cero»; `crearMiniQuiz`: las preguntas al final de cada lección.
 - `vistaInicio`, `vistaFundamentos` (con `vistaGlosario`), `vistaEstudio`, `vistaEvaluacion`, `vistaSustentacion`, `vistaCodigo` y `vistaRepaso`: dibujan cada sección.
 
@@ -233,7 +239,8 @@ Solo se tocan si hace falta un tipo de contenido nuevo.
    - un bloque de `ANALISIS` si es una función importante;
    - su fila en `REPASO` si es una fórmula;
    - una explicación sencilla en la lección de `FUNDAMENTOS` que corresponda, y su término en `GLOSARIO`, si introduce un concepto o una palabra técnica nueva.
-6. Validar y avisarle a Daniel qué secciones cambiaron, para que vuelva a estudiarlas.
+6. Ejecutar `.venv\Scripts\python herramientas\enlaces_estudio.py` para que los enlaces apunten a las líneas nuevas. Debe decir que encontró todas las líneas de los fragmentos («N de N»); si alguna falta, el fragmento ya no coincide con el código y hay que corregirlo.
+7. Validar y avisarle a Daniel qué secciones cambiaron, para que vuelva a estudiarlas.
 
 ### Reglas de contenido
 
@@ -258,4 +265,4 @@ Luego se abre en el navegador con la consola (F12) abierta y se recorren las sie
 - El informe en Word.
 - Una carpeta comprimida con los seis archivos .py, LEEME.txt, requirements.txt y la carpeta .vscode.
 
-No se envían la carpeta .venv (pesa mucho y solo sirve en el computador donde se creó), las carpetas __pycache__, la app de estudio («Estudio del perceptrón · Sustentación.html») ni este archivo CLAUDE.md.
+No se envían la carpeta .venv (pesa mucho y solo sirve en el computador donde se creó), las carpetas __pycache__, la carpeta herramientas/, la app de estudio («Estudio del perceptrón · Sustentación.html») ni este archivo CLAUDE.md.

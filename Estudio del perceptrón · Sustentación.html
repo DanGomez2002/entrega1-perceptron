@@ -258,6 +258,10 @@ ol.pasos li { margin-bottom: 10px; }
 .glosario { margin: 0; }
 .glosario dt { font-weight: 700; color: var(--tinta); margin-top: 12px; }
 .glosario dd { margin: 2px 0 0; padding-bottom: 10px; border-bottom: 1px solid var(--linea); }
+/* Enlaces que abren el código en VS Code */
+a.enlace-codigo { color: inherit; text-decoration: underline dotted var(--tinta); text-underline-offset: 3px; }
+a.enlace-codigo:hover { color: var(--tinta); text-decoration-style: solid; }
+.archivo a.enlace-codigo, .linea-cod .num a.enlace-codigo { color: var(--tinta); }
 table.catalogo td.mono { white-space: normal; min-width: 11em; overflow-wrap: anywhere; }
 .oculto { display: none !important; }
 </style>
@@ -280,6 +284,11 @@ table.catalogo td.mono { white-space: normal; min-width: 11em; overflow-wrap: an
   <main class="contenido"><div class="columna" id="vista"></div></main>
 </div>
 <script>
+/* ENLACES-INICIO (generado por herramientas/enlaces_estudio.py; no editar a mano) */
+const RAIZ_PROYECTO = "C:/Users/gomud/Proyectos/Perceptron_Computacional_I";
+const ENLACES_DEF = {"formulas.py": {"valor_absoluto": 48, "raiz_cuadrada": 55, "arcotangente": 75, "PI": 93, "_serie_ln": 96, "LN2": 113, "logaritmo_natural": 116, "coseno": 133, "minimo": 154, "maximo": 163, "INFINITO": 172, "es_finito": 175, "suma_ponderada": 189, "funcion_escalon": 201, "funcion_lineal": 209, "error_instancia": 214, "ajuste_peso": 219, "ajuste_sesgo": 224, "error_epoca": 230, "error_cuadratico_medio": 238, "exactitud": 246, "coordenada_del_plano": 255, "media": 266, "desviacion_estandar": 274, "exactitud_por_clase": 284, "coeficiente_determinacion": 300, "congruencial_lineal": 319, "uniforme_01": 324, "normal_box_muller": 329, "uniforme_media_desviacion": 336, "exponencial_inversa": 343, "binomial_estandarizada": 350}, "aleatorio.py": {"DISTRIBUCIONES": 17, "GeneradorAleatorio": 20, "GeneradorAleatorio.A": 24, "GeneradorAleatorio.C": 25, "GeneradorAleatorio.M": 26, "GeneradorAleatorio.__init__": 28, "GeneradorAleatorio.uniforme01": 33, "GeneradorAleatorio.uniforme": 38, "GeneradorAleatorio.entero": 42, "GeneradorAleatorio.barajar": 46, "GeneradorAleatorio.normal": 53, "GeneradorAleatorio.uniforme_mu_sigma": 56, "GeneradorAleatorio.exponencial": 59, "GeneradorAleatorio.binomial": 62, "GeneradorAleatorio.muestra": 69, "generar_clase": 84, "generar_datos_clasificacion": 95, "generar_datos_regresion": 107}, "perceptron.py": {"MAX_LINEAS_REGISTRO": 28, "Escalon": 31, "Escalon.__init__": 34, "Escalon.__call__": 40, "Lineal": 44, "Lineal.__init__": 47, "Lineal.__call__": 51, "Perceptron": 55, "Perceptron.__init__": 57, "Perceptron.suma": 78, "Perceptron.predecir": 81, "Perceptron.pesos_actuales": 84, "Perceptron.pesos_en_epoca": 87, "Perceptron.error_conjunto": 94, "Perceptron.ajustar": 102, "Perceptron.entrenar": 113, "Perceptron.estado": 168, "Perceptron.ecuacion_plano": 181, "num": 191, "_anotar": 198, "_anotar_paso": 207, "_f": 216, "entrenar_tres_clases": 224, "predecir_tres_clases": 251}, "experimentos.py": {"CONFIG_CLASIFICACION": 21, "CONFIG_REGRESION": 44, "EJEMPLO_X": 65, "EJEMPLO_D": 66, "EJEMPLO_W": 67, "EJEMPLO_THETA": 68, "EJEMPLO_GAMMA": 69, "config_clasificacion": 72, "config_regresion": 76, "ejecutar_clasificacion": 81, "ejecutar_regresion": 127, "ejecutar_ejemplo_clase": 147, "resumen": 162, "clasificar_punto": 211}, "graficas.py": {"COLORES_CLASE": 26, "COLORES_PLANO": 27, "COLORES_PESO": 28, "_rango": 34, "_todos_finitos": 40, "_recortar": 48, "poligono_plano": 67, "_preparar_3d": 93, "dibujar_clasificacion": 104, "dibujar_regresion": 142, "dibujar_ejemplo": 205, "dibujar_epocas": 233, "dibujar_pesos": 255, "_titulo_epoca": 281}, "main.py": {"AZUL": 27, "FONDO": 28, "ESCENARIOS": 31, "leer_float": 47, "leer_no_negativo": 59, "leer_tasa": 67, "leer_int": 76, "leer_salida": 90, "leer_semilla": 97, "fmt": 107, "MarcoDesplazable": 112, "MarcoDesplazable.__init__": 115, "MarcoDesplazable._rueda": 131, "PestanaGrafica": 135, "PestanaGrafica.__init__": 139, "PestanaGrafica.vista_3d": 149, "PestanaTexto": 156, "PestanaTexto.__init__": 157, "PestanaTexto.mostrar": 169, "Aplicacion": 177, "Aplicacion.__init__": 179, "Aplicacion._estilos": 232, "Aplicacion._campo": 243, "Aplicacion._lista": 254, "Aplicacion._ver_codigo": 268, "Aplicacion._abrir_codigo": 275, "Aplicacion._codigo_pestana": 291, "Aplicacion._pestana_clasificacion": 307, "Aplicacion._activar_clase3": 414, "Aplicacion._escenario": 422, "Aplicacion._mover_medias": 431, "Aplicacion._escalar_sigma": 446, "Aplicacion.clasificar_punto": 457, "Aplicacion._config_clasificacion": 474, "Aplicacion._pestana_regresion": 509, "Aplicacion._activar_x3": 586, "Aplicacion._config_regresion": 594, "Aplicacion._pestana_ejemplo": 620, "Aplicacion._barra_epocas": 650, "Aplicacion._max_epocas": 670, "Aplicacion._mover_epoca": 673, "Aplicacion.animar": 685, "Aplicacion._paso_animacion": 692, "Aplicacion.detener": 703, "Aplicacion.mostrar_final": 706, "Aplicacion.reiniciar": 718, "Aplicacion._ejecutar": 790, "Aplicacion.entrenar_clasificacion": 827, "Aplicacion.entrenar_regresion": 830, "Aplicacion.reproducir_ejemplo": 833, "Aplicacion._redibujar_visible": 837, "main": 863}};
+const ENLACES_LINEAS = {"def raiz_cuadrada(a):": [["formulas.py", 55]], "\"\"\"M2: Newton-Raphson para r^2 = a:": [["formulas.py", 56]], "r(k+1) = 1/2 * ( r(k) + a / r(k) )": [["formulas.py", 57]], "Se repite hasta que r deja de cambiar.": [["formulas.py", 58]], "Mientras r está lejos de la raíz, cada paso solo divide r a la mitad; un": [["formulas.py", 59]], "número tan grande como 1e308 necesita unas 520 mitades antes de acercarse,": [["formulas.py", 60]], "por eso se permiten hasta 1100 pasos (los números normales terminan en pocos).\"\"\"": [["formulas.py", 61]], "if a < 0:": [["formulas.py", 62]], "raise ValueError(\"No existe raíz cuadrada real de un número negativo\")": [["formulas.py", 63]], "if a == 0:": [["formulas.py", 64]], "return 0.0": [["formulas.py", 65], ["formulas.py", 296], ["formulas.py", 312]], "r = a if a >= 1 else 1.0": [["formulas.py", 66]], "for _ in range(1100):": [["formulas.py", 67]], "r_nuevo = 0.5 * (r + a / r)": [["formulas.py", 68]], "if valor_absoluto(r_nuevo - r) <= 1e-16 * r_nuevo:": [["formulas.py", 69]], "return r_nuevo": [["formulas.py", 70]], "r = r_nuevo": [["formulas.py", 71]], "return r": [["formulas.py", 72]], "suma = 0.0": [["formulas.py", 78], ["formulas.py", 102], ["formulas.py", 143], ["formulas.py", 232], ["formulas.py", 240], ["formulas.py", 268], ["formulas.py", 278]], "if a <= 0:": [["formulas.py", 120]], "k = 0": [["formulas.py", 122], ["graficas.py", 72]], "m = a": [["formulas.py", 123]], "while m >= 2.0:": [["formulas.py", 124]], "m = m / 2.0": [["formulas.py", 125]], "k += 1": [["formulas.py", 126]], "while m < 1.0:": [["formulas.py", 127]], "m = m * 2.0": [["formulas.py", 128]], "k -= 1": [["formulas.py", 129]], "return k * LN2 + _serie_ln(m)": [["formulas.py", 130]], "def minimo(valores):": [["formulas.py", 154]], "\"\"\"M7: el menor valor de la lista, comparando uno por uno.\"\"\"": [["formulas.py", 155]], "menor = valores[0]": [["formulas.py", 156]], "for v in valores:": [["formulas.py", 157], ["formulas.py", 166], ["formulas.py", 269], ["formulas.py", 279], ["graficas.py", 42]], "if v < menor:": [["formulas.py", 158]], "menor = v": [["formulas.py", 159]], "return menor": [["formulas.py", 160]], "def es_finito(v):": [["formulas.py", 175]], "if v != v:": [["formulas.py", 181]], "return False": [["formulas.py", 182], ["graficas.py", 44]], "return v != INFINITO and v != -INFINITO": [["formulas.py", 183]], "def suma_ponderada(w, x, theta, x0):": [["formulas.py", 189]], "\"\"\"F1:  S = w1*x1 + w2*x2 + ... + wn*xn + theta*x0": [["formulas.py", 190]], "Con x0 = -1 (convención de la clase):  S = w1*x1 + w2*x2 + w3*x3 - theta": [["formulas.py", 192]], "Con x0 = +1 (otra bibliografía):       S = w1*x1 + w2*x2 + w3*x3 + b\"\"\"": [["formulas.py", 193]], "S = 0.0": [["formulas.py", 194]], "for i in range(len(w)):": [["formulas.py", 195]], "S = S + w[i] * x[i]": [["formulas.py", 196]], "S = S + theta * x0": [["formulas.py", 197]], "return S": [["formulas.py", 198], ["formulas.py", 211]], "def funcion_escalon(S, umbral, salida_alta, salida_baja):": [["formulas.py", 201]], "\"\"\"F2:  y = salida_alta  si S >= umbral": [["formulas.py", 202]], "y = salida_baja  si S <  umbral\"\"\"": [["formulas.py", 203]], "if S >= umbral:": [["formulas.py", 204]], "return salida_alta": [["formulas.py", 205]], "return salida_baja": [["formulas.py", 206]], "def exactitud(predicciones, reales):": [["formulas.py", 246]], "\"\"\"F9:  exactitud (%) = 100 * (número de aciertos) / N\"\"\"": [["formulas.py", 247]], "aciertos = 0": [["formulas.py", 248], ["formulas.py", 288]], "for p, r in zip(predicciones, reales):": [["formulas.py", 249], ["formulas.py", 290]], "if p == r:": [["formulas.py", 250], ["formulas.py", 293]], "aciertos += 1": [["formulas.py", 251], ["formulas.py", 294]], "return 100.0 * aciertos / len(reales)": [["formulas.py", 252]], "def coordenada_del_plano(w, theta, x0, umbral, k, otros_valores):": [["formulas.py", 255]], "suma_otros = 0.0": [["formulas.py", 260]], "for j, valor in otros_valores.items():": [["formulas.py", 261]], "suma_otros = suma_otros + w[j] * valor": [["formulas.py", 262]], "return (umbral - theta * x0 - suma_otros) / w[k]": [["formulas.py", 263]], "def desviacion_estandar(valores):": [["formulas.py", 274]], "m = media(valores)": [["formulas.py", 277]], "suma = suma + (v - m) * (v - m)": [["formulas.py", 280]], "return raiz_cuadrada(suma / len(valores))": [["formulas.py", 281]], "def exactitud_por_clase(predicciones, reales, clase):": [["formulas.py", 284]], "total = 0": [["formulas.py", 289]], "if r == clase:": [["formulas.py", 291]], "total += 1": [["formulas.py", 292]], "if total == 0:": [["formulas.py", 295]], "return 100.0 * aciertos / total": [["formulas.py", 297]], "def coeficiente_determinacion(reales, predichos):": [["formulas.py", 300]], "m = media(reales)": [["formulas.py", 305]], "suma_residuos = 0.0": [["formulas.py", 306]], "suma_total = 0.0": [["formulas.py", 307]], "for y, y_pred in zip(reales, predichos):": [["formulas.py", 308]], "suma_residuos = suma_residuos + (y - y_pred) * (y - y_pred)": [["formulas.py", 309]], "suma_total = suma_total + (y - m) * (y - m)": [["formulas.py", 310]], "if suma_total == 0:": [["formulas.py", 311]], "return 1.0 - suma_residuos / suma_total": [["formulas.py", 313]], "def normal_box_muller(U1, U2, mu, sigma):": [["formulas.py", 329]], "Z = raiz_cuadrada(-2.0 * logaritmo_natural(U1)) * coseno(2.0 * PI * U2)": [["formulas.py", 332]], "return mu + sigma * Z": [["formulas.py", 333]], "A = 1664525": [["aleatorio.py", 24]], "C = 1013904223": [["aleatorio.py", 25]], "M = 2 ** 32": [["aleatorio.py", 26]], "if semilla is None:": [["aleatorio.py", 29]], "semilla = time.time_ns()": [["aleatorio.py", 30]], "self.X = int(semilla) % self.M": [["aleatorio.py", 31]], "def uniforme01(self):": [["aleatorio.py", 33]], "\"\"\"F11: X(k+1) = (a X(k) + c) mod m ;  U = (X + 0.5) / m\"\"\"": [["aleatorio.py", 34]], "self.X = congruencial_lineal(self.X, self.A, self.C, self.M)": [["aleatorio.py", 35]], "return uniforme_01(self.X, self.M)": [["aleatorio.py", 36]], "def barajar(self, lista):": [["aleatorio.py", 46]], "\"\"\"Algoritmo de Fisher-Yates: desordena la lista en el mismo sitio.\"\"\"": [["aleatorio.py", 47]], "for i in range(len(lista) - 1, 0, -1):": [["aleatorio.py", 48]], "j = self.entero(i + 1)": [["aleatorio.py", 49]], "lista[i], lista[j] = lista[j], lista[i]": [["aleatorio.py", 50]], "def generar_clase(generador, n, centro, desviacion, distribucion):": [["aleatorio.py", 84]], "\"\"\"n puntos 3D alrededor de 'centro'; cada coordenada con la distribución elegida.\"\"\"": [["aleatorio.py", 85]], "puntos = []": [["aleatorio.py", 86]], "for _ in range(n):": [["aleatorio.py", 87]], "punto = []": [["aleatorio.py", 88]], "for c in centro:": [["aleatorio.py", 89]], "punto.append(generador.muestra(distribucion, c, desviacion))": [["aleatorio.py", 90]], "puntos.append(punto)": [["aleatorio.py", 91]], "return puntos": [["aleatorio.py", 92]], "class Escalon:": [["perceptron.py", 31]], "\"\"\"Función de activación escalón (F2) con umbral y salidas configurables.\"\"\"": [["perceptron.py", 32]], "def __init__(self, umbral=0.0, salida_alta=1, salida_baja=-1):": [["perceptron.py", 34]], "self.umbral = umbral": [["perceptron.py", 35]], "self.salida_alta = salida_alta": [["perceptron.py", 36]], "self.salida_baja = salida_baja": [["perceptron.py", 37]], "self.nombre = \"escalón\"": [["perceptron.py", 38]], "def __call__(self, S):": [["perceptron.py", 40], ["perceptron.py", 51]], "return funcion_escalon(S, self.umbral, self.salida_alta, self.salida_baja)": [["perceptron.py", 41]], "def ajustar(self, x, d):": [["perceptron.py", 102]], "\"\"\"Una iteración: multiplicar, sumar, comparar y ajustar.\"\"\"": [["perceptron.py", 103]], "S = self.suma(x)                                                # F1": [["perceptron.py", 104]], "y = self.activacion(S)                                          # F2 / F3": [["perceptron.py", 105]], "e = error_instancia(d, y)                                       # F4": [["perceptron.py", 106]], "if e != 0:": [["perceptron.py", 107]], "for i in range(self.n_entradas):": [["perceptron.py", 108]], "self.w[i] = ajuste_peso(self.w[i], self.gamma, e, x[i])      # F5": [["perceptron.py", 109]], "self.theta = ajuste_sesgo(self.theta, self.gamma, e, self.x0)    # F6": [["perceptron.py", 110]], "return S, y, e": [["perceptron.py", 111]], "self.historial_error = [self.error_conjunto(X, d)]   # época 0": [["perceptron.py", 128]], "self.historial_pesos = [self.pesos_actuales()]": [["perceptron.py", 129]], "orden = list(range(len(X)))": [["perceptron.py", 134]], "for epoca in range(1, max_epocas + 1):": [["perceptron.py", 136]], "if barajar:": [["perceptron.py", 137]], "self.generador.barajar(orden)": [["perceptron.py", 138]], "for i in orden:": [["perceptron.py", 141]], "S, y, e = self.ajustar(X[i], d[i])": [["perceptron.py", 143]], "self.historial_pesos.append(self.pesos_actuales())": [["perceptron.py", 144]], "err = self.error_conjunto(X, d)": [["perceptron.py", 149]], "self.historial_error.append(err)": [["perceptron.py", 150]], "self.epocas = epoca": [["perceptron.py", 151]], "_anotar(registro, \"  -> err de la época %d = %.6f\" % (epoca, err))": [["perceptron.py", 152]], "if err != err or err > 1e100:                 # NaN o infinito": [["perceptron.py", 154]], "self.divergio = True": [["perceptron.py", 155]], "break": [["perceptron.py", 156], ["perceptron.py", 159], ["perceptron.py", 165]], "if err <= error_minimo:": [["perceptron.py", 157]], "self.convergio = True": [["perceptron.py", 158]], "if tolerancia_cambio is not None and len(self.historial_error) > paciencia:": [["perceptron.py", 160]], "mejor_antes = minimo(self.historial_error[:-paciencia])": [["perceptron.py", 161]], "mejor_reciente = minimo(self.historial_error[-paciencia:])": [["perceptron.py", 162]], "if mejor_reciente >= (1.0 - tolerancia_cambio) * mejor_antes:": [["perceptron.py", 163]], "self.estancado = True": [["perceptron.py", 164]], "return": [["perceptron.py", 200], ["main.py", 284], ["main.py", 297], ["main.py", 439], ["main.py", 454], ["main.py", 460], ["main.py", 465], ["main.py", 675], ["main.py", 687], ["main.py", 694], ["main.py", 709], ["main.py", 723], ["main.py", 800], ["main.py", 839], ["main.py", 843]], "if estrategia == \"cascada\":": [["perceptron.py", 233], ["perceptron.py", 254]], "d1 = [salida_alta if c == 0 else salida_baja for c in etiquetas]": [["perceptron.py", 234]], "p1 = crear_perceptron(\"P1 (clase 1 vs resto)\")": [["perceptron.py", 235]], "p1.entrenar(X, d1, **parametros)": [["perceptron.py", 236]], "X2 = [x for x, c in zip(X, etiquetas) if c != 0]": [["perceptron.py", 237]], "d2 = [salida_alta if c == 1 else salida_baja for c in etiquetas if c != 0]": [["perceptron.py", 238]], "p2 = crear_perceptron(\"P2 (clase 2 vs clase 3)\")": [["perceptron.py", 239]], "p2.entrenar(X2, d2, **parametros)": [["perceptron.py", 240]], "return [p1, p2]": [["perceptron.py", 241]], "if perceptrones[0].predecir(x) == salida_alta:": [["perceptron.py", 255]], "return 0": [["perceptron.py", 256]], "if perceptrones[1].predecir(x) == salida_alta:": [["perceptron.py", 257]], "return 1": [["perceptron.py", 258]], "return 2": [["perceptron.py", 259]], "mejor, mejor_valor = 0, None": [["perceptron.py", 260]], "for k, p in enumerate(perceptrones):": [["perceptron.py", 261]], "valor = p.suma(x) - p.activacion.umbral": [["perceptron.py", 262]], "if mejor_valor is None or valor > mejor_valor:": [["perceptron.py", 263]], "mejor, mejor_valor = k, valor": [["perceptron.py", 264]], "\"clases\": [": [["experimentos.py", 22]], "{\"nombre\": \"Clase 1\", \"n\": 100, \"centro\": [2.0, 2.0, 2.0],": [["experimentos.py", 23]], "\"desviacion\": 1.0, \"distribucion\": \"normal\"},": [["experimentos.py", 24], ["experimentos.py", 26], ["experimentos.py", 28]], "gen = GeneradorAleatorio(config[\"semilla\"])": [["experimentos.py", 82], ["experimentos.py", 128]], "clases = config[\"clases\"][:config[\"n_clases\"]]": [["experimentos.py", 83]], "X, etiquetas = generar_datos_clasificacion(gen, clases)": [["experimentos.py", 84]], "escalon = Escalon(config[\"umbral\"], alta, baja)": [["experimentos.py", 86]], "def crear(nombre):": [["experimentos.py", 91]], "return Perceptron(3, config[\"tasa\"], escalon, gen, nombre, config[\"x0\"])": [["experimentos.py", 92]], "d = [alta if c == 0 else baja for c in etiquetas]": [["experimentos.py", 95]], "\"exactitud\": exactitud(predicciones, etiquetas),                       # F9": [["experimentos.py", 123]], "for j in range(1, 3):": [["graficas.py", 73]], "if valor_absoluto(w[j]) > valor_absoluto(w[k]):": [["graficas.py", 74]], "k = j": [["graficas.py", 75]], "if valor_absoluto(w[k]) < 1e-12:": [["graficas.py", 76]], "return []": [["graficas.py", 77]], "a, b = [j for j in range(3) if j != k]": [["graficas.py", 78]], "punto[k] = coordenada_del_plano(w, theta, x0, umbral, k, {a: va, b: vb})   # F10": [["graficas.py", 85]], "poligono = _recortar(poligono, k, limites[k][0], True)": [["graficas.py", 87]], "if poligono:": [["graficas.py", 88]], "poligono = _recortar(poligono, k, limites[k][1], False)": [["graficas.py", 89]], "try:": [["main.py", 50], ["main.py", 78], ["main.py", 101], ["main.py", 294], ["main.py", 434], ["main.py", 448], ["main.py", 461], ["main.py", 795]], "if not es_finito(valor):": [["main.py", 54]], "valor = leer_float(var, \"Tasa de aprendizaje\")": [["main.py", 70]], "if valor <= 0:": [["main.py", 71]], "class PestanaGrafica:": [["main.py", 135]], "\"\"\"Pestaña con una figura de matplotlib y su barra de herramientas": [["main.py", 136]], "(zoom, mover, guardar imagen). En 3D se puede rotar con el mouse.\"\"\"": [["main.py", 137]], "def __init__(self, cuaderno, titulo):": [["main.py", 139], ["main.py", 157]], "self.marco = ttk.Frame(cuaderno)": [["main.py", 140], ["main.py", 158]], "cuaderno.add(self.marco, text=titulo)": [["main.py", 141], ["main.py", 159]], "self.fig = Figure(figsize=(9, 6), dpi=100)": [["main.py", 142]], "self.canvas = FigureCanvasTkAgg(self.fig, master=self.marco)": [["main.py", 143]], "self.barra = NavigationToolbar2Tk(self.canvas, self.marco, pack_toolbar=False)": [["main.py", 144]], "self.barra.update()": [["main.py", 145]], "self.barra.pack(side=\"bottom\", fill=\"x\")": [["main.py", 146]], "self.canvas.get_tk_widget().pack(side=\"top\", fill=\"both\", expand=True)": [["main.py", 147]], "filas = self.c_clases[:self.c_nclases.get()]": [["main.py", 435]], "centros = [[leer_float(v, \"Media\") for v in fila[\"centro\"]] for fila in filas]": [["main.py", 436]], "except ValueError as error:": [["main.py", 437], ["main.py", 452], ["main.py", 463], ["main.py", 797]], "messagebox.showerror(\"Dato no válido\", str(error))": [["main.py", 438], ["main.py", 453], ["main.py", 464], ["main.py", 798]], "comun = [media([c[j] for c in centros]) for j in range(3)]           # F16": [["main.py", 440]], "for fila, c in zip(filas, centros):": [["main.py", 441]], "for j, var in enumerate(fila[\"centro\"]):": [["main.py", 442]], "var.set(\"%.3g\" % (comun[j] + factor * (c[j] - comun[j])))": [["main.py", 443]], "self.entrenar_clasificacion()": [["main.py", 444], ["main.py", 455]], "if cfg[\"salida_alta\"] == cfg[\"salida_baja\"]:": [["main.py", 491]], "if cfg[\"salida_alta\"] < cfg[\"salida_baja\"]:": [["main.py", 495]], "def entrenar_clasificacion(self):": [["main.py", 827]], "self._ejecutar(lambda: ex.ejecutar_clasificacion(self._config_clasificacion()))": [["main.py", 828]]};
+/* ENLACES-FIN */
 /* =====================================================================
    CONTENIDO DE ESTUDIO
    Cada módulo tiene tres partes: la teoría, el fragmento real del proyecto
@@ -457,6 +466,7 @@ F15 Binomial estandarizada X = μ + σ (B − np) / √(np(1 − p))</div>
 <p>El proyecto está organizado en capas para que la regla de "sin librerías" se vea con solo leer los <code>import</code>. En la base está <code>formulas.py</code>, que no depende de nada. Encima, <code>perceptron.py</code> usa únicamente esas fórmulas, y <code>aleatorio.py</code> también, más <code>time</code>, que solo toma una semilla automática. <code>experimentos.py</code> une la simulación de datos con el entrenamiento y devuelve los resultados sin dibujar nada; aparte de los módulos propios solo importa <code>copy</code>. Solo en la capa visual aparecen las librerías: <code>graficas.py</code> dibuja con matplotlib, y <code>main.py</code> usa tkinter para la ventana y el puente de matplotlib (<code>Figure</code> y <code>FigureCanvasTkAgg</code>) para mostrar las figuras dentro de ella.</p>
 <p>Las tres salidas que pidió el profesor están en <code>graficas.py</code>. El <b>espacio 3D</b> dibuja los puntos de cada clase y los planos de separación; para trazar un plano se despeja la coordenada con el peso de mayor valor absoluto, lo que evita dividir entre un número cercano a cero, se evalúa en las cuatro esquinas de la caja y el polígono resultante se recorta con el algoritmo de Sutherland-Hodgman, escrito a mano. La <b>gráfica de épocas</b> muestra el error F7 por época y la <b>gráfica de pesos</b> reúne w1, w2, w3 y θ en una sola figura para ver cómo cada uno se va quedando quieto.</p>
 <p>La interfaz de <code>main.py</code> tiene a la izquierda las pestañas Clasificación, Regresión y Ejemplo de clase, donde se cambian en vivo las instancias, la media en x1, x2 y x3, la desviación y la distribución de cada clase, la tasa, las épocas, el error mínimo, el umbral, las salidas, el valor de x0, la estrategia de tres clases y la semilla. Los botones <b>Separadas</b>, <b>Cercanas</b>, <b>Solapadas</b> y <b>Desbalanceadas</b> cargan escenarios listos, y la fila <b>Reventar</b> tiene Acercar clases, Alejar clases, Aumentar σ y Reducir σ, que modifican los datos actuales y entrenan de inmediato. Las salidas del escalón aceptan cualquier par de números, como pidió el profesor, siempre que la salida alta sea mayor que la baja. Antes de entrenar, la interfaz valida cada dato: <code>leer_float</code> rechaza textos como nan o inf con <code>es_finito</code> (M8), <code>leer_int</code> tampoco deja escribir épocas infinitas, <code>leer_no_negativo</code> exige que las desviaciones σ no sean negativas y <code>leer_tasa</code> exige que γ sea mayor que cero; en cada caso aparece un mensaje que explica el motivo, en lugar de un error en la consola. Después de entrenar, el recuadro <b>Clasificar un punto nuevo</b> dice a qué clase pertenece cualquier punto y lo marca con una estrella. A la derecha están las pestañas de resultados, incluida la de "Proceso paso a paso", que imprime cada suma, salida, error y ajuste. Abajo, una barra permite ver el plano en cualquier época y un botón anima el entrenamiento.</p>
+<p>Para leer el código desde la ventana, un <b>clic derecho</b> sobre casi cualquier botón, campo o pestaña de resultados abre en VS Code la función que hace ese trabajo. Por ejemplo, el campo de la tasa γ lleva a <code>Perceptron.ajustar</code>, donde se usa en F5 y F6, y el botón ENTRENAR CLASIFICACIÓN lleva a <code>ejecutar_clasificacion</code>. Lo hace <code>_ver_codigo</code>, que asocia el clic derecho a una función, y <code>_abrir_codigo</code>, que saca el archivo y la línea de <code>funcion.__code__</code>, los escribe en la barra de estado y le pide a Windows que abra la dirección <code>vscode://file/ruta:línea</code> con el comando <code>exec</code> de Tcl, el lenguaje sobre el que funciona tkinter. No hace falta ningún import nuevo, y nada de esto interviene en los cálculos.</p>
 <p>En el espacio 3D una X marca el centroide de cada nube, y el resumen muestra para cada clase la media y la desviación pedidas frente a las obtenidas, junto con su exactitud. La barra de estado repite la exactitud global y la de cada clase, y en regresión muestra el ECM y el R². La semilla merece una mención: si se fija, por ejemplo en 7, todo el experimento es reproducible, porque el generador produce siempre la misma secuencia. Eso permite mostrar en la sustentación exactamente los mismos resultados del informe.</p>`,
   archivo: "graficas.py",
   codigo: String.raw`    k = 0
@@ -594,6 +604,12 @@ const NIVELES = [
         ["Porque la global se calcula mal", false, "La global (F9) está bien calculada; el problema es que oculta lo que pasa con cada clase."],
         ["Porque el perceptrón entrena cada clase por separado", false, "Con dos clases hay una sola neurona; la medida por clase es para evaluar, no para entrenar."],
         ["Es solo decorativo", false, "Es la evidencia del efecto del desbalance que pidió probar el profesor."] ] },
+    { tipo: "opcion", enunciado: "En el simulador, haces clic derecho sobre el campo de la tasa γ. ¿Qué pasa y cómo lo sabe el programa?",
+      opciones: [
+        ["Se abre en VS Code el método Perceptron.ajustar; _abrir_codigo saca el archivo y la línea de funcion.__code__", true, "Correcto: co_filename da el archivo y co_firstlineno la línea del def. La barra de estado también muestra el archivo y la línea."],
+        ["Se cambia la tasa a su valor por defecto", false, "El clic derecho no cambia ningún dato; solo muestra el código."],
+        ["Se abre la documentación de tkinter", false, "Abre tu propio código, en la función que usa ese dato."],
+        ["El programa busca la palabra «tasa» en todos los archivos", false, "No busca texto: cada control se asoció con una función concreta mediante _ver_codigo."] ] },
     { tipo: "opcion", enunciado: "¿Cuál es el único papel de matplotlib y tkinter en el proyecto?",
       opciones: [
         ["Dibujar y mostrar la interfaz; no calculan nada del modelo", true, "Correcto: solo aparecen en graficas.py y main.py, y reciben valores ya calculados con formulas.py."],
@@ -755,6 +771,7 @@ const SUSTENTACION = [
   { tema: "Teoría", p: "¿Qué es el aprendizaje supervisado y por qué su proyecto lo es?", r: "Es aprender a partir de ejemplos de los que se conoce la respuesta correcta. En mi proyecto cada instancia trae su salida deseada d, que depende de la clase a la que pertenece, o del valor de y en la regresión, y el perceptrón corrige sus pesos según la diferencia entre lo que respondió y esa respuesta, e = d − y. Sin la salida deseada no habría error y la regla no podría aprender." },
   { tema: "Implementación", p: "¿Qué es una distribución de probabilidad y cuáles usó?", r: "Es la descripción de qué valores puede tomar algo al azar y con qué frecuencia. Usé cuatro, todas controladas con la media μ y la desviación σ: la normal, con forma de campana, por Box-Muller; la uniforme, en la que todos los valores de un intervalo son igual de probables, con semiancho σ√3; la exponencial, asimétrica, por transformada inversa; y la binomial, que cuenta éxitos en 20 ensayos y luego se estandariza. Todas parten del número uniforme U que da mi generador congruencial." },
   { tema: "Implementación", p: "¿Por qué usó clases en lugar de solo funciones?", r: "Porque un perceptrón tiene un estado que cambia, sus pesos, θ y sus historiales, y una clase permite guardar ese estado junto con los métodos que lo usan. Así cada objeto Perceptron tiene sus propios pesos, y en uno contra el resto puedo tener tres neuronas independientes sin que se mezclen. Además, la activación es un objeto, Escalon o Lineal, y gracias a su método __call__ la misma clase Perceptron sirve para clasificar y para hacer regresión. Lo mismo vale para GeneradorAleatorio, que guarda el estado X de la secuencia." },
+  { tema: "Gráficas", p: "Muéstreme en el código qué hace este botón.", r: "Le doy clic derecho al botón y se abre VS Code en la función que hace ese trabajo; la barra de estado también dice el archivo y la línea. Eso lo hace _ver_codigo, que asocia el clic derecho de cada control con una función, y _abrir_codigo, que saca el archivo y la línea del def de funcion.__code__ y abre la dirección vscode://file/ruta:línea con el comando exec de Tcl, sin ningún import nuevo. Por ejemplo, el botón ENTRENAR CLASIFICACIÓN lleva a ejecutar_clasificacion de experimentos.py, y la pestaña Épocas lleva a dibujar_epocas de graficas.py. Es solo una ayuda para leer el código y no interviene en los cálculos." },
   { tema: "Gráficas", p: "¿Cómo funciona la interfaz por dentro?", r: "Está hecha con tkinter. main() crea la ventana y la Aplicacion arma los widgets: cajas de texto unidas a variables StringVar, listas desplegables, botones y pestañas. Cada botón tiene un command, la función que se ejecuta al pulsarlo, y raiz.mainloop() mantiene la ventana esperando esos eventos. Las gráficas son figuras de matplotlib que FigureCanvasTkAgg muestra dentro de la ventana, y para la animación uso after, que programa el siguiente cuadro sin congelar la interfaz. Nada de eso calcula: todo lo que se muestra viene de experimentos.py y formulas.py." },
   { tema: "Teoría", p: "¿Qué es un perceptrón y quién lo propuso?", r: "Es el modelo más sencillo de neurona artificial: calcula una suma ponderada de sus entradas más un sesgo y la pasa por una función de activación. Lo propuso Frank Rosenblatt en 1958, a partir de la neurona lógica de McCulloch y Pitts, y su aporte fue una regla para aprender los pesos a partir de los errores." },
   { tema: "Teoría", p: "¿Qué papel cumple el sesgo y por qué x0 = −1?", r: "El sesgo permite que el plano no esté obligado a pasar por el origen. Con x0 = −1 la suma queda S = Σwi·xi − θ, de modo que θ actúa como un umbral que se aprende, que es la convención de la clase. Con x0 = +1 se obtiene la forma S = Σwi·xi + b de otros libros. Son equivalentes porque solo cambia el signo del parámetro, y el programa deja elegir cualquiera, usando siempre el mismo x0 en la suma y en el ajuste." },
@@ -1009,7 +1026,7 @@ ANALISIS.push({
     [String.raw`except ValueError as error:`, "Si una media no es un número, leer_float lanzó un ValueError…"],
     [String.raw`    messagebox.showerror("Dato no válido", str(error))`, "…se muestra el mensaje…"],
     [String.raw`    return`, "…y se sale sin mover nada ni entrenar."],
-    [String.raw`comun =[media([c[j] for c in centros]) for j in range(3)]           # F16`, "Centro común: la media de los centros en cada coordenada."],
+    [String.raw`comun = [media([c[j] for c in centros]) for j in range(3)]           # F16`, "Centro común: la media de los centros en cada coordenada."],
     [String.raw`for fila, c in zip(filas, centros):`, ""],
     [String.raw`    for j, var in enumerate(fila["centro"]):`, ""],
     [String.raw`        var.set("%.3g" % (comun[j] + factor * (c[j] - comun[j])))`, "c_nuevo = común + f·(c − común): con f = 0,75 se acercan y con 1,33 se alejan."],
@@ -1760,7 +1777,10 @@ const FUNCIONES = {
     ["PestanaGrafica y vista_3d()", "Pestaña con una figura de matplotlib y su barra de herramientas; vista_3d recuerda el ángulo de la cámara al redibujar."],
     ["PestanaTexto y mostrar()", "Pestaña de texto de solo lectura para el proceso paso a paso y el resumen."],
     ["Aplicacion.__init__", "Arma la ventana: encabezado con Reiniciar todo, panel de parámetros a la izquierda, pestañas de resultados a la derecha y barra de épocas."],
-    ["_estilos, _campo, _lista", "Estilos visuales y fábricas de filas con etiqueta más caja de texto o lista desplegable."],
+    ["_estilos, _campo, _lista", "Estilos visuales y fábricas de filas con etiqueta más caja de texto o lista desplegable. Con el parámetro codigo, el clic derecho sobre la fila abre esa función en VS Code."],
+    ["_ver_codigo(widget, funcion)", "Hace que un clic derecho sobre un control abra en VS Code la función que hace su trabajo, y devuelve el mismo control. No interviene en ningún cálculo."],
+    ["_abrir_codigo(funcion)", "Toma el archivo y la línea del def desde funcion.__code__ (co_filename y co_firstlineno), los muestra en la barra de estado y, en Windows, abre vscode://file/ruta:línea con el comando exec de Tcl."],
+    ["_codigo_pestana(evento)", "Clic derecho sobre una pestaña de resultados: abre la función que la dibuja (dibujar_clasificacion, dibujar_regresion o dibujar_ejemplo según el modo, dibujar_epocas, dibujar_pesos) o que escribe su texto (Perceptron.entrenar, resumen)."],
     ["_pestana_clasificacion", "Construye la pestaña Clasificación: tabla de clases, escenarios, fila Reventar, parámetros, botón ENTRENAR y Clasificar un punto nuevo."],
     ["_activar_clase3", "Habilita o deshabilita la fila de la clase 3 según se elijan 2 o 3 clases."],
     ["_escenario(nombre)", "Carga en los campos los valores de un escenario (no entrena)."],
@@ -1848,6 +1868,69 @@ function resaltarPython(codigo) {
 }
 
 /* =====================================================================
+   ENLACES A VS CODE
+   Cada enlace usa la dirección vscode://file/<ruta>:<línea>, que abre el
+   archivo en VS Code en esa línea. La ruta sale de la ubicación de este HTML,
+   que está en la raíz del proyecto; si no se abrió como archivo local, se usa
+   RAIZ_PROYECTO. Las líneas vienen de ENLACES_DEF y ENLACES_LINEAS, que
+   escribe herramientas/enlaces_estudio.py.
+   ===================================================================== */
+const ORDEN_ARCHIVOS = ["formulas.py", "aleatorio.py", "perceptron.py", "experimentos.py", "graficas.py", "main.py"];
+const carpetaProyecto = (() => {
+  if (location.protocol === "file:") {
+    const ruta = decodeURIComponent(location.pathname).replace(/^\/(?=[A-Za-z]:)/, "");
+    return ruta.slice(0, ruta.lastIndexOf("/"));
+  }
+  return RAIZ_PROYECTO;
+})();
+const urlCodigo = (archivo, linea) => "vscode://file/" + encodeURI(carpetaProyecto + "/" + archivo) + ":" + linea;
+const tituloEnlace = (archivo, linea) => `Abrir ${archivo} en la línea ${linea} (VS Code)`;
+function enlaceCodigo(archivo, linea, texto, clase = "enlace-codigo") {
+  return `<a class="${clase}" href="${urlCodigo(archivo, linea)}" title="${tituloEnlace(archivo, linea)}">${texto}</a>`;
+}
+/* Línea donde se define un nombre: exacto («entrenar», «Perceptron.entrenar») o como método de una clase */
+function buscarDefinicion(nombre, archivo) {
+  for (const a of archivo ? [archivo] : ORDEN_ARCHIVOS) {
+    const defs = ENLACES_DEF[a] || {};
+    if (defs[nombre]) return [a, defs[nombre]];
+    const metodo = Object.keys(defs).find(k => k.endsWith("." + nombre));
+    if (metodo) return [a, defs[metodo]];
+  }
+  return null;
+}
+/* Línea real de una línea de código que muestra la app; si aparece varias
+   veces en el archivo, se toma la primera desde «desde» */
+function buscarLinea(texto, archivo, desde = 0) {
+  const lista = (ENLACES_LINEAS[texto.trim()] || []).filter(([a]) => !archivo || a === archivo);
+  if (!lista.length) return null;
+  return (lista.find(([, n]) => n >= desde) || lista[0])[1];
+}
+const primeraLinea = codigo => codigo.split("\n").find(l => l.trim()) || "";
+/* Etiqueta «archivo · línea N» encima de un fragmento, con enlace a esa línea */
+function etiquetaArchivo(archivo, codigo) {
+  const n = buscarLinea(primeraLinea(codigo), archivo);
+  return n ? `${archivo} · ${enlaceCodigo(archivo, n, "línea " + n + " ↗")}` : archivo;
+}
+/* Convierte en enlace cada <code> suelto cuyo texto sea un archivo o una
+   función, clase o constante del proyecto */
+function enlazarCodigoSuelto(raiz) {
+  raiz.querySelectorAll("code").forEach(c => {
+    if (c.closest("a, pre")) return;
+    const texto = c.textContent.trim();
+    let destino = null;
+    if (ORDEN_ARCHIVOS.includes(texto)) destino = [texto, 1];
+    else {
+      // «ex.» y «gr.» son los alias con que main.py importa experimentos y graficas
+      const nombre = texto.replace(/\(.*$/s, "").replace(/^(ex|gr)\./, "");
+      if (nombre.length > 2 && /^[A-Za-z_][A-Za-z0-9_.]*$/.test(nombre)) destino = buscarDefinicion(nombre);
+    }
+    if (!destino) return;
+    const a = el("a", { class: "enlace-codigo", href: urlCodigo(...destino), title: tituloEnlace(...destino) });
+    c.replaceWith(a); a.appendChild(c);
+  });
+}
+
+/* =====================================================================
    NAVEGACIÓN
    ===================================================================== */
 const SECCIONES = [
@@ -1879,6 +1962,7 @@ function ir(id, opciones) {
   const vista = $("#vista");
   vista.innerHTML = "";
   SECCIONES.find(s => s[0] === id)[2](vista, opciones);
+  enlazarCodigoSuelto(vista);
   ponerMenu(false);
   window.scrollTo({ top: 0 });
   try { sessionStorage.setItem(CLAVE + "-seccion", id); } catch (e) {}
@@ -2129,12 +2213,13 @@ function vistaInicio(v) {
       mapa.querySelectorAll(".nodo").forEach(n => n.setAttribute("aria-pressed", "false"));
       ev.currentTarget.setAttribute("aria-pressed", "true");
       const d = ARCHIVOS[a];
-      detalle.innerHTML = `<p><code>${a}</code> · capa ${d.capa.toLowerCase()}</p><p>${d.texto}</p><p class="marcador">Depende de: ${d.usa}</p>`;
+      detalle.innerHTML = `<p>${enlaceCodigo(a, 1, "<code>" + a + "</code>")} · capa ${d.capa.toLowerCase()}</p><p>${d.texto}</p><p class="marcador">Depende de: ${d.usa}</p>`;
     } }, a)));
     mapa.appendChild(fila);
   });
   v.append(mapa, detalle);
 
+  v.appendChild(el("div", { class: "nota-margen" }, "<strong>Ir al código con un clic</strong>Los nombres de archivos y funciones con subrayado punteado, las etiquetas «línea N ↗» encima de cada fragmento, los números de línea del análisis de código y los nombres del catálogo de funciones abren VS Code en la línea exacta. La primera vez, el navegador pregunta si puede abrir Visual Studio Code: acepta y marca que lo recuerde. En el simulador pasa algo parecido: un clic derecho sobre un botón, un campo o una pestaña de resultados abre la función que hace ese trabajo."));
   v.appendChild(el("h2", {}, "Cómo usar esta aplicación"));
   v.appendChild(el("p", {}, "Si sientes que no sabes nada, empieza por <b>Desde cero</b>: catorce lecciones cortas que explican, sin dar nada por sabido, el problema, la matemática y la notación, la estadística, el azar, Python, tkinter y matplotlib, y el recorrido completo de un entrenamiento, con preguntas para comprobar cada una y un glosario. Después sigue con el <b>modo de estudio</b>, que recorre siete módulos en el orden en que se construyó el sistema y une cada tema con tu código. Luego pasa a la <b>evaluación</b>, cuyos tres niveles se desbloquean con 70 % de aciertos. Cuando te sientas seguro, usa la sección de <b>sustentación</b> para practicar las preguntas del profesor con el simulacro cronometrado, y deja el <b>análisis de código</b>, que ahora incluye todas las funciones de cada archivo, y el <b>repaso final</b> para el día anterior."));
   v.appendChild(el("div", { class: "fila-botones" })).append(
@@ -2378,7 +2463,7 @@ function vistaFundamentos(v, opciones) {
   v.appendChild(el("div", {}, l.html));
   (l.ejemplos || []).forEach(e => {
     v.appendChild(el("div", { class: "parte-titulo" }, "En tu código"));
-    v.appendChild(el("div", { class: "archivo" }, e.archivo));
+    v.appendChild(el("div", { class: "archivo" }, etiquetaArchivo(e.archivo, e.codigo)));
     v.appendChild(el("pre", { class: "codigo" }, resaltarPython(e.codigo)));
     if (e.nota) v.appendChild(el("div", { class: "nota-margen" }, `<strong>Cómo leerlo</strong>${escapar(e.nota)}`));
   });
@@ -2440,7 +2525,7 @@ function vistaEstudio(v, opciones) {
   v.appendChild(el("div", { class: "parte-titulo" }, "Teoría"));
   v.appendChild(el("div", {}, m.teoria));
   v.appendChild(el("div", { class: "parte-titulo" }, "En tu código"));
-  v.appendChild(el("div", { class: "archivo" }, m.archivo));
+  v.appendChild(el("div", { class: "archivo" }, etiquetaArchivo(m.archivo, m.codigo)));
   v.appendChild(el("pre", { class: "codigo" }, resaltarPython(m.codigo)));
   v.appendChild(el("div", { class: "nota-margen" }, `<strong>Idea clave para la sustentación</strong>${m.idea}`));
   if (m.demo === "calculadora") crearCalculadora(v);
@@ -2618,7 +2703,12 @@ function vistaCodigo(v, opciones) {
     const tabla = el("table", { class: "catalogo" });
     tabla.innerHTML = "<thead><tr><th>Nombre</th><th>Qué hace</th></tr></thead>";
     const cuerpo = el("tbody");
-    FUNCIONES[archivo].forEach(([n, d]) => cuerpo.appendChild(el("tr", {}, `<td class="mono">${escapar(n)}</td><td>${escapar(d)}</td>`)));
+    FUNCIONES[archivo].forEach(([n, d]) => {
+      // El primer nombre de la fila (por ejemplo «minimo» en «minimo(valores) y maximo(valores)») lleva a su def
+      const destino = buscarDefinicion((n.match(/[A-Za-z_][A-Za-z0-9_.]*/) || [""])[0], archivo);
+      const nombre = destino ? enlaceCodigo(archivo, destino[1], escapar(n)) : escapar(n);
+      cuerpo.appendChild(el("tr", {}, `<td class="mono">${nombre}</td><td>${escapar(d)}</td>`));
+    });
     tabla.appendChild(cuerpo); envoltura.appendChild(tabla); destino.appendChild(envoltura);
   };
   if (filtro === "todos") {
@@ -2636,11 +2726,16 @@ function vistaCodigo(v, opciones) {
 
   ANALISIS.filter(b => filtro === "todos" || b.archivo === filtro).forEach(b => {
     v.appendChild(el("h3", {}, escapar(b.titulo)));
-    v.appendChild(el("div", { class: "archivo" }, b.archivo));
+    v.appendChild(el("div", { class: "archivo" }, etiquetaArchivo(b.archivo, b.lineas[0][0])));
     const tabla = el("div", { class: "anotado" });
+    let desde = 0;   // las líneas van en orden: cada una se busca a partir de la anterior
     b.lineas.forEach(([codigo, exp], i) => {
       const fila = el("div", { class: "linea-cod" });
-      fila.append(el("div", { class: "num" }, String(i + 1)), el("pre", {}, resaltarPython(codigo)), el("div", { class: "exp" }, exp ? escapar(exp) : ""));
+      const n = buscarLinea(codigo, b.archivo, desde);
+      if (n) desde = n;
+      // La columna muestra el número de línea real del archivo, con enlace a VS Code
+      const numero = n ? enlaceCodigo(b.archivo, n, String(n)) : String(i + 1);
+      fila.append(el("div", { class: "num" }, numero), el("pre", {}, resaltarPython(codigo)), el("div", { class: "exp" }, exp ? escapar(exp) : ""));
       tabla.appendChild(fila);
     });
     v.appendChild(tabla);
