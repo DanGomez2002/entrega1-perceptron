@@ -1,8 +1,7 @@
 """
 perceptron.py
 =============
-Perceptrón (una sola neurona) implementado desde cero, SIN librerías.
-Cada paso llama a su fórmula de formulas.py:
+
 
     S  = w1*x1 + w2*x2 + w3*x3 + theta*x0          F1  suma ponderada
     y  = f(S)                                      F2  escalón  /  F3 lineal

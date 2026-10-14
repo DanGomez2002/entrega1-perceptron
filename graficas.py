@@ -1,17 +1,6 @@
 """
 graficas.py
 ===========
-Módulo que DIBUJA con matplotlib, la única librería externa, que se usa SOLO
-para dibujar (main.py la importa además para mostrar estas figuras dentro de
-la ventana). Los valores que se dibujan (planos, predicciones, medias) se calculan con las
-fórmulas de formulas.py.
-
-Gráficas que pidió el profesor:
-    1. Puntos en el espacio 3D con los PLANOS de separación (clasificación) o
-       el plano que sigue a los puntos (regresión).
-    2. Gráfica de las ÉPOCAS (error por época): muestra si termina o no.
-    3. Gráfica de los PESOS: todos los pesos (w1, w2, w3 y theta) en una sola
-       gráfica, para ver cómo se ajustan hasta quedarse quietos.
 
 Todas las funciones reciben una figura (matplotlib.figure.Figure) y dibujan
 dentro de ella, para poder mostrarlas en la interfaz.

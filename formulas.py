@@ -1,13 +1,6 @@
 """
 formulas.py
 ===========
-TODAS las fórmulas matemáticas del proyecto, escritas a mano.
-
-No se importa ninguna librería: ni math, ni numpy, ni random. Hasta la raíz
-cuadrada, el logaritmo natural, el coseno y el número pi se calculan con sus
-fórmulas (Newton-Raphson y series de Taylor).
-
-Cada función lleva el número de fórmula (F1, F2, ...) que se usa en el informe.
 
     PERCEPTRÓN
     F1  Suma ponderada .............. S = w1*x1 + w2*x2 + w3*x3 + theta*x0
